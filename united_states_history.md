@@ -914,50 +914,329 @@ Reconstruction was an unfinished revolution. It abolished slavery and enshrined 
 
 ## PART VI: THE GILDED AGE AND PROGRESSIVE ERA (1877–1917)
 
-Write a detailed explanation of the following topics:
-
 ### Chapter 17: Industrial America
-- The rise of big business: railroads, steel, oil; Carnegie, Rockefeller, Morgan
-- Labor conditions and the union movement: Haymarket, Homestead, Pullman
-- Urbanization and the changing American city
-- The "New Immigration" from Southern and Eastern Europe; Ellis Island; Chinese Exclusion Act
+
+Following the carnage of the Civil War, the United States entered a period of explosive and unprecedented economic growth. In the span of a few decades, the nation transformed from a largely agrarian, commercial republic into the world’s leading industrial powerhouse. This era, often called the Gilded Age, brought wondrous technological marvels, immense wealth, and the rise of modern corporate capitalism. However, this rapid modernization came at a steep human cost. The new industrial economy was built on the backs of a massive, often exploited labor force, sparking bitter class warfare. It also fueled rapid, chaotic urbanization and triggered a massive wave of global migration, profoundly reshaping the demographic and social fabric of the nation.
+
+#### The Rise of Big Business: Railroads, Steel, Oil; Carnegie, Rockefeller, Morgan
+
+The engine of the industrial revolution was the railroad. Transcontinental railroads, heavily subsidized by the federal government through massive land grants, stitched the continent together, creating a truly national market. To manage these vast enterprises, railroads pioneered modern corporate bureaucracy, time zones, and complex accounting systems. But the railroads also created a landscape of unchecked corporate power, engaging in rampant corruption (as seen in the Crédit Mobilier scandal) and discriminatory pricing that ruined small farmers and merchants.
+
+The railroad's insatiable demand for materials spawned other massive industries. **Steel**, made vastly cheaper and stronger by the Bessemer process, was needed for rails, bridges, and the new skyscrapers. **Andrew Carnegie** dominated this industry. Carnegie practiced **vertical integration**, meaning his company, Carnegie Steel, owned every stage of the production process—from the iron ore mines, to the coal fields, to the ships and railroads that transported the materials, to the mills themselves. By controlling every step, Carnegie eliminated middlemen and slashed costs, producing steel cheaper than anyone else. Carnegie became the richest man in the world, later devoting his later life to philanthropy and arguing in his *Gospel of Wealth* that the wealthy had a moral obligation to distribute their fortunes for the public good.
+
+In the oil industry, **John D. Rockefeller** built the Standard Oil monopoly. Rather than vertical integration, Rockefeller relied on **horizontal integration**—buying out or ruthlessly crushing all his competitors. Through secret deals with railroads (securing secret rebates on shipping costs) and industrial espionage, Standard Oil controlled roughly 90% of the nation's oil refining by the 1880s. Rockefeller's creation of the "trust"—a legal arrangement allowing a board of trustees to manage multiple companies as a single entity—allowed monopolies to bypass state anti-monopoly laws, setting the template for corporate consolidation.
+
+The sheer scale of these industries required vast amounts of capital, elevating the power of finance. **J.P. Morgan** was the era’s most powerful banker. Morgan used his immense financial clout to stabilize volatile markets, reorganize failing railroads, and consolidate industries. In 1901, Morgan bought out Carnegie for $480 million and merged his steel operations with others to create the United States Steel Corporation, the world’s first billion-dollar corporation. 
+
+These titans of industry viewed themselves as the fittest survivors in a fiercely competitive world, a mindset justified by the philosophy of **Social Darwinism**. Proponents like Herbert Spencer applied Charles Darwin’s biological concepts to society, arguing that unfettered capitalism and the concentration of wealth were natural and beneficial stages of human evolution. This ideology provided a moral shield for the vast inequalities of the Gilded Age, framing monopolies and wage cuts as the natural law of progress.
+
+#### Labor Conditions and the Union Movement: Haymarket, Homestead, Pullman
+
+Beneath the gleaming surface of industrial wealth lay the brutal reality of the American worker. Industrial labor was characterized by long hours (often 12 to 14 a day, six days a week), dangerous conditions, and poverty wages that barely kept a family fed. Factory owners treated labor as a commodity to be bought as cheaply as possible and routinely hired women and children, who could be paid even less. In an era before workers' compensation, industrial accidents maimed and killed thousands, with employers facing no legal liability.
+
+Workers fought back by organizing unions, but they faced fierce opposition from employers, the courts, and the government, who frequently used the police, state militias, and federal troops to crush strikes. 
+
+The first major national labor organization was the **Knights of Labor**, founded in 1869. The Knights were unique because they welcomed all "producers"—skilled and unskilled workers, women, and African Americans—though they excluded Chinese immigrants. They advocated for an eight-hour workday, cooperatives, and the abolition of child labor. They scored a major victory in 1885 against the ruthless railroad magnate Jay Gould, but their momentum was shattered by the **Haymarket Affair** of 1886. During a labor protest in Chicago’s Haymarket Square, an unknown person threw a bomb at the police, killing several officers. The police opened fire, killing and wounding dozens of civilians. Although the bomb-thrower was never identified, eight anarchist labor leaders (mostly German immigrants) were railroaded in a biased trial and four were executed. The event sparked a nationwide Red Scare, associating the labor movement with violent radicalism and destroying the Knights of Labor.
+
+The American Federation of Labor (AFL), led by Samuel Gompers, took a different, more conservative approach. The AFL was a "bread and butter" union that organized only skilled workers by craft. Rather than trying to overthrow capitalism, the AFL focused on practical goals: higher wages, shorter hours, and better conditions, using collective bargaining and strikes.
+
+However, even the most established unions faced brutal repression. The **Homestead Strike of 1892** at Carnegie Steel demonstrated the complete defeat of organized labor in heavy industry. When Henry Clay Frick, Carnegie’s manager, announced wage cuts and locked out the workers, the Amalgamated Association of Iron and Steel Workers struck. A violent battle erupted when Frick hired armed Pinkerton detectives to secure the plant; workers fought them off, killing several detectives. The state governor then sent 8,000 National Guard troops to protect strikebreakers, and the union was destroyed.
+
+A similar fate befell the **Pullman Strike of 1894**. George Pullman, who manufactured luxury railroad sleeping cars, cut wages by 25% but refused to lower the rent or prices in the company town where his workers were forced to live. The workers, led by Eugene V. Debs and the American Railway Union, struck and refused to handle trains with Pullman cars, paralyzing national rail traffic. The federal government, siding with the railroads, obtained an injunction citing the Sherman Antitrust Act (ironically meant to bust monopolies, not unions) and sent federal troops to break the strike. Debs was jailed, and the strike collapsed. These defeats left the labor movement reeling, as corporations and the state worked hand-in-hand to maintain the power of capital over the rights of labor.
+
+#### Urbanization and the Changing American City
+
+Industrialization and the rural-to-urban migration it sparked transformed the American landscape. In 1860, only 20% of Americans lived in cities; by 1900, it was 40%. The American city became a dazzling, chaotic monument to the new industrial age.
+
+Technologically, the city was remade. The invention of the elevator and the steel frame building allowed cities to grow vertically, giving birth to the skyscraper. Mass transit systems, first elevated trains and then electric streetcars (trolleys), allowed cities to expand outward, creating distinct residential, commercial, and industrial zones. The wealthy moved to streetcar suburbs on the edges of the city, commuting to downtown offices. The city was electrified; telephones and indoor plumbing became available to the upper and middle classes.
+
+However, for the working class, the industrial city was a place of intense crowding and squalor. Immigrants and native-born migrants packed into **tenements**—poorly constructed, massively overcrowded apartment buildings that lacked ventilation, light, and basic sanitation. Diseases like cholera, tuberculosis, and typhoid ran rampant. The squalor of the slums stood in stark, jarring contrast to the opulent, Vanderbilt-tier mansions being built just miles away.
+
+This vast inequality and the breakdown of municipal services gave rise to **political machines**. Organizations like New York’s **Tammany Hall**, led by "Boss" William M. Tweed, ruled cities through a system of patronage and corruption. Machines traded votes for favors—providing constituents with jobs, food, coal, or help with the law in exchange for their political support. While machines were undeniably corrupt, stealing millions in public funds, they also provided vital social services to the immigrant poor who were ignored by the traditional elites, bridging the gap between the destitute masses and a city government that otherwise would not have served them.
+
+#### The "New Immigration" from Southern and Eastern Europe; Ellis Island; Chinese Exclusion Act
+
+The factories and cities were fueled by a massive influx of cheap labor. In the 1880s, the pattern of immigration shifted dramatically. Prior to this, most immigrants had come from Northern and Western Europe (Britain, Ireland, Germany). But by the late 19th century, the **"New Immigration"** was dominated by people from Southern and Eastern Europe—Italians, Poles, Russians, Greeks, and Austro-Hungarians. Many were Catholic or Jewish, fleeing religious persecution (like the anti-Jewish pogroms in Russia) or severe rural poverty.
+
+Unlike earlier immigrants, who often moved to the frontier to farm, these new immigrants overwhelmingly stayed in the industrial cities, forming dense ethnic enclaves like New York’s Lower East Side or Chicago’s "Little Italy." They took the dirtiest, lowest-paying industrial jobs. 
+
+In 1892, the federal government opened **Ellis Island** in New York Harbor to process the millions of European immigrants arriving in the United States. There, immigrants underwent medical and legal inspections; those found to be diseased or "likely to become a public charge" were deported. However, the vast majority passed through and entered the country, enduring grueling interrogations and language barriers.
+
+While Europeans faced discrimination based on class and religion, Asian immigrants faced outright legal exclusion. In the West, Chinese immigrants had been vital to building the Transcontinental Railroad and developing the California economy. However, during the economic depression of the 1870s, white workers, led by politicians like Denis Kearney, violently scapegoated the Chinese, blaming them for taking jobs and lowering wages, culminating in the anti-Chinese riots in San Francisco and the Los Angeles Chinese Massacre of 1871.
+
+This nativist, racial animosity resulted in the **Chinese Exclusion Act of 1882**. It was the first major federal law to restrict immigration based explicitly on race and nationality. It banned the immigration of Chinese laborers for ten years (later extended and made permanent) and barred Chinese immigrants from becoming U.S. citizens. The law set a dangerous precedent, establishing the legal and ideological framework for a broader system of immigration restriction that would expand in the twentieth century, cementing racial exclusivity into the American immigration system even as the nation continued to rely on immigrant labor to fuel its industrial empire.
 
 ### Chapter 18: The Transformed West and the New South
-- Transcontinental railroads, homesteaders, cowboys, and miners
-- The Plains Indian Wars: Little Bighorn, Wounded Knee, the reservation system, Dawes Act
-- The New South: sharecropping and industrial dreams
-- Jim Crow: segregation, disenfranchisement, lynching; Plessy v. Ferguson
-- Black responses: Booker T. Washington, W.E.B. Du Bois, Ida B. Wells
+
+In the decades following the Civil War, the United States turned its energies inward, completing the conquest of the continent and redefining its internal social and economic structures. West of the Mississippi, a frantic wave of settlement, extraction, and railroading reshaped the landscape, while simultaneously triggering the final, violent displacement of the Plains Indians. In the South, the fall of Reconstruction gave way to the "New South"—a region that remained economically dependent on Northern capital and agriculturally bound by a new system of coerced labor. In both regions, the late nineteenth century was defined by the triumph of corporate capitalism, the legalization of racial segregation, and the fierce, diverse resistance of marginalized peoples fighting for dignity and survival.
+
+#### Transcontinental Railroads, Homesteaders, Cowboys, and Miners
+
+The settlement of the West was not a slow, inevitable drift; it was a rapid, corporate-driven process catalyzed by the federal government. The **Pacific Railway Act of 1862** authorized the construction of the transcontinental railroad. The Central Pacific built eastward from California using thousands of Chinese laborers, while the Union Pacific built westward from Omaha, largely employing Irish immigrants and Civil War veterans. They met at Promontory Point, Utah, in 1869. To finance this massive undertaking, the government gave the railroad companies immense federal land grants, effectively making them the largest landowners in the West.
+
+The railroad opened the floodgates for white settlement. The **Homestead Act of 1862** offered 160 acres of public land virtually free to anyone who would live on and improve it for five years. Hundreds of thousands of "exodusters" (African Americans fleeing the Jim Crow South), European immigrants, and native-born Americans rushed onto the Great Plains. Farming the arid Plains was brutally difficult, requiring backbreaking labor, sod houses, and new technologies like barbed wire and steel plows. The romantic myth of the independent homesteader obscures the fact that most land actually went to railroads, speculators, and large corporate farms.
+
+The West was also defined by extraction. The **mining frontier** began with individual prospectors panning for gold and silver in California, Nevada, and the Dakotas. However, the easily accessible precious metals were quickly exhausted. The mining industry was soon dominated by deep-shaft, hydraulic mining operations funded by Eastern and European capital, which ravaged the environment and left toxic debris.
+
+Simultaneously, the **cattle kingdom** flourished. Texans drove millions of longhorn cattle north to railheads in Kansas (like Dodge City) to be shipped to Eastern slaughterhouses. The iconic American cowboy was a transient, low-wage laborer. Contrary to Hollywood's white-dominated mythos, roughly a quarter of cowboys were Black men who had headed West after the Civil War, and another quarter were Mexican *vaqueros* who had invented the lariat, rodeo, and ranching techniques. The open-range cattle boom was short-lived, collapsing in the 1880s due to overgrazing, a brutal winter in 1886, and the invention of barbed wire, which privatized the open range.
+
+#### The Plains Indian Wars: Little Bighorn, Wounded Knee, the Reservation System, Dawes Act
+
+The rapid white settlement of the West was an unmitigated disaster for the Native nations of the Great Plains. The defining conflict of the era was not between cowboys and Indians, but between the U.S. Army and the Indigenous peoples defending their hunting grounds. The construction of railroads and the slaughter of the buffalo herds (from over 30 million to near extinction by 1884) deliberately undermined the foundation of Plains Indigenous life.
+
+The **Plains Indian Wars** (1850s–1890s) were a series of brutal conflicts. The most famous victory for Native resistance occurred in 1876 at the **Battle of Little Bighorn** in Montana. A coalition of Lakota and Northern Cheyenne, led by Sitting Bull and Crazy Horse, completely annihilated a U.S. Cavalry unit commanded by Lieutenant Colonel George Armstrong Custer. However, this victory was short-lived; the U.S. government responded with overwhelming military force, relentlessly hunting down the coalition until they surrendered.
+
+Defeated militarily, Native nations were forced onto **reservations**. The reservation system was designed to confine Native peoples to small, undesirable parcels of land, making them dependent on corrupt government rations and forcing them to abandon their nomadic lifestyles and spiritual practices in favor of sedentary farming and Christianity.
+
+In 1887, Congress passed the **Dawes Severalty Act**, a devastating piece of assimilationist legislation. The Dawes Act broke up communally held reservation lands into 160-acre individual plots allocated to each Native family. Any "surplus" land was sold to white settlers. The goal was to destroy tribal sovereignty and force Native Americans to assimilate as independent farmers. The human cost was staggering: Native Americans lost roughly 90 million acres of treaty-land—about two-thirds of their reservation holdings—to white speculators.
+
+The final, tragic chapter of the Indian Wars occurred in 1890 at the **Wounded Knee Massacre**. Faced with the total destruction of their way of life, many Lakota turned to the **Ghost Dance**, a spiritual movement prophesying the restoration of the buffalo herds and the disappearance of the white man. Panicked U.S. officials sent troops to suppress the movement. When soldiers attempted to disarm a Lakota camp at Wounded Knee Creek, a shot rang out, and the soldiers indiscriminately massacred roughly 300 Native men, women, and children. Wounded Knee marked the brutal, bloody end of the frontier wars.
+
+#### The New South: Sharecropping and Industrial Dreams
+
+After Reconstruction ended in 1877, the "Redeemer" governments—white Democratic elites—took control of the South. They promoted the vision of a **"New South"**, arguing that the region would rise from the ashes of the Civil War, abandon its reliance on cotton, and embrace industrialization. 
+
+However, the New South remained a colonial economy, heavily dependent on the North for capital and manufacturing. While cities like Birmingham, Alabama, developed steel mills and Atlanta grew as a commercial hub, the vast majority of the South remained rural and agriculturally bound. The "industrial dreams" of the New South were largely an illusion; Southern workers remained the lowest-paid in the nation, and the region's economy continued to revolve around extracting raw materials and agricultural staples.
+
+The true labor system of the New South was **sharecropping** and tenant farming. With no land of their own and no cash wages, both Black and poor white farmers rented land from wealthy planters. They worked the land, paying the landlord with a large share of their crop at harvest. A predatory credit system, the "crop lien," allowed sharecroppers to buy supplies on credit from local merchants, using the future crop as collateral. Because merchants charged exorbitant interest rates and the price of cotton steadily dropped, sharecroppers fell into perpetual, inescapable debt. Sharecropping kept the Southern masses—Black and white alike—locked in poverty and economic subservience, effectively replacing the economic mechanics of slavery without the legal ownership.
+
+#### Jim Crow: Segregation, Disenfranchisement, Lynching; Plessy v. Ferguson
+
+While sharecropping controlled Black Southerners economically, **Jim Crow** laws controlled them socially and politically. Beginning in the late 1880s, Southern states systematically stripped African Americans of the rights they had exercised during Reconstruction.
+
+**Disenfranchisement** was achieved through legal, ostensibly race-neutral means. States implemented **poll taxes** (fees to vote), **literacy tests**, and **grandfather clauses** (which exempted you from the poll tax or literacy test if your grandfather had been eligible to vote before the Civil War—meaning white men could vote, but Black men could not). These laws virtually eliminated Black political power in the South and severely reduced the political participation of poor whites.
+
+Simultaneously, states passed laws mandating racial **segregation** in every facet of public life: schools, trains, streetcars, waiting rooms, parks, and eventually water fountains and restrooms. 
+
+In 1896, the U.S. Supreme Court upheld the constitutionality of segregation in the landmark case **Plessy v. Ferguson**. The Court ruled that "separate but equal" facilities did not violate the 14th Amendment's Equal Protection Clause. In reality, facilities for Black Americans were drastically inferior and underfunded, creating a rigid, legally enforced caste system.
+
+Enforcing this system of white supremacy was a campaign of horrific, extrajudicial violence. **Lynching** became a pervasive terror tactic. Between 1882 and 1900, thousands of African Americans—along with some white men and Mexicans—were murdered by white mobs. These public spectacles of torture and hanging were often attended by large crowds, including children, and were frequently advertised in local newspapers. Lynching was rarely about the protection of white women; it was a weapon of social control used to punish Black success, political assertiveness, or any behavior that challenged the racial hierarchy.
+
+#### Black Responses: Booker T. Washington, W.E.B. Du Bois, Ida B. Wells
+
+In the face of the collapse of Reconstruction and the rise of Jim Crow, African American leaders and communities responded with diverse strategies of survival, resistance, and uplift.
+
+**Booker T. Washington** emerged as the most prominent Black leader of the era. Born into slavery, Washington founded the **Tuskegee Institute** in Alabama, focusing on vocational and industrial education. In his famous 1895 "Atlanta Compromise" speech, Washington urged Black Americans to temporarily accept segregation and political disenfranchisement, focusing instead on economic self-reliance, agricultural skill, and manual labor to earn the respect of white society. White politicians and philanthropists celebrated Washington's approach, but a rising generation of Black intellectuals viewed his stance as a capitulation to white supremacy.
+
+**W.E.B. Du Bois** was Washington’s most formidable critic. A Harvard-educated sociologist and historian, Du Bois rejected the Atlanta Compromise. In his 1903 book *The Souls of Black Folk*, he argued that Washington was asking Black Americans to give up political power, civil rights, and higher education. Du Bois demanded immediate political and social equality. He advocated for the education of the "Talented Tenth"—the top 10 percent of Black minds who would lead the race forward through the arts, sciences, and political activism. In 1909, Du Bois helped found the **NAACP** (National Association for the Advancement of Colored People), shifting the civil rights struggle into the courts and the national political arena.
+
+While Washington and Du Bois articulated political and intellectual responses, **Ida B. Wells** provided a fearless, radical journalistic response to the violence of Jim Crow. A Memphis newspaper editor, Wells launched a relentless **anti-lynching campaign**. Through rigorous investigative journalism, she debunked the myth that lynchings were a response to the rape of white women, proving instead that lynchings were a terror tactic to suppress Black economic and political power. When a white mob destroyed her newspaper office and threatened her life, she moved North and continued her work, publishing detailed exposes like *Southern Horrors* and *A Red Record*. 
+
+Wells's activism demanded that the federal government pass anti-lynching legislation, a fight that would tragically continue for decades. Together, Washington, Du Bois, and Wells represented the multifaceted resilience of African Americans navigating the brutal realities of the late nineteenth century, laying the intellectual and organizational groundwork for the Civil Rights Movement of the twentieth century.
 
 ### Chapter 19: Populism and Progressivism
-- The farmers' revolt and the Populist Party; the 1896 election
-- Progressive reform: muckrakers, trust-busting, food and drug regulation
-- Theodore Roosevelt, Taft, and Wilson
-- Women's suffrage movement and the 19th Amendment
-- The Social Gospel, settlement houses, and Jane Addams
+
+As the nineteenth century drew to a close, the immense inequalities and chaotic excesses of the Gilded Age sparked a wave of political and social reform. The agrarian economy of the West and South gave rise to a mass, insurgent political movement challenging the power of corporate capital. When this rural revolt collapsed, its energy was absorbed and transformed by a new generation of urban, middle-class reformers. Together, the Populist and Progressive eras fundamentally altered the relationship between the American people and their government, rejecting laissez-faire capitalism in favor of an active, interventionist state capable of curbing corporate power, protecting consumers, and expanding democratic participation.
+
+#### The Farmers' Revolt and the Populist Party; the 1896 Election
+
+The agricultural heartland of the United States was in crisis in the late 1800s. Falling crop prices, exorbitant railroad freight rates, and a deeply ingrained system of debt trapped millions of farmers in a cycle of poverty. The federal government’s adherence to the gold standard—keeping the money supply tight and inflation low—meant that farmers had to pay back their loans in dollars that were increasingly hard to earn. 
+
+Farmers organized to fight back. The **Patrons of Husbandry (the Grange)** and the **Farmers' Alliances** formed cooperatives to bypass exploitative middlemen and negotiate better shipping rates. In 1892, these rural activists united with labor groups to form a new third party: the **Populist Party** (or People’s Party). 
+
+The Populists presented a radical, sweeping critique of American capitalism. Their 1892 Omaha Platform called for the free and unlimited coinage of silver (to inflate the money supply and ease debt), a graduated income tax, government ownership of the railroads, the direct election of U.S. Senators, and a "sub-treasury" plan to provide federal loans to farmers. Crucially, the Populists attempted to forge an interracial coalition of poor white and Black farmers in the South, recognizing that racial division only aided the corporate elites. Though ultimately destroyed by Southern white supremacy and racial violence, this brief interracial political experiment was a courageous challenge to the status quo.
+
+The climax of the Populist movement was the **presidential election of 1896**. The Democrats, recognizing the political power of the free silver issue, nominated a young, charismatic Nebraskan, **William Jennings Bryan**. Bryan’s "Cross of Gold" speech at the Democratic convention—arguing that mankind should not be "crucified on a cross of gold" (the gold standard)—electrified the agrarian masses. The Populists, faced with a choice, fused with the Democrats and endorsed Bryan. 
+
+However, Bryan was decisively defeated by the Republican candidate, William McKinley. McKinley’s campaign, masterminded by industrialist Mark Hanna, raised millions of dollars from terrified corporate elites who feared Bryan’s radicalism. Hanna used this money to flood the media with propaganda, successfully persuading urban, industrial workers that their jobs depended on McKinley’s victory. The defeat of Bryan marked the end of the Populist Party, but its platform—particularly the income tax, the direct election of senators, and railroad regulation—would become law during the Progressive Era.
+
+#### Progressive Reform: Muckrakers, Trust-Busting, Food and Drug Regulation
+
+While Populism was a radical, agrarian, and working-class movement, Progressivism was primarily a middle-class, urban, and professional response to the ills of industrialization. Progressives believed that the chaos of the Gilded Age could be cured not by destroying capitalism, but by regulating it through the application of scientific expertise, rational management, and an active, moral government.
+
+The movement was fueled by investigative journalists known as **muckrakers** (a term coined by Theodore Roosevelt). Writers like Ida Tarbell, who exposed the predatory monopolistic practices of Standard Oil, and Lincoln Steffens, who documented urban political corruption in *The Shame of the Cities*, roused public outrage. Jacob Riis’s photographic book *How the Other Half Lives* shocked the middle class with images of squalid tenement life. The most impactful muckraker was **Upton Sinclair**, whose 1906 novel *The Jungle*, intended to expose the exploitation of immigrant meatpacking workers, instead horrified the public with its graphic descriptions of unsanitary food processing.
+
+Public outcry over *The Jungle* directly resulted in the passage of the **Meat Inspection Act** and the **Pure Food and Drug Act of 1906**, which created the Food and Drug Administration (FDA) to protect consumers from adulterated and dangerous products.
+
+A central goal of Progressivism was curbing the power of the monopolies, or "trusts." Progressives sought to restore competition through **trust-busting** and federal regulation. They also pursued political reforms to make the political system more democratic and responsive to the people, bypassing corrupt party machines. States adopted the **initiative** (allowing citizens to propose laws), the **referendum** (allowing citizens to vote directly on laws), the **recall** (allowing voters to remove elected officials), and the **direct primary**. 
+
+#### Theodore Roosevelt, Taft, and Wilson
+
+Three presidents dominated the Progressive Era, each shaping the expanding role of the federal executive.
+
+**Theodore Roosevelt** (1901–1909) championed his **"Square Deal"** for the American people, balancing the interests of labor, business, and consumers. Roosevelt was not anti-business, but he believed in distinguishing between "good trusts" (large, efficient corporations that acted fairly) and "bad trusts" (predatory monopolies). He used the Sherman Antitrust Act to successfully break up 44 monopolies, including the Northern Securities Company railroad monopoly. He also aggressively expanded federal power over the environment, withdrawing millions of acres of public land from private sale to establish national forests, parks, and monuments.
+
+His handpicked successor, **William Howard Taft** (1909–1913), actually busted more trusts than Roosevelt and signed the Mann-Elkins Act, expanding the government's power to regulate telephone and telegraph rates. However, Taft lacked Roosevelt’s political instincts and progressive fervor. He angered conservationists by opening public lands to private development and alienated progressive Republicans by supporting the high Payne-Aldrich Tariff. This schism within the Republican Party led Roosevelt to break away and run as the candidate of the Progressive "Bull Moose" Party in 1912.
+
+The 1912 election was a watershed moment, as all three candidates—Taft, Roosevelt, and the Democrat **Woodrow Wilson**—claimed the progressive mantle. Wilson’s platform, the **"New Freedom,"** called for destroying monopolies entirely to restore small-business competition, rather than merely regulating them as Roosevelt proposed. With the Republican vote split, Wilson won in a landslide.
+
+Wilson’s presidency saw a flurry of major progressive legislation. In 1913, the **16th Amendment** authorized a federal income tax, and Congress passed the **Federal Reserve Act**, creating a central banking system to stabilize the economy and regulate the money supply. In 1914, the **Clayton Antitrust Act** strengthened anti-monopoly laws and explicitly protected labor unions from antitrust prosecution. Wilson also lowered protective tariffs, believing they artificially inflated prices for consumers.
+
+#### Women's Suffrage Movement and the 19th Amendment
+
+Women were at the forefront of virtually every Progressive reform, from temperance and settlement houses to consumer protection and labor laws. However, their lack of political power—the inability to vote—was a glaring handicap. The campaign for women’s suffrage gained immense momentum during this era, driven by the realization that the vote was the essential tool for achieving all other reforms.
+
+The movement was led by two major organizations. The **National American Woman Suffrage Association (NAWSA)**, led by Carrie Chapman Catt, pursued a state-by-state strategy, successfully winning suffrage in several Western states. Alice Paul, a younger, more militant activist, formed the **National Woman’s Party**, pushing for a federal constitutional amendment using confrontational, dramatic tactics.
+
+Paul and her followers picketed the White House—the first group to ever do so—holding banners calling President Wilson a hypocrite for fighting for democracy abroad in World War I while denying it to women at home. When arrested, they went on hunger strikes, were force-fed, and subjected to brutal treatment. The resulting public sympathy, combined with women’s massive contribution to the war effort, forced Wilson to reverse his opposition and endorse suffrage as a "war measure."
+
+The campaign culminated in the **19th Amendment** (1920), which prohibited the denial of the right to vote on the basis of sex. It was the largest expansion of voting rights since the 15th Amendment and the crowning political achievement of the Progressive Era, though it primarily benefited white women, as many Black, Native, and Asian American women remained disenfranchised by state and federal laws.
+
+#### The Social Gospel, Settlement Houses, and Jane Addams
+
+Underlying the political and economic reforms of the Progressive Era was a profound moral awakening. Middle-class reformers were driven by a sense of social responsibility that rejected the Social Darwinist notion that poverty was a natural consequence of unfitness.
+
+This moral impulse was heavily influenced by the **Social Gospel** movement, led by Protestant ministers like Walter Rauschenbusch. The Social Gospel argued that true Christianity was not merely about individual salvation, but about the "salvation of society." It applied Christian ethics to social problems, insisting that the exploitation of labor and the squalor of the slums were sins that required collective, institutional remedies. The Social Gospel provided the moral urgency that drove middle-class Progressives to fight for child labor laws, workplace safety, and housing reform.
+
+The most tangible manifestation of this social responsibility was the **settlement house** movement. Founded primarily by educated, middle-class women, settlement houses were community centers established in the heart of the poorest, most crowded immigrant slums. Their goal was to "settle" in the neighborhood, living among the poor not as charity workers handing out relief, but as neighbors sharing knowledge and culture.
+
+The most famous settlement house was **Hull House**, founded in Chicago in 1889 by **Jane Addams** and Ellen Gates Starr. Hull House offered a staggering array of services: kindergarten classes, vocational training, art studios, music schools, public baths, and a gymnasium. It provided a space for immigrant women to socialize and escape the isolation of the tenements. 
+
+Jane Addams used Hull House as a base to research urban poverty and lobby the state legislature for protective labor laws for women and children, the establishment of the first juvenile court system, and better sanitation. Addams became one of the most influential women in the world, embodying the Progressive belief in pragmatic, grassroots reform. Hull House proved that the application of expertise and empathy could effectively combat the ills of industrial capitalism, bridging the gap between the privileged and the marginalized and cementing the legacy of the Progressive Era as a pivotal step toward the modern, socially conscious American state.
 
 ### Chapter 20: America Becomes a World Power
-- The Spanish-American War (1898); acquiring Hawaii, Puerto Rico, the Philippines
-- The Philippine-American War and debates over empire
-- The Panama Canal and "Big Stick" diplomacy
-- Dollar diplomacy and interventions in Latin America
+
+By the close of the nineteenth century, the United States had transformed from a war-torn, agrarian republic into the world’s leading industrial powerhouse. With the frontier officially declared "closed" in 1890, the economic and ideological momentum of Manifest Destiny began to look outward. Influenced by the naval theories of Captain Alfred Thayer Mahan—who argued that national greatness depended on a powerful navy and overseas bases—and driven by a desire for new global markets, the United States abandoned its traditional posture of isolationism. In a remarkably short period, the nation embarked on a campaign of overseas expansion, projecting its military and economic power into the Pacific and Latin America, and stepping onto the stage as a modern imperial power.
+
+#### The Spanish-American War (1898); Acquiring Hawaii, Puerto Rico, the Philippines
+
+The catalyst for America’s sudden entry into imperial politics was a colonial rebellion in Cuba. Since 1895, Cuban *insurrectos* had been fighting a brutal guerrilla war against Spanish rule. To crush the rebellion, Spain sent General "Butcher" Weyler, who forced hundreds of thousands of Cubans into disease-ridden concentration camps. The American press, led by the sensationalist "yellow journalism" of William Randolph Hearst’s *New York Journal* and Joseph Pulitzer’s *New York World*, exaggerated Spanish atrocities, whipping the American public into a frenzy of sympathy for the Cubans.
+
+Tensions boiled over in February 1898 when the U.S. battleship *USS Maine*, stationed in Havana Harbor to protect American interests, mysteriously exploded, killing 260 sailors. Although the cause was likely an internal accident, the yellow press immediately blamed Spain. "Remember the *Maine*! To hell with Spain!" became the rallying cry. President William McKinley, hesitant but bowing to public and political pressure, asked Congress for a declaration of war. Congress complied, passing the **Teller Amendment**, which promised that the U.S. would leave Cuba independent once the war was over.
+
+The **Spanish-American War** was swift and decisively one-sided, revealing the decay of the Spanish empire and the modernization of the American military. The most famous land battle featured the "Rough Riders," a volunteer cavalry regiment led by future president Theodore Roosevelt, who charged up Kalkan Hill (popularized as San Juan Hill) in Cuba. Meanwhile, in the Pacific, Commodore George Dewey’s fleet easily destroyed the aging Spanish Pacific fleet in Manila Bay in the Philippines.
+
+The war lasted only ten weeks. In the subsequent **Treaty of Paris (1898)**, Spain relinquished its claims to Cuba and ceded the territories of Puerto Rico, Guam, and the Philippines to the United States. The U.S. paid Spain $20 million for the Philippines, marking a massive expansion of American territory. Simultaneously, driven by the strategic desire for a refueling station on the way to Asian markets, Congress annexed **Hawaii** in 1898. American sugar planters, led by Sanford Dole, had overthrown the Hawaiian monarchy (Queen Liliuokalani) in 1893, and the war provided the final push for formal, imperial absorption of the islands. The United States now possessed a global empire.
+
+#### The Philippine-American War and Debates over Empire
+
+The acquisition of the Philippines ignited a fierce, deeply philosophical debate within the United States. Was it hypocritical for a nation founded on the principle of self-determination to rule over foreign peoples without their consent? 
+
+The **Anti-Imperialist League** formed to oppose annexation. This diverse coalition included industrialist Andrew Carnegie, labor leader Samuel Gompers, author Mark Twain, and sociologist William Graham Sumner. They argued that imperialism violated the spirit of the Declaration of Independence, entangled the U.S. in dangerous foreign rivalries, and required a large standing army that threatened American liberties. Some opponents were openly racist, arguing that incorporating millions of "unassimilable" Asian peoples would pollute the American racial stock.
+
+Imperialists, however, argued that the U.S. had a moral duty to "civilize" and Christianize the "backward" peoples of the world—a paternalistic attitude famously encapsulated in Rudyard Kipling's poem "The White Man's Burden." President McKinley claimed he had prayed and decided it was America's duty to "educate the Filipinos, and uplift and civilize and Christianize them."
+
+The Filipinos, however, had no interest in swapping one colonial master for another. They had been fighting for independence from Spain, and under the leadership of **Emilio Aguinaldo**, they turned their guerrilla forces against the United States. The resulting **Philippine-American War** (1899–1902) was brutal, vicious, and largely forgotten in American history. 
+
+Faced with an elusive enemy, the U.S. Army resorted to extreme tactics, burning villages, implementing scorched-earth campaigns, and forcing civilians into concentration camps. The conflict saw widespread use of torture, including the "water cure" (a form of waterboarding). An estimated 200,000 Filipino civilians died from disease, starvation, and violence. The war finally ended with Aguinaldo’s capture, but it firmly established the United States as a colonial power in Asia, governing the Philippines until 1946.
+
+#### The Panama Canal and "Big Stick" Diplomacy
+
+Following McKinley’s assassination in 1901, Theodore Roosevelt became president and aggressively expanded American foreign policy. His approach was famously summarized by the West African proverb: **"Speak softly and carry a big stick."** Roosevelt believed in negotiating peacefully but maintaining a strong military threat to back up those negotiations.
+
+Roosevelt’s most ambitious project was the **Panama Canal**. The U.S. needed a canal to connect the Atlantic and Pacific oceans, allowing the newly expanded U.S. Navy to move rapidly between the two theaters without having to sail around the tip of South America. 
+
+The Colombian government, which controlled Panama, refused to ratify a U.S. treaty to build the canal. In response, Roosevelt brazenly supported a Panamanian independence movement. When the rebellion broke out in 1903, Roosevelt sent the U.S. Navy to block Colombian troops from suppressing it, effectively manufacturing the new nation of Panama. In gratitude, the new Panamanian government granted the U.S. the Canal Zone in perpetuity. Construction began in 1904 and was completed in 1914. It was one of the greatest engineering feats in history, but it was accomplished by a blatant display of American coercion and hemispheric dominance.
+
+Roosevelt also applied his "Big Stick" philosophy to Latin America through the **Roosevelt Corollary to the Monroe Doctrine** (1904). While the original Monroe Doctrine (1823) simply warned European powers to stay out of the Western Hemisphere, the Corollary claimed the exclusive right for the United States to intervene militarily in Latin American nations to maintain stability. Roosevelt invoked this "international police power" to seize the customs houses of the Dominican Republic to ensure it paid its European debts, preventing European military intervention. 
+
+#### Dollar Diplomacy and Interventions in Latin America
+
+Roosevelt’s successors continued to project American power in Latin America, though with different emphases. 
+
+President William Howard Taft (1909–1913) favored **"Dollar Diplomacy."** Taft believed that the best way to stabilize Latin American nations and keep European powers out was to substitute "dollars for bullets." The U.S. government actively encouraged and protected American banks and corporations to invest heavily in the economies of Central American and Caribbean nations, using military force if necessary to protect these investments. When liberal uprisings threatened American corporate interests in Nicaragua, Taft sent U.S. Marines to occupy the country and install a pro-American government. Dollar Diplomacy often resulted in U.S. military intervention, making local economies entirely dependent on American capital and deepening anti-American resentment.
+
+President Woodrow Wilson (1913–1921) entered office harshly critical of Taft’s dollar diplomacy and the moral compromises of imperialism. He promised a new approach based on "moral diplomacy," supporting only democratic governments and refusing to recognize dictators. He supported a 1916 law granting the Philippines future independence. 
+
+However, Wilson’s idealistic foreign policy proved impossible to maintain in practice. Determined to bring "democratic order" to the Western Hemisphere, Wilson actually intervened militarily in Latin America more frequently than Roosevelt or Taft. He sent Marines to occupy Haiti (1915) and the Dominican Republic (1916), forcing new governments to adopt U.S.-written constitutions. 
+
+The most severe test of Wilson’s moral diplomacy came in Mexico, where a violent revolution had ousted the long-time dictator Porfirio Díaz. When a rival faction briefly seized power and arrested American sailors, Wilson ordered the U.S. Navy to seize the port of Veracruz. Later, when the Mexican revolutionary general Pancho Villa raided the American border town of Columbus, New Mexico, Wilson sent General John J. Pershing on a punitive expedition deep into Mexico to hunt him down. These interventions nearly sparked a full-scale war with Mexico and demonstrated that, despite his democratic rhetoric, Wilson was fully prepared to use the "Big Stick" of American military and economic dominance to control the Western Hemisphere.
+
+By the outbreak of World War I, the United States had firmly established itself as an imperial power. Through conquest, economic coercion, and military intervention, it had secured an overseas empire and transformed the Caribbean into an American lake, setting the stage for its inevitable involvement in the global conflicts of the twentieth century.
 
 ---
 
 ## PART VII: WAR, BOOM, AND BUST (1917–1945)
 
 ### Chapter 21: World War I and Its Aftermath
-- Neutrality, the Lusitania, and American entry (1917)
-- Mobilization, the home front, and civil liberties (Espionage and Sedition Acts)
-- Wilson's Fourteen Points and the Treaty of Versailles fight
-- The Red Scare, race riots of 1919, and the Great Migration begins
+
+When war engulfed Europe in 1914, the vast majority of Americans wanted no part of the conflict. President Woodrow Wilson, a proud Progressive who had kept the nation out of foreign entanglements, urged Americans to remain "neutral in thought and action." However, the United States was deeply tied to the Allied powers through economics, culture, and politics. Over three years, the facade of neutrality eroded, driven by German aggression and American financial interests. When the U.S. finally entered the Great War in 1917, it did so with a messianic zeal to remake the world. Yet, the war’s aftermath at home was marked not by a harmonious triumph of democracy, but by intense repression, racial violence, and a toxic red scare that starkly betrayed the Progressive ideals Wilson had championed.
+
+#### Neutrality, the Lusitania, and American Entry (1917)
+
+The United States was a melting pot of European immigrants, meaning public opinion was deeply divided. While many Americans sympathized with Britain and France due to cultural ties and shared democratic values, millions of German and Irish Americans harbored deep animosity toward the British. 
+
+Economically, however, true neutrality was impossible. American banks and manufacturers lent billions of dollars to the Allies (Britain and France), making the U.S. economically invested in an Allied victory. To prevent American supplies from reaching Germany, the British Royal Navy blockaded European ports. Germany, unable to match British surface naval power, turned to the submarine (U-boat), a weapon that made distinguishing between combatant warships and neutral civilian vessels nearly impossible.
+
+In May 1915, a German U-boat torpedoed the British passenger liner **RMS *Lusitania***, killing 1,198 passengers, including 128 Americans. The sinking outraged the American public, who viewed it as an act of piracy against non-combatants. Wilson demanded that Germany cease unrestricted submarine warfare, and the Germans temporarily backed down. 
+
+In early 1917, however, Germany made a calculated, desperate gamble: it resumed unrestricted submarine warfare, hoping to starve Britain into submission before the U.S. could effectively mobilize. In response, the British intercepted and shared the **Zimmermann Telegram**, a secret German message proposing a military alliance with Mexico against the U.S., promising Mexico the return of Texas, New Mexico, and Arizona. Combined with the sinking of several American merchant ships, Wilson could no longer hold back the tide. In April 1917, he asked Congress for a declaration of war, proclaiming the world must "be made safe for democracy."
+
+#### Mobilization, the Home Front, and Civil Liberties (Espionage and Sedition Acts)
+
+To fight a modern, industrialized war, the U.S. had to rapidly mobilize its economy and manpower. Wilson created a web of new federal agencies, vastly expanding the power of the state. The War Industries Board directed industrial production, the Food Administration encouraged "Meatless Mondays" and "Wheatless Wednesdays," and the Fuel Administration managed coal rations. The Committee on Public Information, led by George Creel, bombarded the public with propaganda films, posters, and speeches, promoting the war as a noble crusade. To raise an army, Congress passed the Selective Service Act (1917), drafting nearly 3 million men. 
+
+However, this immense mobilization was accompanied by a brutal crackdown on civil liberties. To stifle dissent, Congress passed the **Espionage Act (1917)** and the **Sedition Act (1918)**. These laws effectively criminalized anti-war speech, banning the use of "disloyal, profane, scurrilous, or abusive language" about the U.S. government, the military, or the American flag. 
+
+The government aggressively prosecuted war critics. Eugene V. Debs, the prominent socialist leader, was sentenced to ten years in prison for a speech denouncing the draft and capitalism. The Supreme Court upheld the Espionage Act in *Schenck v. United States* (1919), establishing the "clear and present danger" test to limit free speech during wartime. Nativist vigilante groups, like the American Protective League, carried out vigilante violence against German Americans and immigrants, leading to the renaming of sauerkraut to "liberty cabbage" and the banning of German language classes in schools. The wartime home front was characterized by a fervent, often hysterical conformity that severely undermined the democratic ideals the war was supposedly fighting for.
+
+#### Wilson's Fourteen Points and the Treaty of Versailles Fight
+
+By late 1918, the Central Powers were collapsing. In January 1918, before the war's end, Wilson had unveiled his **Fourteen Points**, a visionary blueprint for post-war peace. It called for an end to secret treaties, freedom of the seas, free trade, arms reduction, self-determination for European ethnic groups, and, crucially, the creation of a **League of Nations**—an international organization to prevent future wars. 
+
+When Wilson sailed to Paris for the peace negotiations in 1919, he was the first sitting U.S. president to travel to Europe. However, Wilson was outmaneuvered by the other Allied leaders, particularly French Premier Georges Clemenceau, who was determined to punish Germany severely. The resulting **Treaty of Versailles** bore little resemblance to the Fourteen Points. It forced Germany to accept sole blame for the war, stripped it of territory, and demanded crushing reparations. 
+
+Wilson's only major victory was the inclusion of the League of Nations. When he returned home, he faced a ferocious political battle. The U.S. Constitution requires a two-thirds Senate vote to ratify treaties. The Senate was deeply divided. **Irreconcilables** opposed the League entirely, arguing it would entangle the U.S. in foreign wars. **Reservationists**, led by Republican Senator Henry Cabot Lodge, were willing to accept the League but wanted significant changes, particularly to Article X, which they feared would force Congress to surrender its constitutional power to declare war. 
+
+Wilson, refusing to compromise, embarked on a grueling, nationwide speaking tour to appeal directly to the people. The physical toll contributed to a massive, debilitating stroke in October 1919. His wife, Edith, essentially ran the White House while hiding the severity of his condition from the public. Incapacitated and stubborn, Wilson refused to negotiate with Lodge. As a result, the Senate rejected the Treaty of Versailles twice. The U.S. signed a separate peace with Germany in 1921 and never joined the League of Nations, a devastating personal defeat for Wilson that crippled the new international order.
+
+#### The Red Scare, Race Riots of 1919, and the Great Migration Begins
+
+The end of the war brought not peace, but intense social and racial turmoil. The Bolshevik Revolution in Russia had terrified American elites, who feared that communist, anarchist, and socialist radicals were plotting to overthrow the U.S. government. 
+
+This fear exploded into the **Red Scare of 1919–1920**. A series of anarchist bombings, including one targeting Attorney General A. Mitchell Palmer's home, triggered the **Palmer Raids**. In a series of violent, warrantless raids, federal agents broke into meeting halls and private homes, arresting thousands of suspected radicals, beating them, and deporting hundreds of immigrants without due process. The raids targeted unions, the Socialist Party, and immigrants, severely curtailing civil liberties. The Red Scare culminated in the tragic case of Italian anarchists **Nicola Sacco and Bartolomeo Vanzetti**, who were arrested for murder, convicted in a blatantly biased trial, and executed in 1927, becoming international martyrs for judicial prejudice.
+
+Simultaneously, the nation was convulsed by racial violence. During the war, the "Great Migration" had begun, as hundreds of thousands of African Americans fled the Jim Crow South for industrial jobs in Northern cities. This massive demographic shift intensified competition for housing and jobs and inflamed racial prejudice among Northern whites. 
+
+When Black veterans returned from fighting for "democracy" abroad, they refused to accept second-class citizenship at home. The summer of 1919 became known as the **"Red Summer"** due to a wave of deadly race riots. In Chicago, a riot was sparked when a Black teenager drifted into a "whites-only" beach and was stoned to death. The violence raged for days, with white mobs attacking Black neighborhoods and Black residents arming themselves to fight back. Dozens of people were killed. Lynching surged in the South; in 1919 alone, dozens of Black men, some still in their military uniforms, were lynched by white mobs.
+
+The aftermath of World War I revealed the profound limits of Wilson's crusade for democracy. The war had expanded federal power and temporarily unified the economy, but it also unleashed a wave of nativism, political repression, and racial violence. The progressive dream of a rational, ordered, harmonious society shattered, paving the way for the cultural clashes and economic volatility of the Roaring Twenties.
 
 ### Chapter 22: The Roaring Twenties
-- Mass consumption: automobiles, radio, advertising
-- The Jazz Age and the Harlem Renaissance
-- Prohibition and organized crime
-- Cultural conflicts: Scopes Trial, immigration restriction (1924), the KKK's resurgence
-- The "New Woman" and changing social mores
+
+The end of World War I did not bring the era of peaceful international cooperation that Woodrow Wilson had envisioned. Instead, the 1920s was a decade of profound contradiction. On one hand, it was an era of dazzling technological innovation, explosive economic growth, and unprecedented cultural liberation. On the other, it was a time of deep social anxiety, marked by a retreat from global responsibilities, a fierce resurgence of nativism and white supremacy, and a bitter cultural war between modern, secular urbanites and traditional, rural Protestants. The "Roaring Twenties" roared with the sound of jazz, factories, and Speakeasies, but it also simmered with the tension of a nation violently divided over its own identity.
+
+#### Mass Consumption: Automobiles, Radio, and Advertising
+
+The defining economic shift of the 1920s was the transition from a producer economy focused on heavy industry to a consumer economy driven by mass consumption. The engine of this transformation was the **automobile**. Henry Ford revolutionized manufacturing with the moving assembly line, drastically reducing the time and cost required to build a car. The price of the Model T dropped to a level affordable for the average American. By 1929, there was roughly one car for every five Americans. 
+
+The automobile transformed American life. It spawned massive ancillary industries (rubber, glass, steel, road construction), created millions of jobs, and fundamentally altered the landscape. Suburbs expanded as commuting became possible, loosening the grip of the crowded city. The car also revolutionized social life, giving young people unprecedented mobility and privacy away from the watchful eyes of parents, which deeply alarmed the older generation.
+
+Connecting the nation just as profoundly was the **radio**. The first commercial radio station, KDKA in Pittsburgh, broadcast the 1920 presidential election results. By the mid-1920s, millions of Americans had crystal sets in their living rooms. Radio created a shared, instantaneous national culture. People from coast to coast listened to the same sporting events, news broadcasts, and comedy shows. It also became a powerful new medium for advertising.
+
+**Advertising** matured into a sophisticated psychological industry. Ad men, realizing that Americans now had disposable income but needed a reason to spend it, shifted from simply announcing a product's existence to selling a lifestyle. Advertisements linked products to status, romance, and modernity. To allow consumers to buy these newly desirable goods, businesses expanded the concept of **installment buying** (credit). Americans bought refrigerators, radios, and cars on the "buy now, pay later" plan, creating an illusion of boundless prosperity that masked underlying economic weaknesses.
+
+#### The Jazz Age and the Harlem Renaissance
+
+The cultural heartbeat of the 1920s was jazz. Originating in the African American communities of New Orleans and Chicago, jazz broke the rules of traditional European music, emphasizing improvisation, syncopation, and raw emotion. It became the soundtrack of the decade, drawing young, rebellious whites to urban nightclubs and creating the "Jazz Age" persona famously chronicled by writer F. Scott Fitzgerald.
+
+Simultaneously, a massive demographic shift known as the Great Migration brought hundreds of thousands of African Americans from the rural South to Northern cities. In New York City, the neighborhood of **Harlem** became the epicenter of a remarkable cultural awakening known as the **Harlem Renaissance**. 
+
+This was an explosion of Black art, literature, music, and intellectual thought. Writers like **Langston Hughes** and **Claude McKay** celebrated African American culture and folklore, refusing to conform to white expectations of respectability. Poet **Countee Cullen** and novelist **Zora Neale Hurston** explored the complexities of Black identity. Visual artists like Aaron Douglas created stunning murals blending African motifs with modernist aesthetics. 
+
+The Harlem Renaissance was a declaration of independence. Black intellectuals, led by **W.E.B. Du Bois** and sociologist **Alain Locke**, promoted the concept of the "New Negro"—assertive, educated, proud of their heritage, and unapologetic in demanding civil rights. While white patrons frequently exploited the movement for entertainment, the Harlem Renaissance fundamentally redefined Black identity and laid the cultural and intellectual groundwork for the Civil Rights Movement.
+
+#### Prohibition and Organized Crime
+
+The 18th Amendment, which went into effect in 1920, banned the manufacture, sale, and transportation of alcoholic beverages. The culmination of decades of Progressive-era moral reform, **Prohibition** was heavily supported by rural, Protestant, middle-class Americans who viewed alcohol as the root of poverty, domestic violence, and urban corruption.
+
+Prohibition was a spectacular failure. It closed down legitimate breweries and saloons, but it did not stop Americans from drinking. Instead, it birthed a massive, illicit underground economy. "Bootleggers" smuggled liquor across the Canadian border and on ships from the Caribbean. City residents frequented illicit bars called "speakeasies," which often required a password to enter and numbered in the thousands in cities like New York and Chicago. 
+
+Prohibition also fueled the spectacular rise of **organized crime**. Syndicates, led by figures like Al Capone in Chicago, made fortunes distributing bootleg liquor, bribing police, and violently eliminating rivals. Capone’s empire was essentially a massive, highly profitable business that thrived on the very law meant to cure society's ills. 
+
+By the late 1920s, public support for Prohibition had collapsed. The law had fostered disrespect for authority, provided a massive revenue stream for gangsters, and failed to curb drinking. It was finally repealed by the 21st Amendment in 1933.
+
+#### Cultural Conflicts: Scopes Trial, Immigration Restriction (1924), the KKK's Resurgence
+
+The dazzling modernity of the 1920s was deeply threatening to traditional, rural Americans, sparking a fierce backlash and a culture war that manifested in three major ways.
+
+First was the **Scopes "Monkey" Trial** of 1925. In Dayton, Tennessee, a high school teacher named John Scopes was arrested for teaching human evolution, violating a state law banning the teaching of any theory that contradicted the biblical creation story. The trial became a national spectacle and a proxy war between modernism and fundamentalism. It featured two titans of American law: Clarence Darrow defending Scopes and William Jennings Bryan prosecuting. Darrow brilliantly exposed the absurdity of a literal interpretation of the Bible, putting Bryan on the witness stand and making him look foolish. Although Scopes was convicted (and later acquitted on a technicality), the trial exposed the deep cultural divide between secular, scientific urbanites and religious, traditional rural America.
+
+Second, the post-war Red Scare fueled a massive wave of nativism, leading to strict **immigration restriction**. In 1921, Congress passed a temporary quota law, followed by the **National Origins Act of 1924**. This law used the 1890 census to set quotas, explicitly designed to drastically reduce the number of immigrants from Southern and Eastern Europe (Italians, Poles, Russians) while favoring Northern and Western Europeans. The law also completely excluded Japanese immigrants. This legislation, heavily influenced by pseudo-scientific eugenics, slammed the door on the "New Immigrants" and codified racial hierarchy into American immigration law.
+
+Third, the **Ku Klux Klan** experienced a massive resurgence. The "Second Klan," founded in 1915, was not confined to the South but was a national organization heavily concentrated in the Midwest. It broadened its targets beyond African Americans, launching campaigns of terror against Catholics, Jews, immigrants, and anyone who violated Protestant moral codes. Claiming to defend "100 percent Americanism," the Klan boasted millions of members by the mid-1920s, even controlling state politics in places like Indiana and Oregon. The Klan's power collapsed in the late 1920s due to internal corruption scandals, but its brief dominance highlighted the intense fear and hostility generated by the rapidly changing nation.
+
+#### The "New Woman" and Changing Social Mores
+
+The passage of the 19th Amendment in 1920 granted women the right to vote. However, while women became a crucial voting bloc, they did not vote as a unified, progressive force, and the women's rights movement largely fragmented. Equality in the workplace remained a distant dream; most working women were confined to low-paying, "pink-collar" jobs like clerical work, teaching, or domestic service, and were expected to quit working once they married.
+
+Yet, cultural and social expectations for women shifted dramatically. The iconic symbol of the era was the **"flapper"**—a young, single, urban woman who bobbed her hair, wore short skirts and makeup, smoked in public, and danced provocatively to jazz. While not the majority of American women, the flapper became a powerful symbol of female liberation and the rejection of Victorian sexual restraints.
+
+Changing social mores extended beyond fashion. The new mass culture of movies, radio, and the automobile loosened parental control over courtship. Dating replaced formal "calling" at home, and peer pressure replaced parental supervision. The ideas of Sigmund Freud regarding sexuality became popularized, leading to a somewhat more open discussion of sex and birth control, championed by activists like **Margaret Sanger**. 
+
+The "New Woman" of the 1920s enjoyed unprecedented personal freedom, though it was largely a cultural phenomenon rather than a political or economic one. This newfound freedom, combined with the era's consumerism and the backlash of rural traditionalists, defined the decade. The Roaring Twenties was a vibrant, volatile era of modernity that gleefully tore down the structures of the 19th century, setting the stage for the catastrophic economic collapse that would abruptly end the party.
+
+Write a detailed explanation of the following topics:
 
 ### Chapter 23: The Great Depression and the New Deal
 - The Crash of 1929 and causes of the Depression
@@ -1050,7 +1329,30 @@ Write a detailed explanation of the following topics:
 - Polarization, populism, and institutional stress
 - The COVID-19 pandemic and its social and economic toll
 - The 2020 election, January 6, and challenges to democracy
-- The Biden years and current debates: immigration, climate, technology (AI), inequality
+- The Biden years and current debates: immigration, climate, inequality
+
+Here is an addition to your outline, continuing the structure and style of the previous chapters to cover the key events, domestic policies, and foreign interventions of the second Trump administration through mid-2026:
+
+### Chapter 35: The Second Trump Presidency and Global Interventions (2025–Present)
+* **The 2024 Election and the Republican Trifecta**
+  * Donald Trump's return to the White House as the 47th president after defeating Kamala Harris
+  * The establishment of a unified Republican government with majorities in both the House and Senate
+* **Federal Deregulation and Government Restructuring**
+  * The establishment of the Department of Government Efficiency (DOGE) under Elon Musk, driving civil service layoffs and agency downsizings before sunsetting in July 2026
+  * Record-setting reliance on executive orders to bypass legislative hurdles and implement rapid regulatory rollbacks
+  * Passage of the One Big Beautiful Bill Act (OBBBA) permanently extending first-term tax cuts
+* **Immigration Cracks, Economic Measures, and Domestic Gridlock**
+  * Hardline immigration policies, including mass deportations, the Laken Riley Act, and attempts to restrict birthright citizenship
+  * A record-breaking 76-day partial government shutdown of the Department of Homeland Security over federal funding for ICE
+  * Escalating global trade conflicts sparked by new waves of tariffs and subsequent retaliatory trade policies
+* **A New Era of Direct Military Intervention**
+  * *Operation Absolute Resolve* (January 2026): The surprise U.S. military raid in Caracas, Venezuela, resulting in the capture and extradition of Nicolás Maduro
+  * *Operation Epic Fury* (February 2026): Joint U.S.–Israeli military strikes against Iranian nuclear and military assets, culminating in the death of Supreme Leader Ali Khamenei
+  * Diplomatic friction with historic allies and international bodies over the use of unilateral military force
+* **Technology, Exploration, and National Milestones**
+  * The launch of the Artemis II mission in April 2026, marking humanity's first crewed deep-space voyage to the Moon since 1972
+  * The introduction of the first federal regulatory framework for stablecoins alongside legal crackdowns on digital prediction markets
+  * National commemorations and civic events surrounding "America250," the 250th anniversary of the signing of the Declaration of Independence
 
 ---
 
