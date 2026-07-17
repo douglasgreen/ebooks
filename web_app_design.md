@@ -42,61 +42,203 @@ By the end of the book, readers should be able to:
 | Part VI | Technical foundations for design decisions | 22–26 |
 | Part VII | Complete product experiences | 27–30 |
 | Part VIII | Delivery, measurement, and maintenance | 31–34 |
-| Part IX | Case studies and capstone projects | 35–38 |
+| Part IX | Case studies | 35–37 |
 | Appendices | Checklists, templates, glossary, resources | Reference material |
 
 ---
 
-<details open>
-<summary><strong>Front Matter and Introduction</strong></summary>
+<strong>Front Matter and Introduction</strong>
 
 ## Preface: Why Web Application Design Matters
 
-- The modern web app as a workplace, marketplace, service portal, creative tool, and social environment
-- Why web application design is more complex than page design
-- The overlap between product design, UX, UI, engineering, content, accessibility, and business strategy
-- Common failures:
-  - Building features before understanding user goals
-  - Treating edge cases as afterthoughts
-  - Designing static screens instead of dynamic states
-  - Ignoring accessibility, performance, or security until late in development
-- How the book is organized
-- How designers, developers, and product teams can use the book differently
+Somewhere between your first coffee and your first meeting, you probably used half a dozen web applications. You checked a project board to see what your team finished overnight. You answered messages in a workspace chat. You reviewed an invoice in a billing portal, skimmed a dashboard, edited a document that three colleagues were editing at the same time, and maybe glanced at a community feed before lunch. None of this felt remarkable — and that is precisely the point. The web application has quietly become the most-used room in modern working life.
 
-## Introduction: What Is a Well-Designed Web Application?
+This book exists because that room is often badly built.
 
-### Core argument
+### The web application is where life now happens
 
-A good web application helps users accomplish meaningful tasks with clarity, confidence, speed, and trust.
+It is worth pausing on how many distinct roles the modern web app plays, because each role raises the stakes of getting the design right:
 
-### Key ideas
+- **A workplace.** Documents, spreadsheets, issue trackers, chat, HR systems, calendars. For millions of people, the office is no longer a building — it is a set of browser tabs. When those tabs are confusing, work itself becomes confusing.
+- **A marketplace.** Commerce runs through admin panels as much as storefronts. Sellers manage inventory, fulfill orders, dispute chargebacks, and interpret payouts inside web apps. A poorly designed merchant dashboard doesn't just frustrate; it costs someone income.
+- **A service portal.** Banking, insurance claims, medical records, tax filing, government permits. Increasingly, the portal is the *only* door. A bewildering benefits application isn't an inconvenience — it is a wall between a person and something they are entitled to.
+- **A creative tool.** Design, video editing, music production, 3D modeling, and game development now happen in the browser, in real time, with collaborators. These applications carry people's livelihoods and their art at once.
+- **A social environment.** Communities, forums, comment systems, and shared spaces. Here the design doesn't merely support tasks; it shapes behavior — what gets said, who gets heard, and how a culture forms.
 
-- Web applications are task-oriented systems, not just collections of pages
-- Design quality includes:
-  - Usefulness
-  - Usability
-  - Accessibility
-  - Responsiveness
-  - Performance
-  - Security
-  - Maintainability
-  - Business alignment
-- The difference between:
-  - Website design
-  - Web application design
-  - Product design
-  - Service design
-  - Software architecture
-- The book’s recurring sample project:
-  - A collaborative project management SaaS application
-  - Used to demonstrate research, flows, layouts, components, permissions, dashboards, onboarding, and analytics
+In every one of these roles, the interface is not a wrapper around the product. The interface *is* the product. Users do not experience your architecture, your roadmap, or your intentions. They experience the screen in front of them, on a slow connection, between interruptions, with a goal in mind.
+
+### Why this is harder than designing pages
+
+If you can design a beautiful marketing site, you are partway to designing a web application — but only partway, and the remaining distance is most of the journey.
+
+A web page is a statement. A web application is a conversation. A page presents content to a largely anonymous visitor and succeeds if the visitor understands it. An application presents *state* to an identified user — state shaped by their data, their role, their permissions, their history, the time of day, the device in their hand, and whatever their colleagues changed sixty seconds ago.
+
+Consider what that means concretely. A pricing page has essentially one version. A project dashboard is a function of a dozen variables: how many projects exist (zero? four hundred?), whether data is still loading, whether anything failed, whether the viewer is an owner or a guest, whether someone just deleted the task being viewed, whether the connection dropped mid-save. Designing "the dashboard" really means designing the whole matrix of conditions the dashboard must survive.
+
+Applications also carry consequence. Reading a page changes nothing; clicking in an app moves money, sends messages, assigns work, deletes records. And applications are lived in over time — users return daily, develop habits, build mental models, and suffer disproportionately when those models are betrayed by inconsistency. Page design asks, *"Is this clear and compelling?"* Application design asks that, and then asks twenty harder follow-up questions.
+
+### No discipline owns this problem alone
+
+One reason web applications so often fall short is that their design sits at the intersection of at least seven fields, and every organization draws the boundaries differently.
+
+Take a single, ordinary decision: who is allowed to see a project. That is simultaneously a **UX** question (what does each person expect to see?), a **UI** question (how do we indicate restricted content?), an **engineering** question (where is authorization enforced?), a **content** question (what does the "Request access" message say?), an **accessibility** question (can a screen reader user navigate the permissions table?), a **product** question (should guests be a paid-tier feature?), and a **business strategy** question (does openness or restriction serve our market position?). There is no version of this decision that belongs to one job title.
+
+Throughout this book, we treat that overlap as the defining condition of the craft. Product design supplies intent and priorities. UX shapes flows and mental models. UI gives them form. Engineering determines what is actually possible at acceptable cost and speed. Content design handles the single most powerful interface element ever invented — the word. Accessibility ensures the result works for the full range of human ability. Business strategy defines what "good" even means, because an application that ignores retention, cost to serve, or revenue will not survive long enough to help anyone. Web application design is the practice of negotiating among these forces without letting the user pay the price of the negotiation.
+
+### Four ways web applications fail
+
+Most failing applications are not ugly, and many are built by talented teams. They fail in patterns — four of which recur so reliably that this book returns to them again and again.
+
+#### 1. Building features before understanding user goals
+
+The roadmap becomes a junk drawer: a feature because a competitor has it, a feature because a big prospect asked for it, a feature because it demoed well at an offsite. The result is a Swiss Army knife with forty tools and no handle — comprehensive on a comparison chart, unusable on a Tuesday afternoon. The telltale symptom is an activation rate that sags while the feature count climbs. Research is not a phase that slows down shipping; it is how you learn what is worth shipping at all.
+
+#### 2. Treating edge cases as afterthoughts
+
+Teams design the demo path: the account with a friendly eight-character name, twelve tidy tasks, a fast network, and no surprises. Then reality arrives — the invoice with zero line items, the teammate who was removed mid-project, the user who opens the same record in two tabs, the surname that breaks the layout. Here is the uncomfortable arithmetic: at any meaningful scale, improbable events happen constantly. There are no edge cases, only cases you have not met yet. This book treats them as first-class design material.
+
+#### 3. Designing static screens instead of dynamic states
+
+The design file shows the ideal: avatar loaded, data present, network instant. But every screen you ship is really at least six screens — loading, empty, populated, erroring, stale, and partially broken — and users will see all six, usually on their worst day.
+
+<details>
+<summary><strong>A closer look: one screen, six states</strong></summary>
+
+Take an ordinary notifications panel. The static mockup shows five neatly stacked items. Now walk the states:
+
+1. **Loading** — skeleton or spinner? How long before the wait itself needs a message?
+2. **Empty** — never zero; the first-run experience lives here. An empty state is either dead space or a teaching moment.
+3. **Populated** — the only state most teams design. What happens at 500 items?
+4. **Error** — the request failed. Is retry obvious? Is anything cached?
+5. **Stale** — the panel has been open for twenty minutes. Are these still true?
+6. **Partial** — notifications loaded but avatars didn't, on a phone, in the rain.
+
+Users form their opinion of your application in states 1, 2, 4, and 6 — the ones that never appear in the portfolio screenshot.
 
 </details>
 
+#### 4. Leaving accessibility, performance, and security for "later"
+
+Later never comes — or it arrives as an expensive, resentful retrofit. The modal that traps keyboard focus. The dashboard that ships four megabytes of JavaScript to a field technician on a rural connection. The record page that checks permissions "in phase two" and leaks data in phase one. These are not QA concerns to bolt on at the end; they are design materials, as fundamental as layout and type. Deciding early is cheap. Deciding late is a rewrite.
+
+### How to use this book
+
+This book is written for the whole team, because the problems described above are whole-team problems. Different readers should take different paths through it.
+
+| If you are a… | You will get the most from… | How to read |
+|---|---|---|
+| **Designer** | The chapters on research, flows, state inventories, layout, and component design | Straight through; the sequence mirrors a real project lifecycle |
+| **Developer** | The reasoning behind design decisions, plus the shared ground of states, data, performance, and accessibility | Read the early chapters for vocabulary, then use later chapters as reference when a design lands on your desk |
+| **Product manager** | Discovery, scoping, defining success, and how to evaluate design beyond personal taste | Start with the introduction and research chapters; keep the quality framework close during reviews |
+| **Founder or generalist** | Everything — you are the whole team | Cover to cover, with the running example as your sparring partner |
+
+A word on temperament: this book is opinionated. Where I recommend a practice, I will say so and say why — but the tools and trends cited here will age, and the principles are meant to outlive them. If you remember nothing else, remember this: **design the system, not the screen.**
+
 ---
 
+## Introduction: What Is a Well-Designed Web Application?
+
+Ask ten people what makes a web application good and you will hear ten answers: it's beautiful, it's fast, it's innovative, it has the features we need. All of these can be true of an application that still fails its users every day.
+
+This book argues for a plainer, more demanding definition:
+
+> **A well-designed web application helps people accomplish meaningful tasks with clarity, confidence, speed, and trust.**
+
+Every chapter that follows is, in one way or another, an unpacking of that sentence. It is worth unpacking once here.
+
+- **Meaningful tasks.** The application earns its place in someone's day. It solves a problem that actually exists, for people who actually exist, at a cost — in money, attention, or learning — they are willing to pay. Usefulness is not a feature; it is the precondition for everything else.
+- **Clarity.** At any moment, the user can answer three questions: *Where am I? What can I do here? What just happened?* An application that leaves any of these unanswered is leaking confidence with every click.
+- **Confidence.** The application behaves predictably, forgives mistakes, and never makes the user afraid of breaking something. Undo is worth a hundred confirmation dialogs. The best interfaces make people feel capable — even powerful — rather than careful.
+- **Speed.** Both kinds: the application loads and responds quickly, *and* the flows within it are short. A task that takes three steps instead of nine is a performance feature. A spinner is not a design language.
+- **Trust.** The data is safe. The application is reliable. The business behind it is honest — no dark patterns, no manufactured urgency, no privacy surprises buried in a settings page. Trust compounds slowly and evaporates instantly.
+
+Notice what this definition does *not* say. It does not say the application is visually striking, feature-rich, or built on fashionable technology. Aesthetics matter — beauty signals care, and care signals trustworthiness — but visual polish is in service of these five qualities, never a substitute for them.
+
+### Applications are task-oriented systems, not collections of pages
+
+The single most important mental shift in this book is from *screens* to *tasks*.
+
+Nobody opens a project management app to admire its navigation. They open it because a client is waiting, a deadline moved, or a teammate is blocked. Users arrive with intent, and the application is either a bridge between intent and outcome or an obstacle between them. The unit of design is therefore not the screen but the **flow** — the full path a person travels from goal to completion, including every decision, interruption, and failure along the way. And the unit of value is not the visited page but the **finished task**.
+
+Beneath those flows sits a system. A real web application is a living arrangement of data models, business rules, user roles, interface states, notifications, and integrations, all changing over time, often changed by several people at once. Designing the application means designing those *relationships*: what happens to the dashboard when a project is archived, what a guest sees that a member doesn't, what the email says when a task is assigned, what occurs when two people edit the same field simultaneously. This is why web application design cannot be done in pictures alone. The pictures are the visible tip; the system is the iceberg.
+
+A website is a place you visit. A web application is a tool you wield. Tools must fit the hand, survive heavy use, and never, ever break in a way that injures the person holding them.
+
+### The eight qualities of a well-designed application
+
+The core argument gives us five user-facing promises. Delivering them in practice requires eight qualities, and this book evaluates design decisions against all of them.
+
+| Quality | What it means | What failure looks like |
+|---|---|---|
+| **Usefulness** | The application solves a real problem for real people | Elegant features nobody asked for; a roadmap driven by competitor checklists |
+| **Usability** | Routine work is learnable, efficient, and forgiving | Users need training, documentation, and luck to do everyday tasks |
+| **Accessibility** | People of all abilities can perceive, operate, and understand it | Keyboard traps, meaningless icon-only buttons, silence where a screen reader needs words |
+| **Responsiveness** | The interface adapts to viewport, device, and input method | Horizontal scrolling on a phone; hover-only controls on a touchscreen |
+| **Performance** | It loads fast, responds fast, and — crucially — *feels* fast | Skeleton screens that never resolve; interactions that lag behind the hand |
+| **Security** | Users' data and actions are protected by design | Broken authorization, leaked records, trust destroyed in a single headline |
+| **Maintainability** | The design can grow for years without rotting | Seven button styles; every new screen a bespoke snowflake; a design system in name only |
+| **Business alignment** | The application sustains the organization that sustains it | A delightful product that cannot retain users, price itself, or survive |
+
+Three things about this list matter more than the list itself.
+
+First, **the qualities interact**. Security pulls against convenience; richness pulls against performance; feature growth pulls against maintainability. Design is the negotiation among them, and the negotiation is the job. Second, **the qualities are interdependent, not additive**. An application that is usable only for sighted, mouse-using, well-connected people is not "mostly usable" — it is unusable for everyone else, and the average is a fiction. Third, **none of them can be retrofitted cheaply**. Each is far easier to build in than to bolt on, which is why they appear here, on page one of the book, rather than in a closing chapter on polish.
+
+### Where web application design sits among its neighbors
+
+"Web application design" borrows freely from four neighboring disciplines, and much confusion — in job postings, in team structure, in critique sessions — comes from treating them as interchangeable. They are not.
+
+| Discipline | Its central question | Its unit of work |
+|---|---|---|
+| **Website design** | How do we present and organize content so people find and understand it? | The page |
+| **Web application design** | How do we help identified users complete tasks in a stateful, shared system? | The flow and the dynamic screen |
+| **Product design** | What should this product become, and is it working? | The outcome, over time |
+| **Service design** | How does the entire experience hold together across every touchpoint — app, email, support, paper, people? | The end-to-end journey |
+| **Software architecture** | How is the system structured so it can actually deliver all of the above? | The module, the API, the data model |
+
+Website design is primarily a act of *presentation* to a mostly anonymous audience; its success is comprehension, reach, and conversion. Web application design is an act of *enablement* for known users with roles, histories, and consequences. Product design zooms out to own the application's life over time — strategy, discovery, metrics, iteration — and asks not just "is this screen good?" but "is this product becoming what it should?" Service design zooms out further still, past the browser entirely, to every channel where the promise is kept or broken: the password-reset email, the support call, the printed invoice. Software architecture zooms *in*, to the technical structures that make the other four possible — because no designer can specify an experience the system cannot deliver.
+
+These boundaries are membranes, not walls, and the web application designer works permanently in the overlap. Consider designing a notification: what it says and when it appears is application design; whether it exists to drive engagement or to serve the user is product design; the email that carries it beyond the app is service design; the queue that delivers it to two hundred thousand people is architecture. One decision, four disciplines. This book keeps all four in view while staying rooted in the browser, where the user actually lives.
+
+### Meet Meridian: the book's running example
+
+Principles are easy to agree with in the abstract and surprisingly hard to apply at 4 p.m. on a deadline. So this book argues its case twice: once in principles, and once in practice, through a single recurring project that we design — deliberately, visibly, and sometimes painfully — from first research question to final analytics review.
+
+**Meridian** is a fictional collaborative project management SaaS. Teams use it to plan projects, assign and track tasks, discuss work in context, monitor progress on dashboards, and report outcomes to stakeholders. It is a multi-user, role-based, data-dense, real-time application — which is exactly why it was chosen.
+
+The domain earns its place for three reasons. First, it is *familiar*: nearly every reader has used a tool like it, so we can focus on design decisions rather than explaining an obscure industry. Second, it is *rich*: almost every hard problem in this book surfaces naturally inside Meridian — permissions and roles, dense tables and boards, empty states, onboarding, notifications, settings, billing, real-time collaboration, and analytics. Third, it is *honest*: the problems are genuinely contested. There is no universally correct dashboard, no perfect permission model. Meridian forces us to make trade-offs and defend them, which is the real texture of the work.
+
 <details>
-<summary><strong>Part I: Foundations of Web Application Design</strong></summary>
+<summary><strong>Meridian at a glance: the feature inventory</strong></summary>
+
+Throughout the book we will design, break, and redesign the following surfaces:
+
+- **Workspaces** — the top-level container for a team or company, with its own members, roles, and billing
+- **Projects** — the unit of work, each with views (list, board, timeline), statuses, and archives
+- **Tasks** — titles, assignees, due dates, priorities, comments, attachments, and activity history
+- **Roles and permissions** — owner, admin, member, and guest, with all the ambiguity that entails
+- **Dashboards** — personal and team-level summaries of progress, workload, and risk
+- **Onboarding** — first-run experience, sample data, invitations, and the long road to a team's "aha" moment
+- **Notifications** — in-app, email, and the settings that keep them humane
+- **Reports and analytics** — the product's reports to its users, and our own analytics about whether the product works
+- **Settings and administration** — profile, workspace, security, integrations, and billing
+
+Each major chapter returns to Meridian at the moment its topic becomes concrete: research interviews shape the task flows, the flows shape the layouts, the layouts are built from components, the components bend under the permission matrix, and the analytics close the loop by telling us whether any of it worked.
+
+</details>
+
+One honest caveat before we begin: Meridian is a teaching vehicle, not a template. Your application will have different users, different constraints, and different right answers. Do not copy Meridian's solutions — copy its *process*: name the user, name the task, inventory the states, confront the constraints, and let the eight qualities arbitrate the trade-offs.
+
+### What you will be able to do
+
+By the end of this book, you should be able to look at any screen — yours or a competitor's — and interrogate it: *What task lives here? Which state is this? Who is this user, and what are they allowed to do? What just changed, and how would they know? What breaks on a phone, on a keyboard, on a slow network, at scale?* And you should be able to answer those questions not with taste but with reasoning your whole team can act on.
+
+Above all, you will be equipped to build applications that respect the people who depend on them — people who did not choose your software as a hobby, but as a workplace, a marketplace, a service portal, a creative tool, or a community. They arrive with intent. The work of this book is making sure they leave with it fulfilled.
+
+Let's begin.
+
+---
+
+<strong>Part I: Foundations of Web Application Design</strong>
 
 ## Chapter 1: The Web Application Design Mindset
 
@@ -211,12 +353,9 @@ Give readers a practical end-to-end design process.
 
 Map a design process for a new web app from idea to launch.
 
-</details>
-
 ---
 
-<details>
-<summary><strong>Part II: Product Strategy and User Research</strong></summary>
+<strong>Part II: Product Strategy and User Research</strong>
 
 ## Chapter 5: Product Thinking Before Interface Design
 
@@ -318,12 +457,9 @@ Teach readers to turn research and strategy into a manageable product scope.
 
 Take a list of proposed features and prioritize them into launch, later, and unnecessary categories.
 
-</details>
-
 ---
 
-<details>
-<summary><strong>Part III: Information Architecture and Workflow Design</strong></summary>
+<strong>Part III: Information Architecture and Workflow Design</strong>
 
 ## Chapter 9: Information Architecture for Web Applications
 
@@ -429,12 +565,9 @@ Show that web application design must account for changing conditions, not just 
 
 Choose one screen and design its default, loading, empty, error, and permission-denied states.
 
-</details>
-
 ---
 
-<details>
-<summary><strong>Part IV: Interface and Interaction Design</strong></summary>
+<strong>Part IV: Interface and Interaction Design</strong>
 
 ## Chapter 13: Layout, Composition, and Visual Hierarchy
 
@@ -617,12 +750,9 @@ Teach readers to design data-heavy interfaces for decision-making.
 
 Design a dashboard that helps a team understand project health.
 
-</details>
-
 ---
 
-<details>
-<summary><strong>Part V: Design Systems, Accessibility, Ethics, and Trust</strong></summary>
+<strong>Part V: Design Systems, Accessibility, Ethics, and Trust</strong>
 
 ## Chapter 19: Design Systems and Component Libraries
 
@@ -724,12 +854,9 @@ Help readers design web applications that respect users.
 
 Identify dark patterns in a common subscription flow and redesign the flow ethically.
 
-</details>
-
 ---
 
-<details>
-<summary><strong>Part VI: Technical Foundations for Better Design Decisions</strong></summary>
+<strong>Part VI: Technical Foundations for Better Design Decisions</strong>
 
 ## Chapter 22: How Web Applications Work
 
@@ -882,12 +1009,9 @@ Help readers design safer workflows and understand common security concerns.
 
 Design a secure document-sharing flow with permissions, expiration, and audit history.
 
-</details>
-
 ---
 
-<details>
-<summary><strong>Part VII: Designing Complete Product Experiences</strong></summary>
+<strong>Part VII: Designing Complete Product Experiences</strong>
 
 ## Chapter 27: Onboarding and First-Time User Experience
 
@@ -999,12 +1123,9 @@ Teach readers to design complex but essential areas of web applications.
 
 Design the settings architecture for a SaaS workspace with multiple user roles.
 
-</details>
-
 ---
 
-<details>
-<summary><strong>Part VIII: Delivery, Measurement, and Maintenance</strong></summary>
+<strong>Part VIII: Delivery, Measurement, and Maintenance</strong>
 
 ## Chapter 31: Prototyping and Design Validation
 
@@ -1123,12 +1244,9 @@ Teach readers how to improve web applications after launch.
 
 Define success metrics and feedback channels for a newly launched onboarding flow.
 
-</details>
-
 ---
 
-<details>
-<summary><strong>Part IX: Case Studies and Capstone Projects</strong></summary>
+<strong>Part IX: Case Studies and Capstone Projects</strong>
 
 ## Chapter 35: Case Study — Designing a SaaS Dashboard
 
@@ -1206,54 +1324,7 @@ How collaboration multiplies design complexity.
 
 ---
 
-## Chapter 38: Capstone Project — Design a Web Application from Start to Finish
-
-### Project brief
-
-Design a complete web application for one of the following:
-
-- A project management tool
-- A personal finance dashboard
-- A learning management system
-- A healthcare appointment portal
-- A marketplace for local services
-- A customer support platform
-
-### Required deliverables
-
-- Product brief
-- Research plan
-- User roles or personas
-- Core user flows
-- Information architecture
-- Low-fidelity wireframes
-- High-fidelity screens
-- Component inventory
-- Accessibility review
-- Responsive design plan
-- Prototype
-- Usability test plan
-- Launch checklist
-- Success metrics
-
-### Evaluation criteria
-
-- Clarity of product purpose
-- Quality of user flows
-- Usability of interface
-- Accessibility
-- Responsiveness
-- Handling of states and edge cases
-- Consistency of components
-- Technical feasibility
-- Measurement plan
-
-</details>
-
----
-
-<details>
-<summary><strong>Conclusion and Appendices</strong></summary>
+<strong>Conclusion and Appendices</strong>
 
 ## Conclusion: The Future of Web Application Design
 
@@ -1454,4 +1525,4 @@ Key terms to define:
 - Version control platforms
 - Component preview tools
 
-</details>
+
