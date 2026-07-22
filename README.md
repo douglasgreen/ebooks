@@ -19,5 +19,5 @@ Here is an outline for a book about <topic>. Write the introduction.
 3. Write each chapter.
 
 ```
-Write a detailed explanation of the following topics:
+Write a detailed explanation of the following topics for a book about <topic>.
 ```
