@@ -42,222 +42,82 @@ By the end of the book, readers should be able to:
 | Part VI | Technical foundations for design decisions | 22–26 |
 | Part VII | Complete product experiences | 27–30 |
 | Part VIII | Delivery, measurement, and maintenance | 31–34 |
-| Part IX | Case studies | 35–37 |
+| Part IX | Case studies and capstone projects | 35–38 |
 | Appendices | Checklists, templates, glossary, resources | Reference material |
 
 ---
 
-<strong>Front Matter and Introduction</strong>
+<details open>
+<summary><strong>Front Matter and Introduction</strong></summary>
 
 ## Preface: Why Web Application Design Matters
 
-The modern web application is no longer a simple brochure or a set of linked pages. It has become a workplace, a marketplace, a service portal, a creative tool, and a social environment. People manage projects, file taxes, collaborate on documents, trade goods, monitor health, create art, and maintain relationships through interfaces that live in the browser. These systems are where work happens, where money moves, and where trust is either earned or lost. Designing them well is therefore not a cosmetic exercise—it is a responsibility that touches productivity, inclusion, safety, and business outcomes.
-
-Web application design is substantially more complex than traditional page design. A marketing site primarily communicates; a web application primarily enables action. It must support multi-step workflows, persistent state, real-time updates, permissions, error recovery, offline or degraded modes, and long-term use by people with varying abilities, devices, and contexts. Screens are only the visible surface of a deeper system of data models, interaction patterns, feedback loops, and technical constraints. A beautiful mockup that ignores loading states, empty states, validation, concurrency, or accessibility is not a design—it is a sketch of one possible happy path.
-
-Effective web application design sits at the intersection of several disciplines. Product design defines what problems are worth solving and for whom. UX shapes flows, mental models, and task success. UI craft gives those flows clarity and delight through layout, typography, motion, and visual hierarchy. Engineering determines what is feasible, performant, and maintainable. Content strategy supplies the words that guide, reassure, and instruct. Accessibility ensures the product works for the widest range of people. Business strategy aligns the whole effort with sustainable goals. No single role owns the complete outcome; the quality of the application depends on how well these perspectives inform one another.
-
-Despite this complexity, many teams repeat the same failures:
-
-- **Building features before understanding user goals.** Shipping capabilities is easy; shipping the right capabilities in the right order is hard. Without clear jobs-to-be-done and success criteria, teams accumulate surface area that confuses users and slows future work.
-- **Treating edge cases as afterthoughts.** Edge cases are often the majority of real experience—network failures, partial data, permission denials, interrupted sessions, and unexpected inputs. Designing only for the ideal path produces brittle products.
-- **Designing static screens instead of dynamic states.** Applications are alive. They load, wait, succeed, fail, refresh, and adapt. A design system that does not account for these states leaves developers inventing behavior under pressure.
-- **Ignoring accessibility, performance, or security until late in development.** These qualities cannot be bolted on cleanly. Retrofitting keyboard support, fixing core Web Vitals, or closing authorization gaps after launch is far more expensive—and far more damaging to users—than building them in from the start.
-
-This book is written to be used differently depending on your role. Designers will find frameworks for thinking beyond screens: state models, flow architecture, inclusive patterns, and collaboration techniques with engineering. Developers will find guidance on translating design intent into resilient interfaces, on the UX implications of technical choices, and on building systems that remain coherent as they grow. Product managers and strategists will find a shared language for scoping, prioritizing, and evaluating design quality in terms of user outcomes and business alignment. Cross-functional teams can treat the chapters as a common reference when trade-offs arise—because in web application design, trade-offs are constant, and clarity about what “good” means is the best defense against accidental mediocrity.
-
----
+- The modern web app as a workplace, marketplace, service portal, creative tool, and social environment
+- Why web application design is more complex than page design
+- The overlap between product design, UX, UI, engineering, content, accessibility, and business strategy
+- Common failures:
+  - Building features before understanding user goals
+  - Treating edge cases as afterthoughts
+  - Designing static screens instead of dynamic states
+  - Ignoring accessibility, performance, or security until late in development
+- How the book is organized
+- How designers, developers, and product teams can use the book differently
 
 ## Introduction: What Is a Well-Designed Web Application?
 
-### Core Argument
+### Core argument
 
 A good web application helps users accomplish meaningful tasks with clarity, confidence, speed, and trust.
 
-Everything else—visual polish, clever interactions, impressive technology—is secondary to that purpose. Clarity means users understand where they are, what they can do, and what will happen next. Confidence means they feel safe acting, undoing, and recovering from mistakes. Speed means the application respects their time through responsive feedback and efficient paths. Trust means the system behaves reliably, protects their data, and communicates honestly when something goes wrong. When these qualities are present, the interface recedes and the user’s work comes forward.
+### Key ideas
 
-### Key Ideas
+- Web applications are task-oriented systems, not just collections of pages
+- Design quality includes:
+  - Usefulness
+  - Usability
+  - Accessibility
+  - Responsiveness
+  - Performance
+  - Security
+  - Maintainability
+  - Business alignment
+- The difference between:
+  - Website design
+  - Web application design
+  - Product design
+  - Service design
+  - Software architecture
+- The book’s recurring sample project:
+  - A collaborative project management SaaS application
+  - Used to demonstrate research, flows, layouts, components, permissions, dashboards, onboarding, and analytics
 
-Web applications are task-oriented systems, not just collections of pages. A page can inform or persuade; an application must support ongoing activity. Users enter with goals—create something, decide something, monitor something, complete a transaction—and they judge the product by whether those goals become easier or harder. Navigation, layout, and component choices matter only insofar as they serve progress toward those goals. The unit of design is therefore the task and its surrounding ecosystem of states, not the individual screen in isolation.
-
-Design quality in this context is multi-dimensional. It includes:
-
-- **Usefulness** — The application addresses real needs and avoids unnecessary complexity.
-- **Usability** — People can discover, learn, and operate the interface efficiently and with few errors.
-- **Accessibility** — People with diverse abilities, assistive technologies, and contexts can use it effectively.
-- **Responsiveness** — The interface adapts gracefully across devices, viewports, and input methods.
-- **Performance** — Interactions feel immediate; critical paths are fast even under imperfect network conditions.
-- **Security** — Data and actions are protected; users are not exposed to preventable risk.
-- **Maintainability** — The design and its implementation can evolve without collapsing under inconsistency or technical debt.
-- **Business alignment** — The product supports sustainable goals without undermining user trust or long-term value.
-
-These dimensions reinforce one another. A slow application feels untrustworthy. An inaccessible one excludes customers and invites legal and ethical failure. A visually refined interface that cannot be maintained fragments over time until no one can predict its behavior. Excellence requires holding all of them in view.
-
-It is also important to distinguish related but non-identical practices:
-
-- **Website design** focuses primarily on content presentation, information architecture, and conversion or communication goals. Interaction is often relatively shallow.
-- **Web application design** centers on stateful, task-driven systems with rich interaction, persistent data, and complex feedback. It inherits concerns from software design as much as from visual design.
-- **Product design** encompasses the broader definition of what the product is, whom it serves, and how it creates value—including discovery, strategy, and outcome measurement. Web application design is one major expression of product design.
-- **Service design** looks beyond the digital interface to the full journey across channels, people, processes, and touchpoints. A web application is frequently one surface of a larger service.
-- **Software architecture** defines the structural and technical foundations—data models, APIs, deployment, scalability—that enable or constrain what the interface can do. Application design and architecture must inform each other continuously.
-
-A well-designed web application emerges when these perspectives are treated as complementary rather than competing. The chapters that follow offer concrete principles, patterns, and decision frameworks for building systems that people can rely on—systems that make meaningful work clearer, faster, and more trustworthy.
+</details>
 
 ---
 
-<strong>Part I: Foundations of Web Application Design</strong>
+<details>
+<summary><strong>Part I: Foundations of Web Application Design</strong></summary>
 
 ## Chapter 1: The Web Application Design Mindset
 
 ### Goal
 
-This chapter introduces the fundamental mindset required to design web applications successfully. Many designers enter the field with a background in visual design, marketing sites, or single-page experiences. While those skills remain valuable, web application design demands a different way of thinking. You are no longer creating isolated screens or polished one-off pages. You are shaping living systems that people use repeatedly to accomplish meaningful work.
+Introduce the mindset required to design applications rather than isolated screens.
 
-The core shift is simple but profound: **stop designing screens and start designing systems of workflows**. A web application is not a collection of beautiful interfaces. It is a coordinated set of tools, states, rules, and pathways that help users move through complex tasks over time. When you adopt this mindset, every decision—from information architecture to micro-interactions—serves the larger purpose of enabling efficient, reliable, and satisfying work.
+### Key topics
 
-This chapter explores the key concepts that define this mindset. By the end, you will understand why web application design is inherently multi-layered, collaborative, and lifecycle-oriented, and why success depends on thinking far beyond the pixels on a single viewport.
+- Web apps as systems of workflows
+- Designing for repeated use, not one-time visits
+- The difference between tasks, features, flows, and screens
+- Designing for users, teams, organizations, and business goals
+- Why web application design requires cross-functional collaboration
+- The designer’s responsibility across the product lifecycle
 
-### Web Apps as Systems of Workflows
+### Practical exercise
 
-A traditional website often functions as a destination. Users arrive, consume information, complete a simple action (such as signing up or making a purchase), and leave. A web application operates differently. It is a workplace.
-
-Consider tools such as project management platforms, customer relationship systems, analytics dashboards, or collaborative document editors. People do not visit these applications once. They inhabit them. They open them every day, sometimes for hours, and use them to complete interconnected series of actions that produce tangible outcomes.
-
-These interconnected series are **workflows**. A workflow is a sequence of steps a user (or group of users) performs to achieve a goal. Workflows can be linear or branching, short or spanning days or weeks, individual or collaborative. Examples include:
-
-- Onboarding a new client in a CRM
-- Creating, reviewing, approving, and publishing a marketing campaign
-- Investigating an anomaly in a monitoring dashboard and escalating it
-- Building a report, sharing it, and iterating based on feedback
-
-When you design a web application, you are designing the container and the rules that make these workflows possible. Screens are merely the visible surfaces where parts of the workflow happen. The real product is the flow of work itself: the states data can be in, the transitions between those states, the permissions that govern who can act, the feedback that confirms progress, and the recovery paths when something goes wrong.
-
-Thinking in systems of workflows forces you to ask better questions:
-
-- What is the complete job the user is trying to get done?
-- Where does this workflow begin and end? What systems or people does it touch outside the application?
-- What information must persist across sessions and devices?
-- How do multiple users coordinate inside the same workflow?
-- What happens when the workflow is interrupted, abandoned, or fails?
-
-This systems perspective prevents the common trap of optimizing individual screens in isolation while creating friction at the seams between them.
-
-### Designing for Repeated Use, Not One-Time Visits
-
-Marketing websites and landing pages are often optimized for first impressions and conversion. Web applications must be optimized for the hundredth or thousandth use.
-
-Repeated use changes almost every design priority:
-
-**Efficiency over discovery.**  
-New users need guidance, but experienced users need speed. Progressive disclosure, keyboard shortcuts, customizable views, saved filters, and bulk actions become essential. What feels delightful on day one can feel burdensome on day thirty if it cannot be bypassed or streamlined.
-
-**Memory and continuity.**  
-The application must remember context. Users expect to return to exactly where they left off, with their preferences, recent items, unfinished drafts, and notification states intact. Session restoration, robust draft auto-saving, and clear “pick up where you left off” patterns are not nice-to-haves; they are core requirements.
-
-**Forgiveness and recoverability.**  
-People make mistakes more often when they work quickly and repeatedly. Strong undo systems, soft deletes, version history, and clear error recovery paths reduce anxiety and build trust. In high-frequency tools, the cost of an unrecoverable error compounds rapidly.
-
-**Consistency and predictability.**  
-Repeated use amplifies small inconsistencies. A button that behaves slightly differently in two places, or a form field that validates on blur in one flow and on submit in another, creates cumulative cognitive load. Design systems, shared interaction patterns, and rigorous consistency become strategic assets rather than aesthetic preferences.
-
-**Evolution of expertise.**  
-Users grow from novices to power users. The interface should support this journey through layered complexity: simple defaults for beginners, progressive power features for experts, and the ability for individuals or teams to tailor the experience (dashboards, templates, shortcuts, roles).
-
-Designing for repeated use means measuring success differently. Vanity metrics such as time-on-page or bounce rate lose relevance. Instead, you track task completion rates, time-to-complete core workflows, error rates, feature adoption among retained users, and qualitative signals of daily satisfaction or frustration.
-
-### The Difference Between Tasks, Features, Flows, and Screens
-
-Clarity of language is a prerequisite for clear design. Teams often collapse distinct concepts into the vague term “page” or “feature,” which leads to misaligned expectations and incomplete solutions. Precise distinctions help:
-
-**Tasks**  
-A task is a user intention or goal, usually expressed in the user’s language. Examples: “I need to approve last week’s expenses,” “I want to see which campaigns are underperforming,” “I need to invite a new team member and set their permissions.” Tasks are the fundamental unit of user value. Good design starts by identifying and prioritizing the most important tasks.
-
-**Features**  
-A feature is a capability the product offers to support one or more tasks. Features are often what product managers put on roadmaps (“real-time collaboration,” “advanced filtering,” “role-based access control”). Features are solutions; tasks are problems. Confusing the two leads to building capabilities that do not map cleanly to real work.
-
-**Flows (or Workflows)**  
-A flow is the structured path—or set of possible paths—a user takes through the application to complete a task or series of tasks. Flows include entry points, decision points, validation steps, handoffs between people or systems, success states, and failure/recovery states. Flows exist across time and often across multiple screens and sessions. Mapping flows (through user journey maps, service blueprints, or flow diagrams) reveals dependencies, edge cases, and opportunities for streamlining that individual screen designs miss.
-
-**Screens (or Views)**  
-A screen is a specific presentation of interface at a moment in time—a particular layout of components, data, and actions. Screens are the most tangible artifact designers produce, yet they are the least fundamental. A single screen may serve multiple flows; a single flow may traverse many screens. Treating the screen as the primary unit of design often results in beautiful but disconnected experiences.
-
-The relationship is hierarchical and interdependent:
-
-- Users have **tasks**.
-- The product provides **features** that enable those tasks.
-- Features are experienced through **flows**.
-- Flows are composed of **screens** (plus states, transitions, empty/loading/error conditions, and background processes).
-
-Master designers move fluidly between these levels. They begin with tasks, define the necessary flows, determine which features are required to support those flows, and only then design the screens that make the flows usable and efficient. When stakeholders request “a new screen for X,” the disciplined response is to ask which task and flow that screen is meant to serve.
-
-### Designing for Users, Teams, Organizations, and Business Goals
-
-Web applications rarely serve a single user in isolation. They sit at the intersection of multiple stakeholders whose needs sometimes align and sometimes conflict.
-
-**End users**  
-These are the people who perform the primary tasks. Their needs include efficiency, clarity, accessibility, and emotional comfort during complex or high-stakes work. Research methods such as contextual inquiry, task analysis, and usability testing keep their reality central.
-
-**Teams**  
-Many applications are collaborative. Users work with colleagues, managers, clients, or external partners. Design must therefore address shared visibility, permission models, notification strategies, conflict resolution (e.g., simultaneous editing), and the social dynamics of work. A feature that delights an individual can create chaos for a team if it lacks proper access controls or activity history.
-
-**Organizations**  
-Organizations care about standardization, compliance, security, auditability, scalability, and integration with existing systems. An elegant user flow that bypasses required approval gates or fails to log actions will be rejected, regardless of how much users love it. Organizational design constraints—single sign-on, data residency, role hierarchies, branding guidelines—are not afterthoughts; they are first-class inputs.
-
-**Business goals**  
-The organization building or buying the application has its own objectives: revenue growth, cost reduction, risk mitigation, market differentiation, or employee productivity. Design decisions should be traceable to these goals. This does not mean sacrificing user needs; it means finding solutions that create value for both users and the business. A well-designed onboarding flow that reduces time-to-value can simultaneously improve user satisfaction and reduce churn or support costs.
-
-The designer’s job is to hold these perspectives simultaneously and surface trade-offs explicitly. Techniques such as jobs-to-be-done framing, stakeholder mapping, and dual-track research (user + business) help keep all voices present without letting any single voice dominate uncritically.
-
-### Why Web Application Design Requires Cross-Functional Collaboration
-
-No single discipline owns the complete picture of a web application. The quality of the final experience is determined by how well design, product, engineering, research, content, data, security, and support collaborate.
-
-- **Product management** defines the problem space, prioritizes outcomes, and balances scope against timelines.
-- **Engineering** determines what is feasible, performant, maintainable, and secure. Early technical input prevents designs that look perfect in Figma but collapse under real data volumes or edge cases.
-- **Research** supplies evidence about user behavior, mental models, and pain points, reducing reliance on assumptions.
-- **Content design and UX writing** shape the language that guides users through complex flows; in applications, words are often the primary interface.
-- **Data and analytics** reveal how people actually use the product after launch and surface opportunities or breakdowns invisible in lab testing.
-- **Security, compliance, and legal** impose non-negotiable constraints that must be designed in rather than bolted on.
-- **Customer support and success** possess frontline knowledge of recurring friction and unmet needs.
-
-When designers work in isolation and “hand off” polished mockups, the result is frequently a gap between intended and actual experience. Collaborative practices—joint discovery, paired design-and-code exploration, shared flow diagrams, design critiques that include engineers, and continuous feedback loops—produce more robust outcomes. The most effective application designers see themselves as facilitators of a shared understanding rather than sole authors of the interface.
-
-### The Designer’s Responsibility Across the Product Lifecycle
-
-Design does not begin with a blank canvas and end with a final visual specification. In web applications, the designer’s responsibility stretches across the entire lifecycle:
-
-1. **Discovery and framing**  
-   Participate in understanding the problem, defining success metrics, identifying risks, and deciding whether a product or feature should exist at all.
-
-2. **Conceptual design and architecture**  
-   Shape information architecture, core workflows, permission models, and the overall interaction paradigm before any high-fidelity screens are created.
-
-3. **Detailed design and specification**  
-   Produce the interfaces, states, and edge-case behaviors, while collaborating on realistic content, accessibility, and interaction details.
-
-4. **Implementation support**  
-   Work alongside engineers during build, making timely decisions about ambiguities, reviewing work-in-progress, and protecting the integrity of the experience without blocking progress.
-
-5. **Launch and enablement**  
-   Contribute to release communication, in-product guidance, help documentation, and training materials so that the design’s intent survives contact with real users.
-
-6. **Post-launch learning and iteration**  
-   Analyze usage data, support tickets, and follow-up research; identify what is working and what is not; and feed insights back into the next cycle of improvement. Applications are never “done.”
-
-7. **Long-term stewardship**  
-   Maintain and evolve the design system, ensure consistency as the product grows, and advocate for structural improvements that keep the experience coherent over years.
-
-This expanded responsibility requires designers to develop skills beyond craft: systems thinking, facilitation, basic technical literacy, comfort with data, and the ability to influence without authority. It also requires organizations to involve design early and keep designers embedded rather than treating them as a service bureau that beautifies requirements.
-
-### Closing Thoughts
-
-The web application design mindset is ultimately about responsibility. You are responsible for the quality of daily work that thousands or millions of people will perform inside the systems you shape. That responsibility cannot be discharged by producing attractive screens alone. It demands that you understand workflows as systems, design for longevity and repetition, maintain sharp distinctions between tasks, features, flows, and screens, balance the needs of individuals with those of teams and organizations, collaborate deeply across disciplines, and stay engaged from first insight through years of evolution.
-
-When you internalize this mindset, your work becomes more strategic, more resilient, and more valuable. You stop being a decorator of interfaces and become an architect of useful, humane tools for getting things done. The remaining chapters of this book build on this foundation, giving you the methods, patterns, and practices to turn the mindset into consistent, high-quality results.
+Analyze a familiar web app and identify its core workflows, repeated tasks, user roles, and failure points.
 
 ---
-
-Write a detailed explanation of the following topics for a book about web application design.
 
 ## Chapter 2: The Web as a Design Medium
 
@@ -281,6 +141,10 @@ Explain the unique constraints and strengths of the web platform.
   - Continuous deployment
   - Integration with other services
 
+### Practical exercise
+
+Compare a desktop app, mobile app, and web app performing the same task. Identify what the web version must handle differently.
+
 ---
 
 ## Chapter 3: Principles of Effective Web Application Design
@@ -299,6 +163,10 @@ Establish a reusable set of design principles for the rest of the book.
 - Accessibility: interfaces should work for people with different abilities
 - Trust: users should understand what data is used and why
 - Scalability: designs should survive product growth
+
+### Practical exercise
+
+Create a design principles checklist and apply it to one screen from an existing product.
 
 ---
 
@@ -339,9 +207,16 @@ Give readers a practical end-to-end design process.
   - Experimentation
   - Redesign
 
+### Practical exercise
+
+Map a design process for a new web app from idea to launch.
+
+</details>
+
 ---
 
-<strong>Part II: Product Strategy and User Research</strong>
+<details>
+<summary><strong>Part II: Product Strategy and User Research</strong></summary>
 
 ## Chapter 5: Product Thinking Before Interface Design
 
@@ -364,6 +239,10 @@ Teach readers how to define the product before designing the interface.
   - Legal requirements
   - Organizational politics
 
+### Practical exercise
+
+Write a product brief for a web application, including the target users, primary problem, value proposition, and success criteria.
+
 ---
 
 ## Chapter 6: Understanding Users
@@ -383,6 +262,10 @@ Show how to gather and interpret user insights.
 - Competitive research
 - Avoiding biased research questions
 - Translating observations into design opportunities
+
+### Practical exercise
+
+Create a lightweight research plan for a new application feature.
 
 ---
 
@@ -407,6 +290,10 @@ Help readers model users without oversimplifying them.
   - Internal operators
 - How roles affect permissions, navigation, and workflows
 
+### Practical exercise
+
+Define three user roles for a team-based SaaS app and describe what each role needs to accomplish.
+
 ---
 
 ## Chapter 8: Requirements, Scope, and Prioritization
@@ -427,9 +314,16 @@ Teach readers to turn research and strategy into a manageable product scope.
 - Balancing user value, business value, and development effort
 - Avoiding feature bloat
 
+### Practical exercise
+
+Take a list of proposed features and prioritize them into launch, later, and unnecessary categories.
+
+</details>
+
 ---
 
-<strong>Part III: Information Architecture and Workflow Design</strong>
+<details>
+<summary><strong>Part III: Information Architecture and Workflow Design</strong></summary>
 
 ## Chapter 9: Information Architecture for Web Applications
 
@@ -447,6 +341,10 @@ Explain how to organize a web app so users can understand where things are and h
 - Mental models
 - Matching product structure to user expectations
 - How information architecture changes as products grow
+
+### Practical exercise
+
+Create an application map for a project management tool.
 
 ---
 
@@ -472,6 +370,10 @@ Help readers design navigation systems that scale.
 - Preserving application state in URLs
 - Navigation for different user roles
 
+### Practical exercise
+
+Design a navigation model for an app with projects, teams, reports, settings, and billing.
+
 ---
 
 ## Chapter 11: User Flows and Task Flows
@@ -496,6 +398,10 @@ Teach readers to design the steps users take to complete meaningful tasks.
 - Flow diagrams and service blueprints
 - Reducing friction in repeated tasks
 
+### Practical exercise
+
+Create a flow diagram for inviting a teammate to a workspace.
+
 ---
 
 ## Chapter 12: Designing for States and Edge Cases
@@ -519,9 +425,16 @@ Show that web application design must account for changing conditions, not just 
 - Expired sessions
 - Designing graceful recovery
 
+### Practical exercise
+
+Choose one screen and design its default, loading, empty, error, and permission-denied states.
+
+</details>
+
 ---
 
-<strong>Part IV: Interface and Interaction Design</strong>
+<details>
+<summary><strong>Part IV: Interface and Interaction Design</strong></summary>
 
 ## Chapter 13: Layout, Composition, and Visual Hierarchy
 
@@ -541,6 +454,10 @@ Teach readers how to arrange interface elements clearly and responsively.
 - Mobile-first vs. desktop-first design
 - Designing for dense enterprise interfaces
 - Prioritizing primary, secondary, and tertiary actions
+
+### Practical exercise
+
+Redesign a cluttered dashboard to improve hierarchy and readability.
 
 ---
 
@@ -566,6 +483,10 @@ Explain how visual choices affect usability, brand, and comprehension.
 - Illustration and imagery
 - Light mode, dark mode, and theming
 - Visual consistency across screens
+
+### Practical exercise
+
+Create a basic visual style guide for a web application.
 
 ---
 
@@ -602,6 +523,10 @@ Survey the essential building blocks of web application interfaces.
   - Validation
   - Interaction behavior
 
+### Practical exercise
+
+Specify the states and usage rules for a button, text input, modal, and toast notification.
+
 ---
 
 ## Chapter 16: Forms and Data Entry
@@ -627,6 +552,10 @@ Help readers design forms that are clear, efficient, and forgiving.
 - Sensitive data entry
 - Mobile form design
 
+### Practical exercise
+
+Redesign a long registration, checkout, or onboarding form.
+
 ---
 
 ## Chapter 17: Interaction Design, Feedback, and Motion
@@ -649,6 +578,10 @@ Explain how interfaces respond to user actions.
 - Motion as orientation
 - Avoiding unnecessary animation
 - Reduced-motion preferences
+
+### Practical exercise
+
+Design the interaction behavior for deleting, undoing, and restoring an item.
 
 ---
 
@@ -680,9 +613,16 @@ Teach readers to design data-heavy interfaces for decision-making.
 - Designing drill-down paths
 - Data freshness and confidence indicators
 
+### Practical exercise
+
+Design a dashboard that helps a team understand project health.
+
+</details>
+
 ---
 
-<strong>Part V: Design Systems, Accessibility, Ethics, and Trust</strong>
+<details>
+<summary><strong>Part V: Design Systems, Accessibility, Ethics, and Trust</strong></summary>
 
 ## Chapter 19: Design Systems and Component Libraries
 
@@ -712,6 +652,10 @@ Show how reusable systems help web apps stay consistent as they scale.
 - Versioning and deprecation
 - Design-engineering collaboration
 - Maintaining consistency across teams
+
+### Practical exercise
+
+Define a mini design system for buttons, forms, cards, tables, and navigation.
 
 ---
 
@@ -745,6 +689,10 @@ Teach accessibility as a foundation of quality, not a late-stage checklist.
   - Screen reader testing
   - User testing
 
+### Practical exercise
+
+Audit a web app screen for accessibility issues and propose corrections.
+
 ---
 
 ## Chapter 21: Ethical, Inclusive, and Privacy-Aware Design
@@ -772,9 +720,16 @@ Help readers design web applications that respect users.
 - Account deletion and data export
 - Trust and safety patterns
 
+### Practical exercise
+
+Identify dark patterns in a common subscription flow and redesign the flow ethically.
+
+</details>
+
 ---
 
-<strong>Part VI: Technical Foundations for Better Design Decisions</strong>
+<details>
+<summary><strong>Part VI: Technical Foundations for Better Design Decisions</strong></summary>
 
 ## Chapter 22: How Web Applications Work
 
@@ -799,6 +754,10 @@ Give non-engineers enough technical understanding to make better design decision
 - Progressive web apps
 - The relationship between frontend, backend, and infrastructure
 
+### Practical exercise
+
+Diagram what happens when a user signs in, loads a dashboard, and updates a task.
+
 ---
 
 ## Chapter 23: Frontend Architecture for Designers
@@ -820,6 +779,10 @@ Explain how UI designs become maintainable frontend systems.
 - Reuse vs. over-abstraction
 - Technical constraints that affect UI design
 - Collaboration with frontend engineers
+
+### Practical exercise
+
+Break a complex screen into reusable components and identify their states.
 
 ---
 
@@ -847,6 +810,10 @@ Show how data structures and APIs shape the user experience.
   - WebSockets
 - Designing UI around partial or delayed data
 
+### Practical exercise
+
+Sketch the data objects and API needs for a task management application.
+
 ---
 
 ## Chapter 25: Performance by Design
@@ -873,6 +840,10 @@ Teach performance as a user experience concern.
 - Caching
 - Pagination and infinite scroll
 - Reducing unnecessary complexity
+
+### Practical exercise
+
+Audit a slow page and identify design and technical changes that could improve perceived speed.
 
 ---
 
@@ -907,9 +878,16 @@ Help readers design safer workflows and understand common security concerns.
 - Session expiration
 - Suspicious activity alerts
 
+### Practical exercise
+
+Design a secure document-sharing flow with permissions, expiration, and audit history.
+
+</details>
+
 ---
 
-<strong>Part VII: Designing Complete Product Experiences</strong>
+<details>
+<summary><strong>Part VII: Designing Complete Product Experiences</strong></summary>
 
 ## Chapter 27: Onboarding and First-Time User Experience
 
@@ -930,6 +908,10 @@ Teach readers how to help new users reach value quickly.
 - Progressive onboarding
 - Activation metrics
 - Avoiding overwhelming new users
+
+### Practical exercise
+
+Design onboarding for a team-based SaaS product.
 
 ---
 
@@ -954,6 +936,10 @@ Show how users find things in large applications.
 - Personalization
 - Command menus
 - Information scent
+
+### Practical exercise
+
+Design a search experience for an application with thousands of documents or records.
 
 ---
 
@@ -980,6 +966,10 @@ Cover patterns for multi-user web applications.
 - Batching and digests
 - Avoiding notification fatigue
 
+### Practical exercise
+
+Design a notification system for a collaborative project management app.
+
 ---
 
 ## Chapter 30: Settings, Administration, Billing, and Account Management
@@ -1005,9 +995,16 @@ Teach readers to design complex but essential areas of web applications.
 - Canceling subscriptions
 - Handling sensitive or destructive actions
 
+### Practical exercise
+
+Design the settings architecture for a SaaS workspace with multiple user roles.
+
+</details>
+
 ---
 
-<strong>Part VIII: Delivery, Measurement, and Maintenance</strong>
+<details>
+<summary><strong>Part VIII: Delivery, Measurement, and Maintenance</strong></summary>
 
 ## Chapter 31: Prototyping and Design Validation
 
@@ -1029,6 +1026,10 @@ Help readers choose the right fidelity for the right question.
 - Technical feasibility testing
 - Stakeholder reviews
 - Common prototype mistakes
+
+### Practical exercise
+
+Create a prototype plan for testing a new dashboard feature.
 
 ---
 
@@ -1052,6 +1053,10 @@ Teach designers how to move from design intent to implementation.
 - Component references
 - Design QA
 - Handling implementation tradeoffs
+
+### Practical exercise
+
+Prepare a handoff package for a feature, including states, responsive rules, and acceptance criteria.
 
 ---
 
@@ -1077,6 +1082,10 @@ Show how to evaluate whether a feature is ready to ship.
 - Release notes
 - Support preparation
 - Monitoring after launch
+
+### Practical exercise
+
+Create a release checklist for a new feature.
 
 ---
 
@@ -1110,9 +1119,16 @@ Teach readers how to improve web applications after launch.
 - Managing design debt
 - Planning redesigns
 
+### Practical exercise
+
+Define success metrics and feedback channels for a newly launched onboarding flow.
+
+</details>
+
 ---
 
-<strong>Part IX: Case Studies and Capstone Projects</strong>
+<details>
+<summary><strong>Part IX: Case Studies and Capstone Projects</strong></summary>
 
 ## Chapter 35: Case Study — Designing a SaaS Dashboard
 
@@ -1190,7 +1206,54 @@ How collaboration multiplies design complexity.
 
 ---
 
-<strong>Conclusion and Appendices</strong>
+## Chapter 38: Capstone Project — Design a Web Application from Start to Finish
+
+### Project brief
+
+Design a complete web application for one of the following:
+
+- A project management tool
+- A personal finance dashboard
+- A learning management system
+- A healthcare appointment portal
+- A marketplace for local services
+- A customer support platform
+
+### Required deliverables
+
+- Product brief
+- Research plan
+- User roles or personas
+- Core user flows
+- Information architecture
+- Low-fidelity wireframes
+- High-fidelity screens
+- Component inventory
+- Accessibility review
+- Responsive design plan
+- Prototype
+- Usability test plan
+- Launch checklist
+- Success metrics
+
+### Evaluation criteria
+
+- Clarity of product purpose
+- Quality of user flows
+- Usability of interface
+- Accessibility
+- Responsiveness
+- Handling of states and edge cases
+- Consistency of components
+- Technical feasibility
+- Measurement plan
+
+</details>
+
+---
+
+<details>
+<summary><strong>Conclusion and Appendices</strong></summary>
 
 ## Conclusion: The Future of Web Application Design
 
@@ -1391,4 +1454,4 @@ Key terms to define:
 - Version control platforms
 - Component preview tools
 
-
+</details>
