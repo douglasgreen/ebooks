@@ -2704,14 +2704,2161 @@ You now own the middle of the stack — the part that turns a URL into a respons
 ---
 
 ## Part II — Core Architecture
-**Ch 5. Dependency Injection**
-- Service definitions, autowiring, autoconfiguration
-- Constructor injection, service locator, decorators, aliases, tags
-- Public vs. private services; container compilation and debugging
 
-**Ch 6. Configuration System**
-- `.env` hierarchy, parameters, per-environment overrides
-- Bundle configuration trees and `config/` organization
+### Chapter 5. Dependency Injection
+
+> *"In the Symfony world, almost every object you use is a service wired together by a container. Understanding how that container works — and how to shape it — is the single most useful thing you can learn about the framework's internals."*
+
+---
+
+#### 5.1 Why Dependency Injection Matters
+
+If you have written any non-trivial PHP application, you have probably written code like this:
+
+```php
+class InvoiceService
+{
+    public function __construct(
+        private EntityManagerInterface $em,
+        private MailerInterface $mailer,
+        private LoggerInterface $logger,
+    ) {}
+
+    public function sendInvoice(Invoice $invoice): void
+    {
+        // ...
+    }
+}
+```
+
+The question that immediately arises is: *who creates the `EntityManagerInterface`, the `MailerInterface`, and the `LoggerInterface`? And who passes them in?* The answer in Symfony is the **service container** — a carefully compiled object factory that resolves, wires, and caches every collaborator your application needs.
+
+Dependency injection (DI) is the mechanism; the container is the *implementation*. In this chapter you will learn:
+
+- How services are defined and resolved
+- How autowiring and autoconfiguration eliminate most configuration
+- How to use advanced patterns: decorators, aliases, service locators, and tags
+- How the container compiles, what "private" really means, and how to debug problems
+
+By the end you will be able to design the object graph of a Symfony application with confidence, and you will know exactly what happens between the moment a request hits `public/index.php` and the moment your controller is instantiated.
+
+---
+
+#### 5.2 The Service Container: A First Look
+
+The container is a singleton object (available as `$container` in the compiled runtime) that can do two things:
+
+1. **Create** a service from its definition (constructor arguments, factory, decorators, etc.)
+2. **Return** a previously created instance (for shared, i.e. singleton, services)
+
+Every service definition is a recipe: *given these arguments, call this factory or this constructor, and store the result under this identifier.* The identifier is the **service ID**, and for services that are autowired it is conventionally the fully-qualified class name (FQCN).
+
+```text
+┌─────────────────────────────────────────────────────────┐
+│                    Service Container                     │
+├─────────────────────────────────────────────────────────┤
+│  ID                        │  Definition                │
+├─────────────────────────────┼───────────────────────────┤
+│  App\Service\InvoiceService │  class + autowired args   │
+│  App\Repository\InvoiceRepo │  class + autowired args   │
+│  Psr\Log\LoggerInterface    │  alias → monolog.logger   │
+│  monolog.logger             │  factory → new Logger()   │
+│  event_dispatcher           │  factory → new EventDisp()│
+│  ...                       │  ...                      │
+└─────────────────────────────┴───────────────────────────┘
+```
+
+You rarely interact with the container directly. Instead, you rely on **autowiring** (the container inspects your constructor and resolves each parameter) and **autoconfiguration** (the container assigns common tags and decorators based on the interfaces your service implements). The container is the engine; autowiring and autoconfiguration are the user experience on top of it.
+
+---
+
+#### 5.3 Defining Services
+
+##### 5.3.1 The Default: Resource-Based Autowiring
+
+In a modern Symfony application, the vast majority of your services require **zero explicit configuration**. This is because the `framework` bundle's `services` section includes a default resource registration:
+
+```yaml
+# config/services.yaml
+services:
+    # Default configuration for services in *this* file
+    _defaults:
+        autowire: true          # Automatically inject dependencies
+        autoconfigure: true     # Automatically tag based on interfaces
+
+    # Register every class in the App\ namespace
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/Attributes/'
+```
+
+What this does:
+
+- Scans every `.php` file under `src/`
+- Registers each class as a service with its FQCN as the ID
+- Enables autowiring and autoconfiguration for all of them
+- Excludes directories that are not services (entities, attributes, etc.)
+
+So if you write:
+
+```php
+// src/Service/InvoiceService.php
+namespace App\Service;
+
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+
+class InvoiceService
+{
+    public function __construct(
+        private EntityManagerInterface $em,
+        private LoggerInterface $logger,
+    ) {}
+}
+```
+
+…you have already "defined" the service. There is nothing else to do. The container will create it the first time something asks for it.
+
+> **Convention note:** This book uses attribute-based configuration exclusively for routes, validation, and entity mapping. For service definitions, YAML (`config/services.yaml`) remains the idiomatic format in Symfony 7/8 because the DI configuration is inherently *infrastructure-level* and benefits from being centralized. You will see YAML for service configuration throughout this chapter, but the same definitions are expressible in XML if you prefer.
+
+##### 5.3.2 Explicit Service Definitions
+
+Sometimes a service needs a specific argument that cannot be autowired (a string, an integer, a callable, a specific instance among many implementations). You define it explicitly:
+
+```yaml
+# config/services.yaml
+services:
+    App\Service\InvoiceService:
+        arguments:
+            $logger: '@monolog.logger.invoice'   # bind a specific logger
+```
+
+Or, when the service is not in your `src/` namespace (a vendor class you want to reconfigure):
+
+```yaml
+services:
+    App\Service\PaymentProcessor:
+        class: App\Service\PaymentProcessor
+        arguments:
+            $apiKey: '%env(PAYMENT_API_KEY)%'
+            $timeout: 30
+```
+
+> **Tip:** When you override arguments for an autowired service, you only need to specify the ones that differ. The rest are still resolved automatically.
+
+##### 5.3.3 The `_defaults` Section
+
+The `_defaults` key applies configuration to every service defined *in that file*:
+
+```yaml
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false        # all services are private by default
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/Entity/'
+```
+
+You can also set defaults for a subset:
+
+```yaml
+services:
+    App\Service\:
+        resource: '../src/Service/'
+        public: false
+        autowire: true
+        autoconfigure: true
+```
+
+##### 5.3.4 Service IDs and Naming
+
+The service ID is the string you use to reference a service. For autowired services the ID is the FQCN:
+
+```text
+App\Service\InvoiceService
+```
+
+You can also use short IDs for frequently referenced services (common in Symfony's own bundles):
+
+```yaml
+services:
+    my_invoice_service:
+        class: App\Service\InvoiceService
+```
+
+The convention in modern Symfony is to use FQCNs for your own services and short IDs only when the framework or a bundle establishes them (e.g., `event_dispatcher`, `http_kernel`, `router`).
+
+---
+
+#### 5.4 Autowiring
+
+##### 5.4.1 How It Works
+
+Autowiring is a *type-driven* resolution strategy. When the container instantiates a service, it inspects the constructor (or factory method) and, for each parameter, looks for a service whose **type matches the parameter's type hint**:
+
+```php
+class InvoiceService
+{
+    public function __construct(
+        private EntityManagerInterface $em,    // → finds the EM service
+        private LoggerInterface $logger,       // → finds the logger service
+        private InvoiceRepository $repo,       // → finds the repository
+    ) {}
+}
+```
+
+The resolution order is:
+
+1. **Exact class match** — is there a service with ID `Doctrine\ORM\EntityManagerInterface`?
+2. **Alias match** — is `Psr\Log\LoggerInterface` aliased to another service? (Yes: `monolog.logger`.)
+3. **Implementation match** — is there exactly one service that implements `LoggerInterface`?
+4. **Failure** — if multiple services match or none match, autowiring fails.
+
+##### 5.4.2 When Autowiring Fails
+
+Autowiring fails in predictable situations:
+
+| Situation | Example | Fix |
+|-----------|---------|-----|
+| No service for the type | `private string $apiKey` | Pass it explicitly: `arguments: [$apiKey]` or use `bind` |
+| Multiple implementations | `private LoggerInterface $logger` when 3 loggers exist | Use an alias or bind a specific one |
+| Unresolvable interface | A vendor interface with no registered implementation | Register the implementation or use a service locator |
+
+**Scalar and array parameters** cannot be autowired (there is no type to match). You must provide them:
+
+```yaml
+services:
+    App\Service\PaymentProcessor:
+        arguments:
+            $apiKey: '%env(PAYMENT_API_KEY)%'
+            $allowedRegions: ['eu', 'us', 'uk']
+```
+
+##### 5.4.3 The `bind` Directive
+
+The `bind` configuration lets you inject values into *every* service that has a parameter of that type, without repeating the argument:
+
+```yaml
+services:
+    _defaults:
+        bind:
+            string $env: '%kernel.environment%'
+            int $cacheTtl: 3600
+            App\Entity\Tenant: '@app.current_tenant'  # inject the current tenant
+```
+
+This is particularly powerful in the running project. In a multi-tenant SaaS app, you often need the "current tenant" available everywhere. Instead of injecting `TenantRepository` and querying on every call, you bind the resolved tenant:
+
+```yaml
+# config/services.yaml
+services:
+    _defaults:
+        bind:
+            ?App\Entity\Tenant: '@app.tenant_resolver'
+```
+
+Now any service with `public function __construct(protected Tenant $tenant)` gets the current tenant automatically.
+
+> **Caution:** `bind` is powerful but invisible. A new developer reading a constructor sees a `Tenant` parameter and may not realize it is magically injected. Use it judiciously and document it.
+
+##### 5.4.4 Autowiring and `final`
+
+Autowiring works with `final` classes, interfaces, and abstract types. There is no difference in resolution. However, `final` classes have one practical advantage: they can never be accidentally replaced by a mock in a test that uses type-based resolution, making them slightly more predictable.
+
+---
+
+#### 5.5 Autoconfiguration
+
+##### 5.5.1 What It Does
+
+Autoconfiguration is a *tagging* mechanism. When a service is marked `autoconfigure: true`, the container inspects the interfaces it implements (and, in Symfony 7+, the attributes on the class) and applies pre-defined configuration:
+
+| Interface / Attribute | Effect |
+|-----------------------|--------|
+| `EventSubscriberInterface` | Tagged as `kernel.event_subscriber` |
+| `MessageHandlerInterface` (or `#[AsMessageHandler]`) | Tagged as `messenger.message_handler` |
+| `CacheItemPoolInterface` | Tagged as `cache.pool` |
+| `RateLimiterFactory` implementations | Tagged as `rate_limiter.factory` |
+| `KernelEvents` listeners (via `#[AsEventListener]`) | Tagged as `kernel.event_listener` |
+| `ValidatorInterface` / `ConstraintValidatorInterface` | Tagged as `validator.constraint_validator` |
+| `Twig\Extension\ExtensionInterface` | Tagged as `twig.extension` |
+| `Twig\RuntimeLoader\RuntimeLoaderInterface` | Tagged as `twig.runtime` |
+
+So this class:
+
+```php
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+
+#[AsMessageHandler]
+class SendInvoiceEmailHandler
+{
+    public function __invoke(SendInvoiceEmail $message): void
+    {
+        // ...
+    }
+}
+```
+
+…is automatically tagged as a messenger message handler. You did not write a single line of DI configuration.
+
+##### 5.5.2 Attributes vs. Interfaces
+
+Symfony 7+ strongly prefers **attributes** over marker interfaces for autoconfiguration. The attribute `#[AsMessageHandler]` is the modern replacement for implementing `MessageHandlerInterface`. Both work, but attributes are:
+
+- More explicit (you can configure options inline)
+- Not polluted with extra interface methods
+- Discoverable by static analysis tools more easily
+
+```php
+#[AsMessageHandler]
+class Handler { /* ... */ }
+
+// Equivalent to:
+#[AsMessageHandler(fromTransport: 'async', method: 'process')]
+class Handler {
+    public function process(SendInvoiceEmail $message): void { /* ... */ }
+}
+```
+
+##### 5.5.3 Custom Autoconfiguration
+
+You can register your own autoconfiguration rules in a bundle's `DependencyInjection` extension or via a compiler pass. For the running project, imagine a custom interface for tenant-scoped services:
+
+```php
+// src/DependencyInjection/TenantAwarePass.php
+namespace App\DependencyInjection;
+
+use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
+
+class TenantAwarePass implements CompilerPassInterface
+{
+    public function process(ContainerBuilder $container): void
+    {
+        $tenantResolverId = 'app.tenant_resolver';
+
+        foreach ($container->getDefinitions() as $id => $definition) {
+            if ($definition->isDeprecated()) {
+                continue;
+            }
+
+            // Add tenant resolver as a last argument to all tenant-aware services
+            if ($definition->hasTag('app.tenant_aware')) {
+                $definition->addArgument(new Reference($tenantResolverId));
+            }
+        }
+    }
+}
+```
+
+This is an advanced topic covered in Chapter 8, but it is worth knowing that the mechanism exists.
+
+---
+
+#### 5.6 Constructor Injection: The Core Pattern
+
+##### 5.6.1 The Rule
+
+**All dependencies go through the constructor.** No setters, no service locators in business logic, no static `::getInstance()`.
+
+```php
+class InvoiceService
+{
+    public function __construct(
+        private EntityManagerInterface $em,
+        private MailerInterface $mailer,
+        private LoggerInterface $logger,
+        private InvoiceNumberGenerator $numberGenerator,
+    ) {}
+
+    public function createAndSend(CreateInvoiceDto $dto): Invoice
+    {
+        $invoice = new Invoice();
+        $invoice->setNumber($this->numberGenerator->next());
+        // ...
+        $this->em->persist($invoice);
+        $this->em->flush();
+
+        $this->mailer->send($this->buildEmail($invoice));
+        $this->logger->info('Invoice created', ['id' => $invoice->getId()]);
+
+        return $invoice;
+    }
+}
+```
+
+Why constructor injection?
+
+- **Immutability of dependencies** — the object is fully configured at construction time.
+- **Testability** — you can pass mocks without any reflection or container access.
+- **Explicitness** — the constructor signature *is* the dependency contract.
+- **Fail-fast** — if a dependency is missing, the object cannot be constructed at all.
+
+##### 5.6.2 Constructor Property Promotion (PHP 8+)
+
+PHP 8.0's constructor property promotion makes the pattern extremely concise:
+
+```php
+class InvoiceService
+{
+    public function __construct(
+        private EntityManagerInterface $em,
+        private MailerInterface $mailer,
+        private readonly InvoiceNumberGenerator $numberGenerator,
+    ) {}
+}
+```
+
+Use `readonly` for dependencies that are truly immutable (value objects, generators). Use `private` without `readonly` when you might need to reassign (rare for services, but possible for test doubles).
+
+##### 5.6.3 Avoiding God Constructors
+
+A constructor with 10+ parameters is a design smell. It usually means the class has too many responsibilities. Refactor by extracting cohesive groups:
+
+```php
+// Before: 8 parameters
+class InvoiceService {
+    public function __construct(
+        private EntityManagerInterface $em,
+        private MailerInterface $mailer,
+        private LoggerInterface $logger,
+        private InvoiceNumberGenerator $gen,
+        private PdfGenerator $pdf,
+        private CurrencyConverter $currency,
+        private TaxCalculator $tax,
+        private NotificationService $notify,
+    ) {}
+}
+
+// After: extract a "value object" or "context"
+class InvoiceContext {
+    public function __construct(
+        public readonly PdfGenerator $pdf,
+        public readonly CurrencyConverter $currency,
+        public readonly TaxCalculator $tax,
+    ) {}
+}
+
+class InvoiceService {
+    public function __construct(
+        private EntityManagerInterface $em,
+        private MailerInterface $mailer,
+        private LoggerInterface $logger,
+        private InvoiceContext $context,
+    ) {}
+}
+```
+
+The container will autowire `InvoiceContext` automatically (all its own dependencies are resolvable).
+
+##### 5.6.4 Optional and Null-able Dependencies
+
+If a dependency is genuinely optional (e.g., a "primary" service that may not exist in all environments), use a nullable type:
+
+```php
+public function __construct(
+    private ?FeatureFlagService $featureFlags = null,
+) {}
+```
+
+The container will inject `null` if no service of that type is registered. This is preferable to a service locator in this case because the optionality is visible in the type signature.
+
+> **Anti-pattern:** Do not use `?Type` as an excuse to avoid proper abstraction. If a dependency is optional in *some* environments but required in others, that is a configuration problem, not a type problem.
+
+---
+
+#### 5.7 The Service Locator
+
+##### 5.7.1 When (and When Not) to Use It
+
+A **service locator** is a small, *selective* container that knows about a limited set of services. It exists to break hard dependencies — situations where a service needs *one of many* implementations chosen at runtime.
+
+```php
+// BAD: hard dependency on all payment processors
+class CheckoutService {
+    public function __construct(
+        private StripeProcessor $stripe,
+        private PayPalProcessor $paypal,
+        private BitcoinProcessor $bitcoin,
+    ) {}
+}
+
+// BETTER: a locator of payment processors
+class CheckoutService {
+    public function __construct(
+        private PaymentProcessorLocator $processors,  // ServiceLocatorInterface
+    ) {}
+
+    public function process(string $method, array $data): PaymentResult
+    {
+        $processor = $this->processors->get($method);  // 'stripe', 'paypal', 'bitcoin'
+        return $processor->charge($data);
+    }
+}
+```
+
+##### 5.7.2 Defining a Service Locator
+
+You define a service locator as a service with the `service-locator` tag:
+
+```yaml
+# config/services.yaml
+services:
+    payment_processor_locator:
+        class: Symfony\Component\DependencyInjection\ServiceLocator
+        public: true
+        factory: ['Symfony\Component\DependencyInjection\ServiceLocator', 'locate']
+        arguments:
+            -
+                stripe: '@App\Service\Payment\StripeProcessor'
+                paypal: '@App\Service\Payment\PayPalProcessor'
+                bitcoin: '@App\Service\Payment\BitcoinProcessor'
+```
+
+Then reference it in your code:
+
+```php
+use Symfony\Contracts\Service\ServiceLocatorInterface;
+
+class CheckoutService
+{
+    public function __construct(
+        private ServiceLocatorInterface $paymentProcessors,  // autowired to payment_processor_locator
+    ) {}
+}
+```
+
+Wait — autowiring will not pick up `payment_processor_locator` for a `ServiceLocatorInterface` parameter because there may be multiple locators. You need a `bind` or an alias:
+
+```yaml
+services:
+    _defaults:
+        bind:
+            ServiceLocatorInterface $paymentProcessors: '@payment_processor_locator'
+```
+
+##### 5.7.3 The `ServiceLocatorFactory` (Dynamic Locators)
+
+For more dynamic scenarios (e.g., a plugin system where processors are registered at runtime), Symfony provides `ServiceLocatorFactory`:
+
+```yaml
+services:
+    App\Service\Payment\PaymentProcessorFactory:
+        class: Symfony\Component\DependencyInjection\ServiceLocator
+        factory: ['@service_locator', 'getLocators']
+        arguments:
+            - [
+                'App\Service\Payment\PaymentProcessorInterface',
+                '@App\Service\Payment\PaymentProcessorInterface',
+            ]
+```
+
+This creates a locator that contains *all services tagged* `App\Service\Payment\PaymentProcessorInterface`.
+
+##### 5.7.4 Rules of Thumb
+
+| Use a service locator when… | Do NOT use it when… |
+|----------------------------|--------------------|
+| You need to pick one of N implementations at runtime | You have a fixed, known set of dependencies |
+| You are building a plugin/strategy system | You can express the choice with a single interface + binding |
+| You are in a *framework* or *abstract layer* that serves many backends | You are in business logic (use constructor injection) |
+
+In the running invoicing project, the only place a service locator is justified is the payment processor dispatch. Everything else uses constructor injection.
+
+---
+
+#### 5.8 Decorators
+
+##### 5.8.1 The Concept
+
+A **decorator** wraps an existing service with additional behavior. The original service is *replaced* in the container, but the decorator receives the original as a reference, allowing it to delegate and add logic around it.
+
+```yaml
+services:
+    # The "real" service
+    App\Service\Payment\StripeProcessor:
+        ~
+
+    # The decorator
+    App\Service\Payment\LoggingPaymentDecorator:
+        decorates: 'App\Service\Payment\StripeProcessor'
+        arguments:
+            $inner: '@App\Service\Payment\StripeProcessor.inner'
+```
+
+The key mechanics:
+
+- `decorates: <original_id>` tells the container: "when someone asks for `StripeProcessor`, give them my decorator instead."
+- The original service is still created, but under the ID `<original_id>.inner`.
+- The decorator receives the original via the `.inner` reference.
+
+##### 5.8.2 A Practical Example: Caching a Repository
+
+In the running project, you might want to add a short-lived cache to the `InvoiceRepository` for read-heavy report queries:
+
+```php
+// src/Repository/CachingInvoiceRepository.php
+namespace App\Repository;
+
+use App\Repository\InvoiceRepository as InnerRepository;
+use Doctrine\ORM\EntityManagerInterface;
+
+class CachingInvoiceRepository extends InnerRepository
+{
+    private array $cache = [];
+
+    public function __construct(
+        private InnerRepository $inner,
+        private EntityManagerInterface $em,
+        private int $ttl = 60,
+    ) {
+        parent::__construct($em);
+    }
+
+    public function findByTenant(string $tenantId): array
+    {
+        $cacheKey = "invoices:{$tenantId}";
+
+        if (isset($this->cache[$cacheKey]) && $this->cache[$cacheKey]['exp'] > time()) {
+            return $this->cache[$cacheKey]['data'];
+        }
+
+        $data = $this->inner->findByTenant($tenantId);
+
+        $this->cache[$cacheKey] = ['data' => $data, 'exp' => time() + $this->ttl];
+
+        return $data;
+    }
+
+    public function __call(string $method, array $args): mixed
+    {
+        return $this->inner->$method(...$args);
+    }
+}
+```
+
+```yaml
+services:
+    App\Repository\InvoiceRepository:
+        ~
+
+    App\Repository\CachingInvoiceRepository:
+        decorates: 'App\Repository\InvoiceRepository'
+        arguments:
+            $inner: '@App\Repository\InvoiceRepository.inner'
+            $em: '@doctrine.orm.entity_manager'
+            $ttl: 60
+```
+
+Any service that type-hints `InvoiceRepository` now transparently gets the caching version. The decorator is invisible to consumers.
+
+##### 5.8.3 Multiple Decorators and `on-invalid`
+
+You can chain multiple decorators on the same service. They are applied in the order they are defined:
+
+```yaml
+services:
+    App\Service\Payment\StripeProcessor:
+        ~
+
+    App\Service\Payment\LoggingPaymentDecorator:
+        decorates: 'App\Service\Payment\StripeProcessor'
+        arguments:
+            $inner: '@App\Service\Payment\StripeProcessor.inner'
+
+    App\Service\Payment\MetricsPaymentDecorator:
+        decorates: 'App\Service\Payment\StripeProcessor'
+        arguments:
+            $inner: '@App\Service\Payment\StripeProcessor.inner'
+```
+
+With multiple decorators, the `.inner` reference in the *last* decorator points to the *previous* decorator's output. The order of definition in YAML matters.
+
+> **Caution:** Deeply nested decorators are hard to debug. If you find yourself with 3+ decorators on one service, consider whether the responsibilities should be split into separate services.
+
+---
+
+#### 5.9 Aliases
+
+An **alias** is an alternative name for a service. The most common use is mapping an interface to its implementation:
+
+```yaml
+services:
+    App\Service\Payment\StripeProcessor:
+        ~
+
+    # Now anything that type-hints PaymentProcessorInterface gets StripeProcessor
+    App\Service\Payment\PaymentProcessorInterface:
+        alias: 'App\Service\Payment\StripeProcessor'
+```
+
+When a consumer does:
+
+```php
+public function __construct(
+    private PaymentProcessorInterface $processor,  // → resolves to StripeProcessor
+) {}
+```
+
+…the container follows the alias and injects the concrete service.
+
+##### 5.9.1 Aliases vs. Decorators
+
+| | Alias | Decorator |
+|---|---|---|
+| What it does | Renames a service | Replaces a service with a wrapper |
+| Original still available? | Yes (under its original ID) | Yes (under `.inner`) |
+| Use case | Interface → implementation | Add behavior (logging, caching, retry) |
+| Consumer awareness | None | None |
+
+##### 5.9.2 Public Aliases
+
+Aliases are private by default (same as services). If you need to access an aliased service by its alias in code (rare), mark it public:
+
+```yaml
+services:
+    my_payment_processor:
+        alias: 'App\Service\Payment\StripeProcessor'
+        public: true
+```
+
+In practice, you almost never need this. Prefer type-hinting the interface.
+
+---
+
+#### 5.10 Tags
+
+##### 5.10.1 What Tags Are
+
+Tags are *metadata* attached to a service definition. They do not change the service's identity or instantiation — they mark the service for *consumption by a compiler pass* or a *consumer locator*.
+
+```yaml
+services:
+    App\Service\Notification\EmailChannel:
+        tags:
+            - { name: 'app.notification_channel', channel: 'email', priority: 10 }
+    App\Service\Notification\SmsChannel:
+        tags:
+            - { name: 'app.notification_channel', channel: 'sms', priority: 5 }
+```
+
+A compiler pass (or a tagged-iterator locator) collects all services with the tag `app.notification_channel` and can act on them.
+
+##### 5.10.2 Tagged Iterators and Locators
+
+Since Symfony 4.3, you can autowire a *collection* of tagged services:
+
+```php
+use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+
+class NotificationDispatcher
+{
+    public function __construct(
+        #[TaggedIterator('app.notification_channel')]
+        private iterable $channels,  // all services tagged 'app.notification_channel'
+    ) {}
+
+    public function dispatch(Notification $notification): void
+    {
+        foreach ($this->channels as $channel) {
+            $channel->send($notification);
+        }
+    }
+}
+```
+
+The `#[TaggedIterator]` attribute (or the `!tagged_iterator` YAML syntax) creates a lazy iterator that yields each tagged service, sorted by `priority` if present.
+
+Similarly, `#[TaggedLocator]` gives you a `ServiceLocatorInterface` of all tagged services, keyed by a tag attribute (e.g., the `channel` key above):
+
+```php
+class NotificationDispatcher
+{
+    public function __construct(
+        #[TaggedLocator(tag: 'app.notification_channel', indexAttribute: 'channel')]
+        private ServiceLocatorInterface $channels,
+    ) {}
+
+    public function sendVia(string $channel, Notification $n): void
+    {
+        $this->channels->get($channel)->send($n);
+    }
+}
+```
+
+##### 5.10.3 Common Built-in Tags
+
+| Tag | Purpose |
+|-----|---------|
+| `kernel.event_subscriber` | Register an event subscriber |
+| `kernel.event_listener` | Register a single event listener |
+| `kernel.exception_listener` | Register an exception listener |
+| `messenger.message_handler` | Register a message handler |
+| `validator.constraint_validator` | Register a constraint validator |
+| `twig.extension` | Register a Twig extension |
+| `cache.pool` | Register a cache pool |
+| `console.command` | Register a console command (auto for `extends Command`) |
+| `routing.loader` | Register a custom route loader |
+| `monolog.logger` | Tag a service as a named logger |
+
+Most of these are applied automatically by autoconfiguration when you use the corresponding attribute or interface. You only write them manually when you need to configure options that cannot be expressed via an attribute.
+
+##### 5.10.4 Tags in YAML (When Needed)
+
+```yaml
+services:
+    App\EventSubscriber\InvoiceSubscriber:
+        tags:
+            - { name: 'kernel.event_subscriber' }
+
+    App\Service\Notification\EmailChannel:
+        tags:
+            - { name: 'app.notification_channel', channel: 'email', priority: 10 }
+```
+
+##### 5.10.5 Tags and the Running Project
+
+In the multi-tenant invoicing app, tags shine in a few places:
+
+- **Notification channels** (email, SMS, in-app) are registered with a custom tag and collected via `#[TaggedLocator]`.
+- **Invoice number generators** (per-tenant sequence, global ULID) are tagged and selected at runtime.
+- **Audit log strategies** (database, external API) are tagged and dispatched to all that apply.
+
+---
+
+#### 5.11 Public vs. Private Services
+
+##### 5.11.1 The Visibility Model
+
+By default, **all services are private**. This is a critical design decision:
+
+- **Private services** are removed from the compiled container if nothing references them. They cannot be fetched by ID from the container at runtime.
+- **Public services** are always available via `$container->get('service_id')`.
+
+```yaml
+services:
+    App\Service\InvoiceService:
+        public: false   # default — will be removed if unused
+
+    App\Controller\InvoiceController:
+        public: true    # controllers must be public (the router instantiates them by ID)
+```
+
+##### 5.11.2 Why Private by Default?
+
+1. **Compilation optimization** — unused services are stripped, reducing container size.
+2. **Encapsulation** — it forces you to depend on services through type-hinting (constructor injection) rather than pulling them from the container by string ID.
+3. **Refactoring safety** — if a service is private and nothing uses it, the compiler will not include it, so you get a clean signal that it is dead code.
+
+##### 5.11.3 When to Make a Service Public
+
+| Case | Reason |
+|------|--------|
+| Controllers | The router instantiates them by class name; they must be reachable by ID |
+| Console commands (if not auto-registered) | `Application::add()` needs to find them |
+| Services accessed from outside the container (e.g., in a test booting the kernel) | `test.client->getContainer()->get(...)` requires public |
+| Services exposed to a service locator that uses string keys | The locator resolves by ID at runtime |
+| Framework "entry point" services | `http_kernel`, `router`, `debug.debug` |
+
+> **Rule of thumb:** If you find yourself making a service public "because I need it in a test," you probably should be injecting it into the class under test instead.
+
+##### 5.11.4 The `public` Keyword in Attributes (Symfony 7+)
+
+For services registered via attributes (e.g., `#[AsCommand]`, `#[AsMessageHandler]`), the service is private by default. If you need it public, use:
+
+```php
+use Symfony\Component\DependencyInjection\Attribute\AsCommand;
+
+#[AsCommand(name: 'app:invoice:generate', public: true)]
+class GenerateInvoiceCommand extends Command { /* ... */ }
+```
+
+---
+
+#### 5.12 Container Compilation
+
+##### 5.12.1 What Happens at Build Time
+
+When you run `bin/console cache:clear` (or the first request in production), the container goes through a **compilation** phase:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Container Compilation Pipeline                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  1. Load service definitions (YAML, XML, PHP, attributes)           │
+│  2. Register compiler passes (from bundles + your own)              │
+│  3. Resolve autowiring (type → service ID)                         │
+│  4. Apply autoconfiguration (interfaces → tags)                     │
+│  5. Apply decorators (original → .inner, wrap with decorator)       │
+│  6. Resolve aliases                                                │
+│  7. Inline single-use private services (performance)               │
+│  8. Remove unused private services (optimization)                  │
+│  9. Remove unused private aliases                                  │
+│ 10. Generate the compiled PHP container class                       │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+The output is a **single PHP file** (in `var/cache/<env>/Container<hash>/`) that contains `get*()` methods for each public service and inlined instantiation code for private ones.
+
+##### 5.12.2 Inlining
+
+Private services that are used by exactly one other service are **inlined**: their constructor call is embedded directly in the consumer's factory method. This eliminates a method call and a hash lookup per request.
+
+```php
+// Pseudocode of what the compiled container looks like:
+
+public function getInvoiceService(): InvoiceService
+{
+    // Inlined: the logger is used only here, so it's constructed inline
+    $logger = new \Monolog\Logger('invoice', [
+        new \Monolog\Handler\StreamHandler('/var/log/invoice.log', \Monolog\Logger::INFO),
+    ]);
+
+    return new InvoiceService(
+        $this->get('doctrine.orm.entity_manager'),  // shared, not inlined
+        $logger,                                      // inlined
+        $this->getInvoiceNumberGeneratorService(),    // used elsewhere, not inlined
+    );
+}
+```
+
+##### 5.12.3 Environment-Specific Containers
+
+Each environment (`dev`, `test`, `prod`) has its own compiled container. This means:
+
+- Different services can be defined per environment (via `config/services_dev.yaml`, etc.)
+- The dev container includes debug services (profiler, var-dumper); the prod container does not
+- Clearing the cache (`cache:clear`) recompiles the container for the current environment
+
+```yaml
+# config/services_dev.yaml
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    # Extra services only in dev
+    App\Service\Dev\MockPaymentProcessor:
+        ~
+```
+
+---
+
+#### 5.13 Debugging the Container
+
+##### 5.13.1 `debug:container`
+
+The primary debugging tool is the `debug:container` console command:
+
+```bash
+# Show all services (public only by default)
+bin/console debug:container
+
+# Show a specific service
+bin/console debug:container App\Service\InvoiceService
+
+# Show a service and its dependencies
+bin/console debug:container App\Service\InvoiceService -v
+
+# Search for services by name
+bin/console debug:container "*Invoice*"
+
+# Show a service's tags
+bin/console debug:container --tag=app.notification_channel
+
+# Show the parameters (not services)
+bin/console debug:container --parameter
+```
+
+Example output:
+
+```
+$ bin/console debug:container App\Service\InvoiceService -v
+
+ ID                        App\Service\InvoiceService
+ --                        ------------------------------------
+ Class                     App\Service\InvoiceService
+ Public                    no
+ Synthetic                 no
+ Tags                      -
+ Lazy                        no
+ Factory                   -
+ Shared                    yes
+ Calls                     -
+ Arguments
+ [0]  =>  @doctrine.orm.entity_manager
+ [1]  =>  @monolog.logger
+ [2]  =>  @App\Service\InvoiceNumberGenerator
+```
+
+##### 5.13.2 Common Problems and How to Diagnose Them
+
+| Symptom | Likely cause | Diagnosis |
+|---------|-------------|-----------|
+| `Cannot autowire service "App\Foo": argument "$bar" of method "__construct()" references interface "BarInterface" but no such service exists` | No service implements the interface | Register an implementation or create an alias |
+| `Cannot autowire service "App\Foo": argument "$apiKey" of method "__construct()" is type-hinted with "string"` | Scalar parameter, not autowirable | Add it to `arguments:` or use `bind` |
+| `Cannot autowire service "App\Foo": argument "$processor" of method "__construct()" references class "PaymentProcessorInterface" but it has multiple aliases` | Ambiguous interface | Use an alias or bind a specific implementation |
+| Service works in dev but fails in prod | Service is private and only referenced by ID (not type) | Make it public or inject by type |
+| `Class "App\Service\Foo" does not exist` | Class not in `src/` or excluded by `exclude` pattern | Check the `resource` and `exclude` in `services.yaml` |
+
+##### 5.13.3 The Debug Container (Dev Only)
+
+In the `dev` environment, the container is wrapped in a **debug container** that records every service instantiation. You can inspect it via the Web Profiler:
+
+- **Container panel** — shows all instantiated services, their creation time, memory usage, and the call stack that triggered instantiation.
+- **Service search** — filter by class, tag, or ID.
+
+This is invaluable for understanding *why* a service was created (e.g., "I didn't expect `InvoiceService` to be instantiated on this request — what pulled it in?").
+
+##### 5.13.4 `bin/console lint:container`
+
+This command validates the container for common misconfigurations without booting the full application:
+
+```bash
+bin/console lint:container
+```
+
+It checks for:
+- Services referencing non-existent IDs
+- Cyclic dependencies
+- Autowiring failures
+- Invalid tag usage
+
+Run it in CI to catch configuration errors early.
+
+---
+
+#### 5.14 Factory Methods and `shared`
+
+##### 5.14.1 Factory Methods
+
+Sometimes a service should not be constructed via `new ClassName(...)`. You can specify a factory:
+
+```yaml
+services:
+    App\Service\Payment\PaymentGatewayFactory:
+        class: App\Service\Payment\PaymentGateway
+        factory: ['@App\Service\Payment\PaymentGatewayFactory', 'create']
+        arguments:
+            - '%env(PAYMENT_GATEWAY)%'
+```
+
+Or with a static factory:
+
+```yaml
+services:
+    app.config_loader:
+        factory: ['App\Config\Loader', 'create']
+        arguments:
+            - '%kernel.project_dir%/config'
+```
+
+In attributes (for your own services), you can use the `#[Factory]` attribute or define the factory in YAML.
+
+##### 5.14.2 `shared: false` (Prototypal Services)
+
+By default, services are **shared** (singleton within a request). If you need a *new instance* every time the service is requested, set `shared: false`:
+
+```yaml
+services:
+    App\Form\Type\InvoiceForm:
+        shared: false
+```
+
+> **Use sparingly.** Unshared services defeat the purpose of the container's caching. The most common legitimate use is for **form types** (though Symfony's form system handles this for you via the form factory) or for services that hold per-request mutable state that must not leak between calls.
+
+In the running project, the `TenantResolver` might be `shared: false` if it reads the tenant from the request and the request changes during sub-requests. However, a better design is to make it stateless and pass the tenant explicitly.
+
+---
+
+#### 5.15 Designing the Object Graph: A Practical Walkthrough
+
+Let's design the DI for a slice of the running invoicing project to tie everything together.
+
+##### The Services
+
+```
+InvoiceController
+  ├── InvoiceService
+  │     ├── EntityManagerInterface (shared)
+  │     ├── MailerInterface (shared)
+  │     ├── LoggerInterface (shared)
+  │     ├── InvoiceNumberGenerator
+  │     └── PaymentProcessorInterface → alias → StripeProcessor
+  ├── InvoiceRepository (decorated by CachingInvoiceRepository)
+  └── TenantResolver (bound via _defaults.bind)
+
+SendInvoiceEmailHandler (#[AsMessageHandler])
+  ├── MailerInterface
+  └── Twig\Environment
+
+NotificationDispatcher
+  └── #[TaggedLocator('app.notification_channel')] → [EmailChannel, SmsChannel]
+```
+
+##### The Configuration
+
+```yaml
+# config/services.yaml
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+        bind:
+            ?App\Entity\Tenant: '@app.tenant_resolver'
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/Attributes/'
+
+    # Payment processor alias
+    App\Service\Payment\PaymentProcessorInterface:
+        alias: 'App\Service\Payment\StripeProcessor'
+
+    # Caching decorator for the repository
+    App\Repository\CachingInvoiceRepository:
+        decorates: 'App\Repository\InvoiceRepository'
+        arguments:
+            $inner: '@App\Repository\InvoiceRepository.inner'
+            $em: '@doctrine.orm.entity_manager'
+            $ttl: 60
+
+    # Notification channels
+    App\Service\Notification\EmailChannel:
+        tags:
+            - { name: 'app.notification_channel', channel: 'email' }
+
+    App\Service\Notification\SmsChannel:
+        tags:
+            - { name: 'app.notification_channel', channel: 'sms' }
+```
+
+Notice: no explicit definition is needed for `InvoiceService`, `InvoiceController`, `SendInvoiceEmailHandler`, or `NotificationDispatcher`. Autowiring, autoconfiguration, and `bind` handle them all.
+
+##### Verifying
+
+```bash
+$ bin/console debug:container App\Service\InvoiceService -v
+$ bin/console debug:container --tag=app.notification_channel
+$ bin/console lint:container
+```
+
+---
+
+#### 5.16 Best Practices Summary
+
+1. **Always use constructor injection.** No setters, no service locators in business logic.
+2. **Let autowiring do the work.** Only write explicit `arguments` when a parameter cannot be type-resolved.
+3. **Use `bind` for cross-cutting values** (current tenant, environment, feature flags) — but sparingly.
+4. **Prefer attributes over interfaces** for autoconfiguration in Symfony 7+.
+5. **Keep services private** unless there is a concrete reason to expose them.
+6. **Use decorators for cross-cutting behavior** (logging, caching, retry) rather than mixing concerns.
+7. **Use service locators only for runtime polymorphic dispatch** (N-choose-1 patterns).
+8. **Use `#[TaggedIterator]` / `#[TaggedLocator]`** for plugin-style collections.
+9. **Run `lint:container` in CI** to catch configuration drift.
+10. **Use the Web Profiler's Container panel** in development to understand instantiation order and detect surprises.
+
+---
+
+#### 5.17 Exercises
+
+##### Exercise 1: Autowiring a New Service
+
+1. Create a new service `App\Service\InvoicePdfGenerator` that depends on `Twig\Environment` and `Psr\Log\LoggerInterface`.
+2. Verify that it is autowired with zero YAML configuration: run `bin/console debug:container App\Service\InvoicePdfGenerator`.
+3. Add a `string $pdfFont` parameter. Observe the autowiring failure. Fix it using the `arguments` key.
+4. Add an `int $maxPageSize` parameter. Fix it using `bind` in `_defaults`.
+
+##### Exercise 2: Decorator Chain
+
+1. Create `App\Service\Payment\RetryPaymentDecorator` that wraps `PaymentProcessorInterface` and retries failed charges up to 3 times with exponential backoff.
+2. Configure it as a decorator of `App\Service\Payment\StripeProcessor`.
+3. Write a unit test that mocks the inner processor to return a failure twice, then a success, and verify the decorator retries correctly.
+4. Add a second decorator: `MetricsPaymentDecorator` that records timing. Verify the order of decoration and that both are applied.
+
+##### Exercise 3: Tagged Locator for Notification Channels
+
+1. Define a `NotificationChannelInterface` with a `send(Notification $n): void` method.
+2. Create `EmailChannel` and `SmsChannel` implementations.
+3. Tag both with `app.notification_channel` and a `channel` attribute.
+4. Create a `NotificationDispatcher` that uses `#[TaggedLocator(tag: 'app.notification_channel', indexAttribute: 'channel')]`.
+5. Write a functional test that dispatches a notification and verifies both channels are called.
+
+##### Exercise 4: Service Locator for Strategy Dispatch
+
+1. Create an `ExportFormatInterface` with a `render(Invoice $invoice): string` method.
+2. Create `CsvExport` and `PdfExport` implementations.
+3. Build a service locator containing both, keyed by format name.
+4. Create an `InvoiceExporter` service that accepts the locator and a `string $format` parameter.
+5. Verify that requesting an unknown format throws a meaningful `ServiceNotFoundException`.
+
+##### Exercise 5: Debug a Broken Container
+
+1. In a scratch Symfony project, define a service with a cyclic dependency (A depends on B, B depends on A).
+2. Run `bin/console debug:container` and observe the error.
+3. Resolve the cycle by extracting the shared dependency into a third service.
+4. Repeat with an ambiguous autowiring failure (two services implement the same interface). Fix it with an alias.
+5. Document each error message and the exact fix in a Markdown file.
+
+##### Challenge: Refactor a "God Service"
+
+Take the `InvoiceService` from the running project (at this point in the book, it may have accumulated several dependencies). Refactor it into:
+
+- `InvoiceService` — orchestration (create, validate, dispatch)
+- `InvoiceCalculator` — total, tax, discount logic
+- `InvoiceNotifier` — email + notification dispatch
+
+Verify that:
+- All three are autowired without YAML changes (beyond the initial class registration).
+- The public API of `InvoiceService` is unchanged (controllers still call the same methods).
+- `bin/console lint:container` passes.
+- A `debug:container -v` dump shows the new dependency graph clearly.
+
+---
+
+#### Chapter Summary
+
+| Concept | Key Takeaway |
+|---------|-------------|
+| Service definitions | Most services need zero configuration thanks to resource-based autowiring |
+| Autowiring | Type-hint-driven resolution; fails on scalars and ambiguous interfaces |
+| Autoconfiguration | Interfaces and attributes → tags; eliminates boilerplate |
+| Constructor injection | The default and preferred pattern; use `readonly` for immutable deps |
+| Service locator | Only for runtime N-choose-1 dispatch; never in business logic |
+| Decorators | Wrap services transparently; use for cross-cutting concerns |
+| Aliases | Map interfaces to implementations; invisible to consumers |
+| Tags | Metadata for compiler passes and tagged iterators/locators |
+| Private by default | Services are stripped if unused; public only when necessary |
+| Compilation | The container is a compiled PHP file; inlining optimizes hot paths |
+| Debugging | `debug:container`, `lint:container`, and the Web Profiler are your friends |
+
+The container is not a black box. It is a predictable, inspectable, and (when used well) invisible layer that lets you focus on your domain logic. In the next chapter, we turn to the **Configuration System** — the parameters, environment variables, and bundle configuration trees that feed the container's definitions.
+
+### Chapter 6. The Configuration System
+
+> *One codebase ships to a laptop, a CI runner, a staging box, and a fleet of production servers. The code stays the same; the configuration is what makes each deployment behave correctly. This chapter is about the machinery that makes that possible: where values come from, how they are typed and validated, and how they end up wired into the container you built in Chapter 5.*
+
+By the end of Chapter 5 you can define services, autowire them, and tag them. But every real service needs *inputs* — a database URL, an API key, a template path, a feature flag. Chapter 6 explains the four layers Symfony provides for supplying those inputs, in the order you will reach for them:
+
+1. **Environment variables** (the `.env` files) — for values that differ by *where* you deploy.
+2. **Parameters** — named values you reuse across your own configuration.
+3. **Bundle configuration** — the semantic, validated options each bundle exposes.
+4. **Per-environment overrides** — small deltas applied only in `dev`, `prod`, `test`, or a custom environment.
+
+We finish by walking the `config/` directory end to end, and by arming you with the console commands that let you *see* the configuration Symfony actually built.
+
+A word on scope: Part II is about understanding the framework, so the examples here are small and self-contained. In Part III we will build all of this into the running project (*InvoiceHub*), where you'll configure the Doctrine connection, the mailer, security, and more.
+
+---
+
+#### 6.1 The big picture: two clocks
+
+Before the details, one idea is worth internalizing because it explains most of what this chapter does. **Symfony resolves configuration on two different clocks:**
+
+- **Compile time** — When you clear the cache (or on the first request after a configuration change), Symfony *compiles* all your configuration into a PHP service container and caches it on disk. Bundle options, parameters, service wiring, and route metadata are all frozen here. This is why a Symfony app is fast: the container is a pre-computed object graph, not something parsed per request.
+- **Runtime** — A few values are deliberately *not* frozen. Environment variables referenced with the `%env(VAR)%` syntax are read once per request, not at compile time.
+
+That single distinction answers the question every production developer eventually asks: *"How do I change the database password in production without redeploying?"* You put the password in an environment variable, reference it with `%env(DATABASE_URL)%`, and then changing the variable in your orchestrator takes effect on the very next request — no rebuild, no restart of the code.
+
+```text
+Real OS environment (PaaS / container orchestrator)      ← highest; never overridden
+        │
+.env                                        ┐
+.env.local                                  │ loaded in this order; later files
+.env.$APP_ENV                               │ win — but can never beat the real env
+.env.$APP_ENV.local                         ┘
+        │
+        ▼
+   %env(VAR)%  ────────────── resolved at RUNTIME (once per request)
+        │
+        ▼
+   Parameters + Bundle configuration ── compiled into the container at BUILD time
+```
+
+Hold that picture in your head. Every section below is an elaboration of it.
+
+---
+
+#### 6.2 The `.env` file hierarchy, in depth
+
+The front matter introduced the `.env` files; here we go deeper, because a surprising number of production incidents trace back to a misunderstanding of this hierarchy.
+
+Symfony loads environment variables with the **Dotenv** component, using `Dotenv::loadEnv()`. Starting from the base `.env` file, it loads a chain of files where **later files override earlier ones**:
+
+```text
+1. .env                  committed defaults, shared by the whole team
+2. .env.local            your personal overrides (git-ignored)
+3. .env.$APP_ENV         e.g. .env.test, committed (per-environment defaults)
+4. .env.$APP_ENV.local   e.g. .env.dev.local (git-ignored)
+```
+
+There is, however, a rule that outranks the entire chain, and it is the one that matters most in production:
+
+> **Caution** — **The real environment always wins.** `loadEnv()` is called with `overrideExistingVars = false`, which means a variable that is *already* set in the actual OS environment (by your PaaS, your `docker run -e`, your CI secrets) is **never** overridden by any `.env` file. The `.env` files only *fill in gaps*. This is exactly what you want: your committed `.env` holds harmless defaults for development, while real credentials come from the deployment environment and cannot be clobbered by an accidental commit.
+
+The variable that drives the whole mechanism is `APP_ENV` itself. When `loadEnv()` runs, it reads `APP_ENV` (falling back to `prod` if absent) and uses it to decide *which* files in the chain to load. So setting `APP_ENV=test` causes `loadEnv()` to load `.env` → `.env.local` → `.env.test` → `.env.test.local`.
+
+##### The three variables that drive everything
+
+Three variables are special and worth memorizing:
+
+| Variable | Role |
+|---|---|
+| `APP_ENV` | Selects the *configuration environment*: which `config/packages/{env}/` files load, which `.env` chain applies, and how errors are rendered. One of `dev`, `prod`, `test` — or any custom name you create. |
+| `APP_DEBUG` | Selects *debug mode*: verbose exception pages, the Web Profiler (Chapter 23), and per-request logging in `dev`. Kept as a separate variable from `APP_ENV` on purpose (see §6.4). |
+| `APP_SECRET` | A long random string used to sign cookies and CSRF tokens. Must be unique per deployment. The Symfony CLI generates one for you at deploy time. |
+
+You can override `APP_ENV` for a single command without editing any file — just prefix the command:
+
+```bash
+# Use the environment from .env (dev, in a fresh project)
+$ php bin/console cache:clear
+
+# Force this one command to run as if it were production
+$ APP_ENV=prod php bin/console cache:clear
+```
+
+This is invaluable when you want to *pre-build* the production container locally before you deploy — a trick you will use again in Chapter 24.
+
+##### Referencing environment variables in configuration
+
+The bridge between the `.env` world and the configuration world is the `%env(VAR)%` syntax. Anywhere a configuration value appears — a bundle option, a service argument, a parameter — you can write:
+
+```yaml
+# config/packages/doctrine.yaml
+doctrine:
+    dbal:
+        # Resolved at runtime, not compile time.
+        url: '%env(DATABASE_URL)%'
+```
+
+And in `services.yaml`, environment variables work in arguments too:
+
+```yaml
+# config/services.yaml
+services:
+    app.stripe_client:
+        class: App\StripeClient
+        arguments:
+            $apiKey: '%env(STRIPE_API_KEY)%'
+```
+
+You *can* read these variables directly from `$_ENV` or `$_SERVER` in PHP:
+
+```php
+$dsn = $_ENV['DATABASE_URL'];
+```
+
+But that bypasses everything else in this chapter. The `%env()%` form is what you want, because it is typeable, cacheable in the compiled container as a placeholder, and inspectable with the debug commands in §6.6. Reach for `$_ENV` only inside a `Kernel` override or very early bootstrap code.
+
+> **Symfony 8** — Symfony 8.1 allows a `.` in environment variable names (for example, `FOO.BAR`). On the 7.4 LTS line a dot in an env var name is not supported. If you name variables with dots, pin your minimum version accordingly.
+
+##### Environment variable processors
+
+Environment variables are *strings*. Your application, of course, needs integers, booleans, arrays, enums, and the components of a DSN. Symfony's **env var processors** transform the raw string. You stack them by prefixing the variable name, reading right-to-left:
+
+```yaml
+framework:
+    router:
+        http_port: '%env(int:HTTP_PORT)%'
+```
+
+The full set of built-in processors is large; here are the ones you will actually use, with a worked example of each:
+
+| Processor | What it does | Example |
+|---|---|---|
+| `env(string:FOO)` | Cast to string (explicit) | `'%env(string:APP_SECRET)%'` |
+| `env(bool:FOO)` | Cast to boolean (`'1'`, `'true'`, `'on'`, `'yes'` → `true`) | `'%env(bool:APP_DEBUG)%'` |
+| `env(not:FOO)` | Boolean, inverted | `safe_mode: '%env(not:APP_DEBUG)%'` |
+| `env(int:FOO)` | Cast to integer | `'%env(int:HTTP_PORT)%'` |
+| `env(float:FOO)` | Cast to float | `'%env(float:RATE_LIMIT)%'` |
+| `env(json:FOO)` | JSON-decode to array or `null` | `'%env(json:ALLOWED_LANGUAGES)%'` |
+| `env(csv:FOO)` | Split CSV string into array | `'%env(csv:CORS_ORIGINS)%'` |
+| `env(const:FOO)` | Look up a PHP constant named in `FOO` | `'%env(const:HEALTH_METHOD)%'` |
+| `env(file:FOO)` | Read the file whose path is `FOO` | `'%env(file:AUTH_FILE)%'` |
+| `env(require:FOO)` | `require()` the file and return its value | `'%env(require:PHP_FILE)%'` |
+| `env(trim:FOO)` | Trim surrounding whitespace (pairs with `file`) | `'%env(trim:file:LICENSE_FILE)%'` |
+| `env(key:NAME:FOO)` | Pull one key out of an array in `FOO` | `'%env(key:database_password:json:SECRETS)%'` |
+| `env(default:FALLBACK:FOO)` | Use parameter `FALLBACK` if `FOO` is unset | `'%env(default:raw_key:file:PRIVATE_KEY)%'` |
+| `env(url:FOO)` | Parse a URL into its component array | see below |
+| `env(enum:Enum:FOO)` | Cast a string to a `\BackedEnum` case | `'%env(enum:App\Enum\BillingPlan:DEFAULT_PLAN)%'` |
+| `env(defined:FOO)` | `true` if `FOO` is set and non-empty | `'%env(defined:STRIPE_API_KEY)%'` |
+| `env(shuffle:FOO)` | Shuffle an array (pairs with `csv`) | `'%env(shuffle:csv:REDIS_NODES)%'` |
+
+Processors compose. The classic DSN pattern uses `url` together with `key` to extract individual components:
+
+```yaml
+# config/packages/doctrine_mongodb.yaml
+doctrine_mongodb:
+    clients:
+        default:
+            hosts:
+                - { host: '%env(key:host:url:MONGODB_URL)%',
+                    port: '%env(int:key:port:url:MONGODB_URL)%' }
+            username: '%env(key:user:url:MONGODB_URL)%'
+            password: '%env(key:pass:url:MONGODB_URL)%'
+            database_name: '%env(key:path:url:MONGODB_URL)%'
+```
+
+This is why a single `DATABASE_URL="postgresql://user:pass@host:5432/db?serverVersion=15.4"` in your `.env` is enough to configure a full Doctrine connection — the bundle pulls each piece out of the URL with a processor.
+
+> **Tip** — To read every processor you can use, run `php bin/console` and consult the "Environment Variable Processors" page of the Symfony docs, or simply look at how a mature bundle reads a DSN. When in doubt, `env(string:FOO)` is always a safe, explicit choice.
+
+###### Giving an environment variable a default
+
+Sometimes you want an environment variable to be *optional* — used if present, falling back to a sane default if not. You declare that default under the `parameters` key using the `env(NAME):` pseudo-parameter:
+
+```yaml
+# config/services.yaml
+parameters:
+    # If APP_TIMEZONE is unset, it will be 'UTC'.
+    env(APP_TIMEZONE): 'UTC'
+
+services:
+    app.scheduler:
+        arguments:
+            $timezone: '%env(APP_TIMEZONE)%'
+```
+
+Now the app runs out of the box, and any deployment that sets `APP_TIMEZONE` overrides it.
+
+###### In PHP configuration closures
+
+When you configure a service in a PHP file (Chapter 5 showed the configurator API), the equivalent of `%env(FOO)%` is the `env()` helper imported from the Configurator namespace:
+
+```php
+// config/packages/stripe.php
+namespace Symfony\Component\DependencyInjection\Loader\Configurator;
+
+use App\StripeClient;
+
+return function (ContainerConfigurator $container): void {
+    $container->services()
+        ->set('app.stripe_client', StripeClient::class)
+        ->arg('$apiKey', env('STRIPE_API_KEY'));
+};
+```
+
+Both forms produce the same runtime-resolved placeholder in the compiled container.
+
+###### Custom processors
+
+If none of the built-ins fit, you can add your own. Implement `EnvVarProcessorInterface` and register the class as a service (autoconfiguration tags it for you in a standard project):
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\EnvVar;
+
+use Symfony\Component\DependencyInjection\EnvVarProcessorInterface;
+
+final class LowercaseProcessor implements EnvVarProcessorInterface
+{
+    public function getEnv(string $prefix, string $name, \Closure $getEnv): string
+    {
+        return strtolower($getEnv($name));
+    }
+
+    public static function getProvidedTypes(): array
+    {
+        // 'lowercase' => 'string'  →  usable as %env(lowercase:FOO)%
+        return ['lowercase' => 'string'];
+    }
+}
+```
+
+You will rarely need this — the built-ins cover nearly every case — but it is good to know the extension point exists.
+
+---
+
+#### 6.3 Parameters
+
+Environment variables are *deployment-specific* and *stringly-typed by nature*. **Parameters** are the other half of the story: named values that you define once and reuse across your own configuration. They live under the `parameters` key, by convention in `config/services.yaml`:
+
+```yaml
+# config/services.yaml
+parameters:
+    # Prefix your own parameters with 'app.' to keep them distinct from the
+    # framework's own parameters.
+    app.support_email: 'support@example.com'
+    app.max_upload_size: 5242880                 # 5 MB, as an integer
+    app.supported_locales: ['en', 'es', 'fr']     # an array
+
+    # A PHP constant, resolved at build time:
+    app.version: !php/const App\Version::RELEASE
+
+    # An enum case:
+    app.default_plan: !php/enum App\Enum\BillingPlan::Pro
+```
+
+Once defined, reference a parameter anywhere by wrapping its name in two percent signs:
+
+```yaml
+# config/packages/acme_notify.yaml
+acme_notify:
+    from_address: '%app.support_email%'
+```
+
+Parameters can be scalars, integers, floats, booleans, arrays, and — with the tag syntax shown above — PHP constants (`!php/const`), enum cases (`!php/enum`), and base64 binary content (`!!binary`).
+
+##### Naming conventions that matter
+
+Two conventions are worth adopting from day one:
+
+- **Use the `app.` prefix** for everything you define. The framework and third-party bundles define their own parameters; the prefix keeps your namespace clean and self-documenting.
+- **A leading dot means "compile-time only."** A parameter named `.mailer.transport` (note the leading `.`) is available *only while the container is being compiled*. It disappears from the final container. This is the tool for scratch values you need inside a compiler pass (Chapter 8). You should never try to inject a dot-prefixed parameter into a service.
+
+##### Escaping a literal percent sign
+
+Because `%name%` is the reference syntax, a value that genuinely contains a percent sign must escape it by doubling it:
+
+```yaml
+parameters:
+    # Parsed as the literal string 'https://symfony.com/?foo=%s&bar=%d'
+    url_pattern: 'https://symfony.com/?foo=%%s&amp;bar=%%d'
+```
+
+> **Caution** — **Parameters cannot be used to build import paths.** This is a hard limitation, not a typo you can route around:
+>
+> ```yaml
+> # config/services.yaml
+> imports:
+>     - { resource: '%kernel.project_dir%/somefile.yaml' }   # ← does NOT work
+> ```
+>
+> Imports are resolved *before* parameters, so `%…%` is treated literally and the file is not found. If you need to import from a variable location, compute the path in a PHP loader, not in a `imports:` list.
+
+##### Enforcing that a required parameter is present
+
+Parameters are not validated by default — a missing one simply resolves to `null`, which can fail far away from the cause. When a parameter is genuinely load-bearing, guard it in a compiler pass:
+
+```php
+$container->parameterCannotBeEmpty('app.private_key',
+    'Did you forget to set a value for the "app.private_key" parameter?');
+```
+
+This throws when the parameter is `null`, `''`, or `[]` — giving you a clear, early error instead of a mysterious failure at runtime.
+
+##### The built-in (kernel) parameters
+
+Symfony seeds the container with a set of parameters you will reference constantly. You do not define these; they are created from your `Kernel` and `framework` configuration. The most useful:
+
+| Parameter | Type | Default / meaning |
+|---|---|---|
+| `kernel.project_dir` | string | Absolute path to the project root (directory of `composer.json`) |
+| `kernel.environment` | string | The active configuration environment (`dev`, `prod`, `test`, …) |
+| `kernel.debug` | bool | Whether debug mode is on |
+| `kernel.cache_dir` | string | `var/cache/{environment}` — per-environment cache |
+| `kernel.build_dir` | string | Read-only build dir; separate from `cache_dir` for Docker/Lambda |
+| `kernel.logs_dir` | string | `var/log` |
+| `kernel.charset` | string | `UTF-8` |
+| `kernel.container_class` | string | e.g. `App_KernelDevDebugContainer` |
+| `kernel.secret` | string | `%env(APP_SECRET)%` |
+| `kernel.default_locale` | string | Default locale (from `framework.default_locale`) |
+| `kernel.bundles` | array | Map of bundle name → bundle class |
+| `kernel.runtime_environment` | string | *Where* the app is deployed (distinct from `environment`) |
+| `kernel.runtime_mode.web` / `.cli` / `.worker` | bool | Which runtime mode is active (FrankenPHP-related) |
+
+`kernel.project_dir` is your best friend for building paths:
+
+```yaml
+services:
+    app.logo_storage:
+        arguments:
+            $path: '%kernel.project_dir%/public/uploads/logos'
+```
+
+The `runtime_environment` vs. `environment` distinction is subtle and worth a sentence: `kernel.environment` selects *which configuration files* load; `kernel.runtime_environment` describes *where the process is deployed* (e.g. `staging`, `production`, `preview`). You can run the `prod` configuration on several different runtime environments — a refinement that mostly matters with long-running servers, and one you can safely ignore until Chapter 24.
+
+> **Symfony 8** — Symfony 8.1 honors the standard `SOURCE_DATE_EPOCH` environment variable for reproducible container builds (it pins `container.build_time` to a fixed timestamp). Combined with a fixed `kernel.container_build_time` parameter, this makes the compiled container byte-for-byte reproducible. If you ship containers and care about reproducible builds, this is the hook to use.
+
+##### Parameters vs. environment variables: which do I pick?
+
+This is the most common confusion, so here is the decision rule, stated plainly:
+
+| Use an **environment variable** when… | Use a **parameter** when… |
+|---|---|
+| The value differs by *deployment* (DB URL, API keys, secrets) | The value is the same everywhere but you want to say it *once* |
+| You want to change it *without* touching config files or rebuilding | The value is part of your *design*, not your deployment |
+| The value is sensitive and must never be committed | You want it to be a typed, named, reusable building block |
+| It must be resolved at *runtime* | It can be baked in at *build time* |
+
+In practice you use both together, and parameters frequently *reference* env vars:
+
+```yaml
+parameters:
+    app.cache_backend: '%env(CACHE_DSN)%'   # parameter wraps an env var
+framework:
+    cache:
+        app: '%app.cache_backend%'           # config references the parameter
+```
+
+---
+
+#### 6.4 Per-environment configuration
+
+You have *one* application, but it needs to behave differently in several places: verbose logging and the profiler in development, speed and error-only logging in production, and a deterministic, quiet setup in tests. **Configuration environments** are how Symfony expresses "same app, different behavior."
+
+Every project ships with three: `dev`, `prod`, and `test`. All three share a large base of configuration; each environment layers a small set of *overrides* on top.
+
+##### The load order
+
+When Symfony builds the container for a given environment, it loads configuration in this exact order — **later files override earlier ones**:
+
+```text
+1. config/packages/*.<ext>                base config, shared by all environments
+2. config/packages/<environment>/*.<ext>  per-environment overrides (e.g. packages/test/)
+3. config/services.<ext>                  base service definitions
+4. config/services_<environment>.<ext>    per-environment service overrides
+```
+
+Walk it concretely. `config/packages/framework.yaml` is loaded in *every* environment. In `test`, the (small) file `config/packages/test/framework.yaml` is loaded *after* it and overrides only the keys it mentions. Everything else in `framework.yaml` is untouched. This is why the per-environment files are tiny: you only ever write the *differences*.
+
+```yaml
+# config/packages/framework.yaml   (loaded everywhere)
+framework:
+    http_method_override: true
+    handle_all_throwables: true
+```
+
+```yaml
+# config/packages/test/framework.yaml   (loaded only in the "test" environment)
+framework:
+    test: true                    # enables the client / profiler stubs for testing
+```
+
+The per-environment `services_test.yaml` works the same way and is where you typically swap in mocks or trim services:
+
+```yaml
+# config/services_test.yaml
+services:
+    test.client:
+        class: Symfony\Component\BrowserKit\Client
+```
+
+##### The `when@` keyword: overrides inside a single file
+
+Splitting into `packages/{env}/` files is the classic approach, but there is a lighter-weight alternative: the `when@<env>` keyword, which lets you scope a block to an environment *within the same file*:
+
+```yaml
+# config/packages/webpack_encore.yaml
+webpack_encore:
+    output_path: '%kernel.project_dir%/public/build'
+    strict_mode: true
+    cache: false
+
+when@prod:
+    webpack_encore:
+        cache: true              # cache enabled only in production
+
+when@test:
+    webpack_encore:
+        strict_mode: false       # loose mode only in tests
+```
+
+Prefer `when@` for a *single* small toggle in a bundle you already configure in this file; prefer the `packages/{env}/` directory when a whole bundle needs a distinct treatment per environment. Both compile to the same thing.
+
+In a **PHP** configuration closure you get the active environment directly as an argument named `$env`:
+
+```php
+// config/packages/my_package.php
+namespace Symfony\Component\DependencyInjection\Loader\Configurator;
+
+return function (ContainerConfigurator $container, string $env): void {
+    $container->parameters()->set('app.is_test', 'test' === $env);
+};
+```
+
+##### Selecting and creating environments
+
+You select the environment with `APP_ENV` (see §6.2). To create a *new* one — say `staging`, so a client can preview the app — do exactly this:
+
+1. Create the directory `config/packages/staging/`.
+2. Drop in only the files that differ from the base (for example, `config/packages/staging/routing.yaml` to point staging at a different API).
+3. Set `APP_ENV=staging` for that deployment.
+
+That is all it takes. Symfony will load the base `config/packages/*.yaml` first and your `staging/` overrides second.
+
+> **Tip** — When two environments are almost identical (say `staging` and `prod`), you can **symlink** files between the `config/packages/<env>/` directories to avoid duplication. Just be aware that a symlink is only as portable as your deployment filesystem — some PaaS environments do not preserve them.
+
+---
+
+#### 6.5 Bundle configuration trees
+
+So far you have seen bundles *accept* configuration (`doctrine:`, `framework:`, `acme_notify:`). This section turns the camera around and shows you *how a bundle defines and validates the configuration it accepts* — which is exactly what you will do in Chapter 8 when you write your own bundle.
+
+The mental model is a **contract** with two parts:
+
+1. **Define the shape** — a *configuration tree* that declares every option, its type, its default, and its allowed values.
+2. **Process the input** — take the (possibly merged) array the user gave you, validate it against the tree, fill in defaults, and use the result to wire up services.
+
+##### The root key comes from the bundle name
+
+The top-level key of a bundle's configuration is derived automatically: it is the **snake_case of the bundle class name with the `Bundle` suffix removed**.
+
+- `AcmeNotifyBundle` → `acme_notify`
+- `DoctrineBundle` → `doctrine`
+- `TwigBundle` → `twig`
+
+This is why `Acme\NotifyBundle` reads configuration under the `acme_notify:` key with no extra wiring.
+
+##### The modern way: `AbstractBundle::configure()`
+
+For a new bundle, the recommended approach is to put both halves on the bundle class itself, extending `AbstractBundle`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Acme\NotifyBundle;
+
+use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
+
+class AcmeNotifyBundle extends AbstractBundle
+{
+    // 1. Define the shape of the configuration.
+    public function configure(DefinitionConfigurator $definition): void
+    {
+        $definition->rootNode()
+            ->children()
+                ->scalarNode('from')
+                    ->isRequired()
+                    ->setInfo('The "From" address for all outgoing mail')
+                ->end()
+                ->integerNode('max_per_hour')
+                    ->defaultValue(100)
+                    ->setInfo('Hard ceiling on messages per hour')
+                ->end()
+                ->arrayNode('templates')
+                    ->prototype('scalar')->end()   // a list of strings
+                ->end()
+            ->end();
+    }
+
+    // 2. Process the merged config and wire it into the container.
+    //    By the time this runs, $config is already merged + validated.
+    public function loadExtension(
+        array $config,
+        ContainerConfigurator $container,
+        ContainerBuilder $builder,
+    ): void {
+        $container->parameters()
+            ->set('acme_notify.from', $config['from'])
+            ->set('acme_notify.max_per_hour', $config['max_per_hour'])
+            ->set('acme_notify.templates', $config['templates']);
+    }
+}
+```
+
+The corresponding user-facing configuration is now fully type-checked:
+
+```yaml
+# config/packages/acme_notify.yaml
+acme_notify:
+    from: 'notifications@example.com'
+    max_per_hour: 500
+    templates:
+        - 'email/invoice_paid'
+        - 'email/invoice_overdue'
+```
+
+Because `from` is `isRequired()`, *omitting* it fails the build with a precise error. Because `max_per_hour` is an `integerNode`, writing `max_per_hour: fast` fails with a type error. And because only `from`, `max_per_hour`, and `templates` are declared, typing a *typo* — `templats:` — also fails. **That is the point of the tree: it converts "it broke three services in at 3 a.m." into "unknown option `templats` under `acme_notify`" at deploy time.**
+
+> **Note** — Both `configure()` and `loadExtension()` run **only at compile time**. The `$config` you receive in `loadExtension()` is the fully merged, defaulted, validated array — you never have to merge or validate it yourself.
+
+##### The traditional way: `Configuration` + `Extension`
+
+You will still encounter the older, separate-class approach in many existing bundles, and understanding it is useful. Here the shape lives in a `Configuration` class and the processing in an `Extension` class:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Acme\NotifyBundle\DependencyInjection;
+
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
+
+class Configuration implements ConfigurationInterface
+{
+    public function getConfigTreeBuilder(): TreeBuilder
+    {
+        $treeBuilder = new TreeBuilder('acme_notify');
+
+        $treeBuilder->getRootNode()
+            ->children()
+                ->scalarNode('from')->isRequired()->end()
+                ->integerNode('max_per_hour')->defaultValue(100)->end()
+            ->end();
+
+        return $treeBuilder;
+    }
+}
+```
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Acme\NotifyBundle\DependencyInjection;
+
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\Extension;
+
+class AcmeNotifyExtension extends Extension
+{
+    public function load(array $configs, ContainerBuilder $container): void
+    {
+        // $configs is an ARRAY OF ARRAYS (see below). processConfiguration()
+        // merges them, applies defaults, and validates against the tree.
+        $config = $this->processConfiguration(new Configuration(), $configs);
+
+        $container->setParameter('acme_notify.from', $config['from']);
+    }
+}
+```
+
+##### The "array of arrays" — how overrides actually merge
+
+There is one subtlety in `processConfiguration()` worth understanding, because it explains *why* per-environment overrides work at the bundle level. The `$configs` argument is **not** a flat array; it is an **array of arrays** — one entry per configuration source that mentioned your root key.
+
+If `acme_notify:` appears in `config/packages/acme_notify.yaml` *and* in `config/packages/prod/acme_notify.yaml`, the extension receives:
+
+```php
+[
+    // from config/packages/acme_notify.yaml
+    ['from' => 'notifications@example.com', 'max_per_hour' => 100],
+    // from config/packages/prod/acme_notify.yaml
+    ['max_per_hour' => 5000],
+]
+```
+
+`processConfiguration()` then **merges** these into a single, validated array, later entries winning. This is the mechanism that lets a bundle participate in the per-environment system without knowing anything about environments.
+
+> **Caution** — **Merging arrays is not the same as concatenating lists.** For *associative* arrays (string keys), merging is deep and later keys win. For *lists* (integer-keyed arrays, like a `prototype` list), the second source **replaces** the first unless the node is declared with `append: true`. This is the single most common surprise when a per-environment file "silently discards" a base list. If you intend to *add* to a list in an environment, make that node append:
+>
+> ```php
+> ->arrayNode('whitelist')
+>     ->append()                       // lists are concatenated, not replaced
+>     ->prototype('scalar')->end()
+> ->end()
+> ```
+
+##### The node vocabulary (the ones you'll reach for)
+
+You do not need to memorize the whole tree-builder API. These cover 95% of cases:
+
+| Builder | Purpose |
+|---|---|
+| `scalarNode()` | A string (or a scalar). The default type. |
+| `integerNode()` / `floatNode()` | Numeric, type-validated. |
+| `booleanNode()` | `true` / `false`. |
+| `enumNode()->values([...])` | A scalar constrained to a fixed set. |
+| `arrayNode()` | A nested structure. |
+| `->prototype('scalar')` | A *list* of scalars (like `templates:` above). |
+| `->arrayPrototype()` | A *map* of identical sub-structures (like named cache pools). |
+| `variableNode()` | Anything, no validation — a last resort. |
+| `->defaultValue()` | Applied when the key is absent. |
+| `->isRequired()` | Build fails if the key is absent. |
+| `->info()` / `->example()` | Rendered as comments in `config:dump-reference` output. |
+| `->beforeNormalizing()` / `->validate()` | Custom transforms and cross-field checks. |
+
+`arrayPrototype()` is the workhorse for "configure many of the same thing." The `framework.cache` configuration is built exactly this way — a map of cache pools, each with the same shape. Study a core `Configuration` class (FrameworkBundle's or TwigBundle's) as a living reference when your own tree grows.
+
+##### How configuration becomes services
+
+The end goal of `loadExtension()` / `load()` is always the same: **turn config values into a configured container.** The most common patterns are:
+
+- **Publish a parameter** (as in the examples above) that a service or other bundle can reference.
+- **Replace an argument** on a service that the bundle's own service file declares with a placeholder:
+
+```php
+$definition = $container->getDefinition('acme_notify.mailer');
+$definition->replaceArgument(0, $config['from']);
+```
+
+- **Conditionally register services** based on a flag:
+
+```php
+if ($config['max_per_hour'] > 0) {
+    $container->register('acme_notify.throttle', ThrottleService::class)
+        ->arg('$maxPerHour', $config['max_per_hour']);
+}
+```
+
+> **Tip** — If your extension only needs to *process config and then* do the usual wiring, extend `ConfigurableExtension` instead of `Extension`. It calls `processConfiguration()` for you and hands you the merged array in `loadInternal()`, saving you the boilerplate.
+
+##### One bundle configuring another: prepend
+
+When two bundles are tightly related, one can *inject* configuration into another before that bundle's extension runs, via the `prepend()` method. FrameworkBundle uses this internally (for instance, to configure the profiler into the `framework` config). You will meet it properly in Chapter 8 when you build a bundle that depends on others; for now, just know the mechanism exists for "my bundle needs to add options to *your* bundle."
+
+##### Seeing the default configuration: `config:dump-reference`
+
+For any bundle, you can dump its entire default configuration tree — every option, every default, with your `info()` comments rendered as YAML comments:
+
+```bash
+$ php bin/console config:dump-reference acme_notify
+acme_notify:
+    # The "From" address for all outgoing mail
+    from: null
+    # Hard ceiling on messages per hour
+    max_per_hour: 100
+    templates: []
+```
+
+This is *the* command to reach for when you want to know what a bundle lets you configure and what its defaults are. It works automatically as long as the bundle's `Configuration` sits in the standard location (`<Bundle>/src/DependencyInjection/Configuration`) or you use the `AbstractBundle::configure()` style above.
+
+---
+
+#### 6.6 The `config/` directory, organized
+
+Time to step back and look at the whole room. Here is the modern `config/` layout, annotated for what each part does (this is what `symfony new --full` gives you):
+
+```text
+config/
+├── bundles.php            # Which bundles are enabled — per environment
+├── services.yaml          # Service definitions, autowiring rules, and parameters
+├── routes/                # Route imports (one file per bundle that provides routes)
+├── packages/              # One YAML file per bundle's configuration
+│   ├── framework.yaml
+│   ├── doctrine.yaml
+│   ├── security.yaml
+│   ├── twig.yaml
+│   ├── test/              # ← per-environment overrides (loaded after base)
+│   │   └── framework.yaml
+│   └── prod/              # ← (often empty; prod is mostly "the base + env vars")
+│       └── framework.yaml
+└── preload.php            # Optional OPcache.preload class list (performance)
+```
+
+The rules of thumb for "where does this go?" are simple and worth keeping on a sticky note:
+
+| You want to… | Put it in… |
+|---|---|
+| Turn a bundle on/off (globally or per env) | `config/bundles.php` |
+| Configure a bundle's semantic options | `config/packages/<bundle>.yaml` |
+| Override a bundle option for one environment | `config/packages/<env>/<bundle>.yaml` (or `when@` in the base file) |
+| Define a service, or a reusable parameter | `config/services.yaml` |
+| Override/replace a service for one environment | `config/services_<env>.yaml` |
+| Add routes from a bundle or directory | `config/routes/` |
+| Preload classes for performance | `config/preload.php` |
+
+##### `bundles.php` is environment-aware
+
+`bundles.php` returns a map of bundle class to an array of environments (or `true` for all). This is how a bundle is enabled in some environments but not others — for example, the debug bundle in `dev` only:
+
+```php
+<?php
+
+use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
+
+return [
+    FrameworkBundle::class => ['all' => true],
+    // Enabled in every environment except prod:
+    // DebugBundle::class => ['dev' => true, 'test' => true],
+];
+```
+
+##### `services.yaml` is the backbone
+
+`services.yaml` is the file you will open most. It holds three things: `parameters:`, the `services:` definitions (the heart of Chapter 5), and the `imports:` that pull in other files. Let's look at how imports actually work, since they are how the whole directory is stitched together:
+
+```yaml
+# config/services.yaml
+parameters:
+    app.support_email: 'support@example.com'
+
+services:
+    # …service definitions from Chapter 5…
+```
+
+The `imports:` directive (from the **Config** component) can pull in other files, supports **globs**, and can tolerate missing files:
+
+```yaml
+imports:
+    - { resource: 'legacy_config.php' }
+    # Glob: load every YAML in a directory
+    - { resource: '/etc/myapp/*.yaml' }
+    # Silently skip if the file does not exist
+    - { resource: 'optional_feature.yaml', ignore_errors: not_found }
+    # Glob, but exclude specific files
+    - { resource: 'services/*.yaml', exclude: ['services/legacy_*.yaml'] }
+```
+
+> **Note** — `reference.php` is a newer addition to the default layout in recent Symfony versions (the 8.x line). It is *generated* by Symfony and contains typed definitions that improve IDE autocompletion and static analysis **when you use PHP as your configuration format**. It is safe to commit, and if you rely on it you may add `config/` to your Composer `classmap`. It is not required and does nothing when you configure in YAML.
+
+##### A note on formats
+
+Symfony does not force a configuration format. You have two that matter:
+
+- **YAML** — the default, concise, very readable. This book uses it for `config/`.
+- **PHP** — returns arrays or closures; dynamic, and benefits from autocompletion and static analysis. Use it when a configuration value needs logic (the `$env`-aware closures above are a good example).
+
+(An XML format existed historically but was deprecated in Symfony 7.4, which is why it appears nowhere in this book.) There is *no* performance difference: every format is compiled to the same PHP and cached before it ever runs.
+
+---
+
+#### 6.7 Debugging configuration
+
+You will not always get configuration right on the first try. These five commands are your diagnostics; learn them now and you will save yourself hours of `var_dump` archaeology later (Chapter 23 covers the broader debugging toolkit).
+
+##### 1. `config:dump-reference` — "what *can* I configure?"
+
+```bash
+$ php bin/console config:dump-reference framework
+$ php bin/console config:dump-reference doctrine
+```
+
+Prints the full default configuration tree for a bundle, with comments. Your reference for what options exist and what they default to.
+
+##### 2. `debug:config` — "what *am I* actually running with?"
+
+```bash
+$ php bin/console debug:config framework
+$ php bin/console debug:config acme_notify
+```
+
+Unlike the previous command, this shows the configuration **as resolved for your current environment** — base values plus all your overrides and per-environment changes, merged and final. This is the command to run when you are sure you set something but the app isn't behaving as expected.
+
+##### 3. `debug:container` — "is my parameter/service there?"
+
+```bash
+# Show one parameter's resolved value
+$ php bin/console debug:container app.support_email
+
+# List every environment variable, its default, and its real (runtime) value
+$ php bin/console debug:container --env-vars
+
+# Filter to one variable
+$ php bin/console debug:container --env-var=DATABASE_URL
+```
+
+The `--env-vars` view is especially useful in production-style debugging because it shows, side by side, the *default* (from your `parameters`/`.env`) and the *real* value that will actually be used at runtime.
+
+##### 4. `lint:yaml` — "is my YAML even valid?"
+
+```bash
+$ php bin/console lint:yaml config/
+```
+
+Catches syntax errors (bad indentation, tabs, stray characters) before they ever reach the compiler. Cheap, fast, run it in CI.
+
+##### 5. Read the compiler's errors — they are precise
+
+When the tree builder rejects your configuration, the error is usually excellent and points at the exact key:
+
+```text
+[Symfony\Component\Config\Definition\Exception\InvalidConfigurationException]
+Invalid configuration for "acme_notify" in "acme_notify":
+- Unrecognized option "templats" under "acme_notify". Available options are
+  "from", "max_per_hour", "templates".
+```
+
+> **Caution** — **You are working against a compiled cache.** If you change configuration and see the *old* behavior, your first instinct should be `php bin/console cache:clear` (or, in `dev`, let Symfony detect the change and rebuild automatically). Configuration is frozen at build time; a stale cache is the classic cause of "I changed it, why isn't it working?" Remember the two-clock model from §6.1: structural config changes need a rebuild; pure `%env()%` values do not.
+
+---
+
+#### 6.8 Putting it together: one value, end to end
+
+Let's trace a single value through every layer of this chapter to make the mental model concrete. Suppose a feature needs an outbound SMTP relay host that differs per deployment.
+
+**1. Define the variable** (per-deployment, secret-ish) — in the real environment, or in `.env` for local development:
+
+```dotenv
+# .env  (a harmless default for development)
+MAIL_RELAY_HOST=localhost
+```
+
+```bash
+# In production, the orchestrator sets it for real:
+MAIL_RELAY_HOST=smtp.mail.example.com
+```
+
+**2. Give it a typed default** in `services.yaml` (so the app runs even if unset):
+
+```yaml
+parameters:
+    env(MAIL_RELAY_HOST): 'localhost'
+    app.mail_relay: '%env(MAIL_RELAY_HOST)%'   # parameter wraps the env var
+```
+
+**3. Consume it** in a service (Chapter 5) — referencing the *parameter*, not the env var directly:
+
+```yaml
+services:
+    app.mail_transport:
+        class: App\MailTransport
+        arguments:
+            $host: '%app.mail_relay%'
+```
+
+**4. Validate and inspect** — `debug:container app.mail_relay` shows the resolved host; `debug:container --env-vars` shows that in production the *real* value came from the orchestrator, not your committed `.env`.
+
+Now the whole journey is legible: a deployment-specific value lives in the environment, is typed by a processor, is exposed as a stable parameter, is injected into a service, and can be inspected without a debugger. Change `MAIL_RELAY_HOST` in production and the next request uses it — no rebuild, no restart of the code. That is the configuration system working exactly as designed.
+
+---
+
+#### 6.9 Chapter summary
+
+- **Two clocks.** Structural configuration (bundle options, parameters, service wiring) is compiled into the container at build time. Environment variables referenced with `%env(VAR)%` are resolved at runtime. This is why secrets and deployment-specific values belong in env vars.
+- **The `.env` chain** loads `.env` → `.env.local` → `.env.$APP_ENV` → `.env.$APP_ENV.local`, later files winning — but the **real OS environment always outranks all files**. `APP_ENV` picks the environment; `APP_DEBUG` and `APP_SECRET` complete the trio.
+- **Env var processors** (`int:`, `bool:`, `json:`, `csv:`, `url:` + `key:`, `enum:`, …) turn strings into typed values, and compose. `env(NAME):` under `parameters` gives a variable a default.
+- **Parameters** are named, reusable values; prefix your own with `app.`, and know that a leading dot means "compile-time only." They cannot build `imports:` paths. `parameterCannotBeEmpty()` guards load-bearing ones. The `kernel.*` parameters give you paths, the environment, and the secret.
+- **Environments** share a base config and layer tiny per-environment overrides, loaded in a fixed order (`packages/*`, then `packages/{env}/*`, then `services.*`, then `services_{env}.*`). `when@` gives you inline per-environment blocks; a new environment is just a new `packages/{env}/` directory plus an `APP_ENV` value.
+- **Bundle configuration trees** are a contract: define the shape (via `AbstractBundle::configure()` or a `Configuration` class), then process the merged input (via `loadExtension()` or `processConfiguration()`). The root key is the snake_case bundle name; unknown keys and wrong types fail the build loudly.
+- **`config/`** is organized by concern: `bundles.php` (enable/disable), `packages/` (bundle options), `services.yaml` (services + parameters), `routes/`, and per-environment subdirectories.
+- **Five debug commands** — `config:dump-reference`, `debug:config`, `debug:container` (+ `--env-vars`), `lint:yaml`, and reading the compiler's errors — let you see exactly what Symfony built. When config "doesn't take," suspect the compiled cache first.
+
+In the next chapter we put a different kind of machinery to work: **events**, the framework's way of letting loosely-coupled components react to the same request pipeline you saw in Chapter 4 — and the natural home for the cross-cutting concerns that configuration alone cannot express.
+
+---
+
+#### Exercises
+
+**Quick checks**
+
+1. You set `APP_SECRET` in both your committed `.env` and your production orchestrator. Which value does production use, and why? What would have to change for the `.env` value to win?
+2. Name the four files, in order, that `loadEnv()` loads when `APP_ENV=test`. Which of them are committed to version control?
+3. What is the difference between `kernel.environment` and `kernel.runtime_environment`? Give one situation where they differ.
+4. You write `max_items: '%env(int:MAX_ITEMS)%'` but `MAX_ITEMS` is never set anywhere. What value does the service receive, and how do you give it a fallback without forcing every deployment to set the variable?
+
+**Practical**
+
+5. Add a parameter `app.api_base_url` to `config/services.yaml`, then reference it from a service argument and from a bundle option. Use `debug:container app.api_base_url` to confirm it resolves.
+6. Create a custom `staging` environment: add `config/packages/staging/` with one file that overrides a single `framework` option, set `APP_ENV=staging`, and run `debug:config framework` to prove the override took effect.
+7. Define a bundle option with three node types (a required scalar, an integer with a default, and a list of strings). Intentionally configure each one wrongly (missing the required key, a non-integer, an unknown key) and record the three distinct error messages Symfony produces.
+8. Find a DSN (for example `DATABASE_URL`) in your `.env` and extract two of its components into configuration using the `url` and `key` processors.
+
+**Stretch ⭐**
+
+9. Write a **custom env var processor** that validates a DSN (e.g. that the scheme is one of a fixed set) and returns a `false`-y sentinel if invalid. Wire it into a service and make `debug:container --env-vars` reveal your processor's effect. Where is the single tag that registers it, and what makes autoconfiguration apply it in a standard project?
+10. Build a small `AbstractBundle` that exposes configuration, then have a *second* bundle use `prepend()` to inject a default value into the first bundle's configuration. Use `config:dump-reference` on both and `debug:config` to trace how the prepended value lands. (This is a dress rehearsal for Chapter 8.)
+11. **Two clocks, demonstrated.** In a `dev` project, pick one value that flows through `%env()%` and one that is a plain parameter. Change each and observe *when* the app picks up the change — which required a `cache:clear` and which did not? Write a short note explaining the result using the compile-time/runtime distinction.
+12. Reproduce the "list silently replaced" pitfall from the merge Caution: declare an append vs. a non-append list node, override it in a `packages/test/` file, and show with `debug:config` that one is concatenated and the other is replaced. Which single modifier changes the behavior?
 
 **Ch 7. Events and Middleware**
 - EventDispatcher: custom events, subscribers, priorities
