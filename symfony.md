@@ -12012,9 +12012,720 @@ We'll keep building on this. Chapter 14 turns to the *front end* — wiring the 
 
 The single habit to carry forward from this chapter: **every query is a decision about how many rows you fetch and how many times you ask the database for them.** Get that right and Doctrine's object model is a gift; get it wrong and no amount of object elegance survives contact with a large table.
 
-**Ch 14. Frontend Integration**
-- AssetMapper: asset references, versioning, hot reload
-- Integrating Vite/webpack; serving built assets in production
+### Chapter 14. Frontend Integration
+
+> *"The backend renders the HTML; the browser finishes the story."*
+
+In this chapter you'll give your SaaS invoicing application a proper front end. You'll start with the **AssetMapper** component — the default asset system in modern Symfony, which versions your CSS, JavaScript, and images without requiring a build step at all. Then you'll see how to bring in a real bundler when a project outgrows the no-build model: **Vite** (via Symfony Reprise, the current integration) and **Webpack Encore** (the legacy, battle-tested path). We finish by wiring up production: compiled, versioned assets served straight from the web server or a CDN.
+
+By the end of the chapter you'll be able to:
+
+- Map, version, and reference assets from Twig with zero build tooling.
+- Use import maps to load modern JavaScript and third-party packages.
+- Decide *when* a bundler is actually worth it.
+- Integrate Vite (Reprise) and Webpack (Encore), in development and in production.
+- Serve immutable, cache-friendly built assets in a real deployment.
+
+---
+
+#### 14.1 Two philosophies, one goal
+
+Every Symfony web app has to get its styles and scripts to the browser. Historically this meant running a JavaScript build tool (Webpack) that bundled, minified, and hashed your files, then referencing the hashed output from your templates. That workflow is powerful, but it adds a Node.js toolchain, a config file, a build step, and a `node_modules` directory to every deploy.
+
+Modern Symfony offers two distinct approaches, and choosing well here saves you pain later:
+
+| Approach | Representative tool | Build step? | Best for |
+|---|---|---|---|
+| **No-build / import maps** | **AssetMapper** (default) | No | Plain CSS/JS, small-to-medium apps, progressive enhancement, Stimulus/Turbo |
+| **Bundler** | **Vite** (Reprise) / **Webpack** (Encore) | Yes | TypeScript, JSX/React/Vue/Svelte, large CSS pipelines, code splitting, heavy minification |
+
+The good news is that these are not mutually exclusive in the way they used to be. AssetMapper is the recommended starting point for new projects, and it even covers a lot of ground that used to force you toward a bundler. We'll go deep on it first, then draw the exact line where you reach for Vite or Webpack.
+
+**Our running project.** The invoicing app needs three front-end concerns: a global stylesheet, a bit of JavaScript to power the invoice line-item editor (adding/removing rows, recalculating totals), and — because it's a SaaS tool — fast, snappy partial-page interactions. We'll use AssetMapper for all three, with a Stimulus controller and Turbo for the interactivity. That keeps the whole front end in the no-build lane until we hit a real reason to graduate.
+
+---
+
+#### 14.2 The AssetMapper component
+
+The **AssetMapper** is a lightweight component that runs entirely in PHP. It exposes a set of directories as publicly versioned assets and leans on two native browser capabilities:
+
+- **ES modules** — browsers natively understand `import` statements, so you can split code into modules without a bundler.
+- **Import maps** — a [HTML standard](https://html.spec.whatwg.org/multipage/webappapis.html#import-maps) that lets you import a bare specifier like `'bootstrap'` from JavaScript, with the browser resolving it to a URL for you. A tiny polyfill covers the rare browsers that don't support import maps natively.
+
+The component has two core features:
+
+1. **Mapping & versioning assets** — every file in your mapped directories becomes publicly available under a *logical path*, and each reference includes a version hash.
+2. **Import maps** — a clean way to load your own modules *and* third-party npm packages without a build system.
+
+##### 14.2.1 Installation
+
+```bash
+$ composer require symfony/asset-mapper symfony/asset symfony/twig-pack
+```
+
+`symfony/asset-mapper` is the component itself. `symfony/asset` provides the base `asset()` URL helper, and `symfony/twig-pack` wires the Twig integration.
+
+If you're using **Symfony Flex** (the norm for new projects), the recipe does the rest for you. It creates:
+
+- `assets/app.js` — your main JavaScript entrypoint;
+- `assets/styles/app.css` — your main stylesheet;
+- `config/packages/asset_mapper.yaml` — where you declare mapped paths;
+- `importmap.php` — your import map configuration.
+
+…and it updates `templates/base.html.twig` to render the import map:
+
+```twig
+{% block javascripts %}
+    {% block importmap %}{{ importmap('app') }}{% endblock %}
+{% endblock %}
+```
+
+> **Tip** — New web app skeletons generated with `symfony new --webapp` already ship with AssetMapper. If you're not on Flex, copy the files from the [latest asset-mapper recipe](https://github.com/symfony/recipes/tree/main/symfony/asset-mapper) into your project.
+
+Let's open the auto-generated config so you know exactly what you're working with:
+
+```yaml
+# config/packages/asset_mapper.yaml
+framework:
+    asset_mapper:
+        # Map the assets/ directory to the root namespace (the empty string).
+        # Files here are referenced by their path *relative* to assets/.
+        paths:
+            assets/: ''
+```
+
+That single mapping is all you need to get started: everything under `assets/` is now a mappable, versioned asset.
+
+##### 14.2.2 The logical path
+
+Every mapped asset is referenced by its **logical path** — the path relative to the mapped directory. If you create `assets/images/logo.png`, its logical path is `images/logo.png`, and you reference it from any template like this:
+
+```twig
+<img src="{{ asset('images/logo.png') }}" alt="Acme Invoices">
+```
+
+Inspect the rendered HTML and the URL will look like this:
+
+```html
+<img src="/assets/images/logo-3c16d92m.png" alt="Acme Invoices">
+```
+
+The `-3c16d92m` suffix is the **version**. It's the linchpin of the whole system, so it deserves a moment.
+
+##### 14.2.3 Versioning: how cache-busting works
+
+The version is what makes long-term browser (and CDN) caching safe. Because the version is part of the *filename*, a change to the file produces a *new* URL, which means the browser never shows a stale asset to a returning user.
+
+How is the version computed?
+
+- **In the `dev` environment**, the version is derived from the file's **last-modified time**. Change the file, save it, and the version string changes immediately.
+- **In the `prod` environment** (after you compile — see §14.2.6), the version becomes a stable **content hash**. Same file → same URL, forever; different content → a brand-new URL.
+
+This split is deliberate. Development wants *freshness* (I just saved the file, I want to see it). Production wants *stability* (identical builds must produce identical URLs so CDNs can cache aggressively).
+
+> **Note** — The exact algorithm behind the version is an implementation detail you shouldn't depend on. Treat it as an opaque token: it changes when the relevant input changes, and that's the only contract you need.
+
+Because the version lives in the URL, you can tell your browser to cache these assets *forever*:
+
+```nginx
+# In your web server config — see §14.5
+location ~* \.(?:css|js|png|jpg|jpeg|gif|svg|woff2?)$ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+}
+```
+
+`immutable` tells modern browsers to never even revalidate; the app is responsible for emitting a new URL when the asset changes. AssetMapper does exactly that.
+
+##### 14.2.4 Adding assets to the invoicing app
+
+Let's wire up real files. Replace the contents of `assets/styles/app.css`:
+
+```css
+/* assets/styles/app.css */
+:root {
+    --accent: #2563eb;
+    --muted: #64748b;
+    --surface: #f8fafc;
+}
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--surface);
+    color: #0f172a;
+    margin: 0;
+}
+
+.invoice-line {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.invoice-line .remove {
+    color: #dc2626;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-size: 1.25rem;
+}
+
+.invoice-total {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+```
+
+And a first script, `assets/app.js`, that we'll grow into a Stimulus controller shortly:
+
+```js
+// assets/app.js
+import './invoice_line_items.js';
+
+console.log('Invoicing app assets loaded.');
+```
+
+To link the stylesheet, add a `stylesheets` block to `base.html.twig`:
+
+```twig
+{# templates/base.html.twig #}
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Acme Invoices{% endblock %}</title>
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+    {% endblock %}
+</head>
+<body>
+    {% block body %}{% endblock %}
+
+    {% block javascripts %}
+        {% block importmap %}{{ importmap('app') }}{% endblock %}
+    {% endblock %}
+</body>
+</html>
+```
+
+That's the entire front-end plumbing: `asset('styles/app.css')` for the CSS, `importmap('app')` for the JS. No `package.json`, no `npm run build`, no bundler.
+
+##### 14.2.5 Hot reload in development
+
+AssetMapper's "hot reload" story is simpler than a bundler's — and that's a feature, not a limitation.
+
+In the `dev` environment, AssetMapper serves mapped assets **directly from your `assets/` directory on every request**, and it versions them by modification time. So the workflow is:
+
+1. Edit `assets/styles/app.css`.
+2. Save.
+3. Reload the browser tab.
+
+You see your change. There's no build step to wait for and no dev server to keep running. This is dramatically less setup than a classic bundler for plain CSS and JS.
+
+If you're using **Turbo** (which we are), you can go one better and have the page reload itself when the versioned assets change, so you don't even have to hit refresh. Turbo tracks `<script>` and `<link>` tags and reloads the page when their URL (and therefore their version) changes:
+
+```bash
+$ php bin/console importmap:require @hotwired/stimulus @hotwired/turbo
+```
+
+With Turbo present, the import map's `<script>` tag is tracked, so a save-and-refresh becomes a save-and-automatic-reload. For the invoicing app's fast-iteration days, that's the "hot reload" you actually want — and it costs you nothing.
+
+> **Warning** — Don't run `asset-map:compile` (§14.2.6) on your *development* machine and then keep working. Once assets are physically copied to `public/assets/`, AssetMapper stops serving them dynamically and your changes won't show up. If you do this, empty the `public/assets/` directory to return to dynamic serving.
+
+##### 14.2.6 Serving assets in dev vs. prod
+
+There's one important difference in how assets are *served* between environments:
+
+- **`dev`** — The URL `/assets/styles/app-<version>.css` is intercepted and handled by your **Symfony app**. AssetMapper looks up the logical path, resolves the real file, and returns it. This is why you see changes instantly.
+- **`prod`** — Before you deploy, you run a single command to *physically* copy every mapped asset into `public/`, with its versioned filename:
+
+  ```bash
+  $ php bin/console asset-map:compile
+  ```
+
+  After this, the files live under `public/assets/` (or your configured output directory) and are served **directly by your web server** — Nginx, Apache, FrankenPHP, your CDN — with zero involvement from PHP. This is both faster and cheaper: static files never touch your application.
+
+> **Production tip** — `asset-map:compile` belongs in your **deploy pipeline**, right after `composer install --no-dev` and before you copy files into place. Chapter 24 walks through this in a full CI/CD context.
+
+If you need to send compiled assets somewhere other than the local `public/` directory — for example, straight to **S3** or an object store — implement `Symfony\Component\AssetMapper\Path\PublicAssetsFilesystemInterface` and tag/alias your service as `asset_mapper.local_public_assets_filesystem`. AssetMapper will call *your* filesystem instead of the built-in one.
+
+##### 14.2.7 Debugging: seeing every mapped asset
+
+Nothing builds confidence like being able to list what the system sees. This command shows you all mapped paths and every asset in them:
+
+```bash
+$ php bin/console debug:asset-map
+```
+
+```
+AssetMapper Paths
+------------------
+ Path      Namespace prefix
+--------- ------------------
+assets
+
+Mapped Assets
+-------------
+---------------------- -------------------------------
+ Logical Path           Filesystem Path
+---------------------- -------------------------------
+ app.js                 assets/app.js
+ invoice_line_items.js  assets/invoice_line_items.js
+ styles/app.css         assets/styles/app.css
+ images/logo.png        assets/images/logo.png
+```
+
+The **Logical Path** column is what you pass to `asset()`. The command supports useful filters:
+
+```bash
+# match by name or directory
+$ php bin/console debug:asset-map styles/
+
+# only a file type
+$ php bin/console debug:asset-map --ext=css
+
+# only assets inside vendor/  (or exclude them)
+$ php bin/console debug:asset-map --vendor
+$ php bin/console debug:asset-map --no-vendor
+
+# combine filters (e.g. web fonts that aren't from a vendor package)
+$ php bin/console debug:asset-map --no-vendor --ext=woff2
+```
+
+When an asset mysteriously 404s, or an `asset()` call throws *"No asset found for path…"*, `debug:asset-map` tells you in two seconds whether the file is actually mapped.
+
+##### 14.2.8 Import maps & writing JavaScript
+
+Because browsers understand ES modules, this code *just works* — no bundler required:
+
+```js
+// assets/invoice_line_items.js
+export default class InvoiceLineItems {
+    constructor(root) {
+        this.root = root;
+    }
+
+    recalculate() {
+        const rows = this.root.querySelectorAll('.invoice-line');
+        let total = 0;
+
+        rows.forEach((row) => {
+            const qty   = parseFloat(row.dataset.qty)   || 0;
+            const rate  = parseFloat(row.dataset.rate)  || 0;
+            const line  = qty * rate;
+            total += line;
+        });
+
+        const totalEl = this.root.querySelector('.invoice-total');
+        if (totalEl) {
+            totalEl.textContent = new Intl.NumberFormat('en-US',
+                { style: 'currency', currency: 'USD' }).format(total);
+        }
+    }
+}
+```
+
+```js
+// assets/app.js
+import InvoiceLineItems from './invoice_line_items.js';
+
+// Attach once, on every invoice form on the page.
+document.querySelectorAll('[data-invoice-form]').forEach((form) => {
+    const controller = new InvoiceLineItems(form);
+    form.addEventListener('input', () => controller.recalculate());
+    controller.recalculate(); // initial paint
+});
+```
+
+> **Note** — When importing a *relative* file, include the `.js` extension (`./invoice_line_items.js`, not `./invoice_line_items`). Node.js can omit extensions; the browser cannot.
+
+The magic happens in `{{ importmap('app') }}`. That single Twig call emits several things into your `<head>`/`<body>`:
+
+1. An **import map** that maps each module to its versioned URL:
+
+   ```html
+   <script type="importmap">{
+       "imports": {
+           "app": "/assets/app-4e986c1a.js",
+           "/assets/invoice_line_items.js": "/assets/invoice_line_items-1b7a64b3.js"
+       }
+   }</script>
+   ```
+
+2. A **shim** (from [`es-module-shims`](https://www.npmjs.com/package/es-module-shims)) so browsers without native import-map support still work.
+
+3. The **entrypoint** loader:
+
+   ```html
+   <script type="module">import 'app';</script>
+   ```
+
+   This executes `assets/app.js`, which — by virtue of the import map — correctly resolves its `./invoice_line_items.js` import to the *versioned* filename.
+
+4. **Preloads** for every module in the graph, so the browser fetches them up front:
+
+   ```html
+   <link rel="modulepreload" href="/assets/app-4e986c1a.js">
+   <link rel="modulepreload" href="/assets/invoice_line_items-1b7a64b3.js">
+   ```
+
+Notice how the import map knows about `/assets/invoice_line_items.js` even though we never listed it in config. AssetMapper *scans* your entrypoint, follows its `import` statements, and registers each transitive module so relative imports keep resolving to versioned URLs. You get module graph awareness without a bundler.
+
+###### Importing third-party packages
+
+Say we want a real library. Rather than pasting a CDN URL into an import, you add the package to your import map:
+
+```bash
+$ php bin/console importmap:require bootstrap
+```
+
+This updates `importmap.php`:
+
+```php
+// importmap.php
+return [
+    'app' => [
+        'path' => './assets/app.js',
+        'entrypoint' => true,
+    ],
+    'bootstrap' => [
+        'version' => '5.3.0',
+    ],
+];
+```
+
+…and now your code can do:
+
+```js
+import { Modal } from 'bootstrap';
+```
+
+Packages are downloaded into `assets/vendor/` (added to `.gitignore` by the recipe). On a fresh machine — or a deploy — you restore them with:
+
+```bash
+$ php bin/console importmap:install
+```
+
+The full lifecycle of third-party packages is console-driven:
+
+```bash
+# See what's outdated
+$ php bin/console importmap:outdated
+
+# Update everything (or a specific set)
+$ php bin/console importmap:update
+$ php bin/console importmap:update bootstrap lodash
+
+# Remove a package (then re-sync the vendor dir)
+$ php bin/console importmap:remove lodash
+$ php bin/console importmap:install
+```
+
+> **Tip** — Use `--dry-run` to preview a change before it lands: `php bin/console importmap:require bootstrap --dry-run`.
+
+A couple of import-map specifics worth internalizing:
+
+- **Sub-paths must match exactly.** If you need a deep import like `import hljs from 'highlight.js/lib/core'`, you must register that *exact* sub-path in `importmap.php`. Import maps don't do fuzzy resolution.
+- **Third-party CSS.** If a package ships a main stylesheet (declared in its `package.json` `style` field), `importmap:require` registers it automatically and the import map emits the matching `<link>` for you.
+- **Local `node_modules` packages.** If a package needs a specific local build, install it with npm, register a directory under `asset_mapper.paths` with a namespace prefix, and require it by logical path (`--path=...`). Namespacing prevents logical-path collisions between your own `assets/` and vendored code.
+
+---
+
+#### 14.3 When do you actually need a bundler?
+
+AssetMapper is the right default for a long way. But it's honest engineering to know its ceiling. Reach for a real bundler when you need **any** of the following:
+
+- **TypeScript compilation** at scale (AssetMapper can transpile TS, but a bundler's toolchain — type-aware transforms, path aliases, declaration builds — is more complete).
+- **JSX or a component framework** — React, Vue single-file components, Svelte. These *require* a compilation step that produces plain browser JavaScript; no amount of import maps substitutes for it.
+- **Heavy CSS pipelines** — advanced Sass, complex PostCSS plugins, or a design-token workflow that benefits from a dedicated compiler.
+- **Code splitting / dynamic imports** — for very large apps where you want the browser to fetch only the chunks a route needs.
+- **Aggressive minification and tree-shaking** across a large module graph.
+
+If you're building the invoicing app as described — plain CSS, ES modules, Stimulus/Turbo — **you do not need a bundler.** Stay on AssetMapper. The sections that follow exist so you know the escape hatch, and so you can make an informed decision the day a client asks for a React widget.
+
+> **Note** — AssetMapper does have optional support for Sass/Tailwind and TypeScript by delegating the *compilation of specific file types* to an external build command, so you can add a little pre-processing power without adopting a full bundler. If your needs are "Sass, but I still want the import-map model," look there before reaching for Vite.
+
+---
+
+#### 14.4 Integrating Vite with Symfony Reprise
+
+When you do need a bundler, **Vite** is the modern choice — fast, and it natively handles Sass, PostCSS, TypeScript, JSX/Vue/Svelte, code splitting, minification, and **Hot Module Replacement (HMR)**. The question is how to wire it into Symfony so templates can render the right `<script>` and `<link>` tags and versioning stays intact.
+
+Symfony's answer is **Reprise** — the successor to Webpack Encore, purpose-built for modern bundlers (Vite and Rsbuild). It does *not* reimplement the bundler; it adds the Symfony glue that bundlers leave out:
+
+- Generates the `entrypoints.json` and `manifest.json` files Symfony needs.
+- Wires up the **dev server** and injects the **HMR client** automatically.
+- Provides **Twig functions** to render entry-point tags.
+- Integrates Stimulus/UX and does asset versioning.
+
+> **Warning** — **Reprise is experimental.** Its API and behavior may still change, sometimes significantly. That's fine for greenfield work and non-critical apps; for a long-lived production SaaS, weigh this against Webpack Encore (§14.4.5), which is stable. The concepts below (entrypoints, manifest, dev vs. build, versioned serving) are identical regardless of which tool you pick, so nothing you learn here is wasted.
+
+##### 14.4.1 Installation
+
+```bash
+# The Symfony-side bundle (reads the JSON, renders tags)
+$ composer require symfony/reprise
+
+# The Node-side integration (talks to Vite)
+$ npm install @symfony/reprise --save-dev
+```
+
+##### 14.4.2 Vite configuration
+
+Create `vite.config.js` at the project root. Reprise's plugin is what makes Vite emit the Symfony-compatible files:
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite';
+import { symfonyVite } from '@symfony/reprise/vite';
+
+export default defineConfig({
+    plugins: [
+        symfonyVite({
+            // The directory (relative to the project root) where built
+            // assets and the JSON manifests land.
+            outputDir: 'public/build',
+            // Your Vite entry points, keyed by name. The name is what
+            // you'll pass to the Twig functions.
+            entryPoints: {
+                app: './assets/app.js',
+            },
+        }),
+    ],
+});
+```
+
+Point your stylesheet import at Vite so it gets processed:
+
+```js
+// assets/app.js
+import './styles/app.css';
+
+console.log('Built by Vite.');
+```
+
+##### 14.4.3 Development: dev server + HMR
+
+Start Vite's dev server in one terminal:
+
+```bash
+$ npm run dev
+```
+
+Now, in your templates, render the entry point with the Reprise Twig functions:
+
+```twig
+{# templates/base.html.twig #}
+{% block stylesheets %}
+    {{ reprise_entry_link_tags('app') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ reprise_entry_script_tags('app') }}
+{% endblock %}
+```
+
+In the dev environment, Reprise detects the running Vite server, repoints `entrypoints.json` at it, and **injects the HMR client** automatically. The result: edit `assets/styles/app.css`, save, and the browser updates **in place** — no full reload, no rebuild. This is the classic, true hot-module-replacement loop.
+
+> **Tip** — There's nothing extra to configure for dev. The same `reprise_entry_*` tags do double duty: dev server in `dev`, compiled manifest in `prod`.
+
+##### 14.4.4 Production: build + manifest
+
+For production you run a real build:
+
+```bash
+$ npm run build
+```
+
+Vite writes to `public/build/`:
+
+- **`manifest.json`** — maps every original asset (including imported fonts, images, and split chunks) to its content-hashed filename. This is what keeps `asset()`-style references correct after the build.
+- **`entrypoints.json`** — lists each entry point and the exact `<script>`/`<link>` files it needs.
+
+`reprise_entry_script_tags('app')` and `reprise_entry_link_tags('app')` read those files and emit the correct, versioned tags. Because the filenames are content-hashed, you can serve `public/build/` with `immutable` long-term caching exactly as we did for AssetMapper (§14.5).
+
+The `npm run build` step belongs in your **deploy pipeline**, alongside `asset-map:compile` when you use both systems. Chapter 24 shows both in a complete deploy.
+
+##### 14.4.5 Webpack Encore (the legacy path)
+
+If you're maintaining an existing Symfony app that already uses **Webpack Encore**, you stay on it — it's fully supported and stable. Encore wraps Webpack and is the original bundler integration. The mental model is identical to Reprise (entry points → JSON manifests → versioned tags); only the tooling and Twig function names differ.
+
+```bash
+# Bundle (Symfony side)
+$ composer require symfony/webpack-encore-bundle
+
+# Bundler (Node side)
+$ npm install
+```
+
+You configure a `webpack.config.js` using Encore's API:
+
+```js
+// webpack.config.js
+const Encore = require('@symfony/webpack-encore');
+
+Encore
+    .setOutputPath('public/build/')
+    .setPublicPath('/build')
+    .setManifestKeyPrefix('build/')
+    .addEntry('app', './assets/app.js')
+    .enableSassLoader()
+    .enableVersioning(Encore.isProduction());
+
+module.exports = Encore.getWebpackConfig();
+```
+
+Build with the provided npm scripts:
+
+```bash
+$ npm run dev     # watch mode with HMR + manifest
+$ npm run build   # production build with minification + versioning
+```
+
+…and render entry points with Encore's Twig functions:
+
+```twig
+{{ encore_entry_link_tags('app') }}
+{{ encore_entry_script_tags('app') }}
+```
+
+The Encore ↔ Reprise mapping is nearly a tag-for-tag swap, which is what makes migration low-risk:
+
+| Concern | Encore | Reprise |
+|---|---|---|
+| Script tags | `encore_entry_script_tags('app')` | `reprise_entry_script_tags('app')` |
+| Link tags | `encore_entry_link_tags('app')` | `reprise_entry_link_tags('app')` |
+| Config file | `webpack.config.js` | `vite.config.js` |
+| Build output | `public/build/` | `public/build/` |
+| Manifests | `entrypoints.json`, `manifest.json` | `entrypoints.json`, `manifest.json` |
+
+For *new* bundler-based projects, Reprise (Vite) is the recommended direction; Encore is the path of least resistance for *existing* apps. Either way, the production-serving rules in the next section apply unchanged.
+
+---
+
+#### 14.5 Serving built assets in production
+
+Whether the assets come from AssetMapper (`public/assets/`) or a bundler (`public/build/`), production serving follows the same principles.
+
+##### 14.5.1 Let the web server serve statics
+
+Static files should never pass through PHP. Serve the asset directories directly and let the CDN/browser cache do the heavy lifting. A representative Nginx block:
+
+```nginx
+# Serve compiled assets straight from disk, no PHP.
+location ^~ /assets/ {
+    alias /var/www/app/public/assets/;
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+    try_files $uri =404;
+}
+
+location ^~ /build/ {
+    alias /var/www/app/public/build/;
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+    try_files $uri =404;
+}
+```
+
+`^~` keeps these locations from being intercepted by the front-controller regex, and `immutable` tells browsers to never revalidate. Because the *filename* carries the version, "never revalidate" is safe — a content change is always a new URL.
+
+> **Production tip** — If you deploy behind **FrankenPHP** (Chapter 24), it serves static files efficiently on its own; the same cache headers and directory layout apply. If you push to a **CDN**, point it at the same immutable asset paths — the content-hashed URLs mean CDN cache invalidation is simply "nothing to do."
+
+##### 14.5.2 The compile/build step in your pipeline
+
+The non-negotiable production rule: **assets must be compiled/built before the web server can serve them.** Your deploy sequence looks like this:
+
+```bash
+# 1. Install PHP dependencies (no dev)
+composer install --no-dev
+
+# 2. Build front-end assets
+npm ci                 # if using a bundler (Vite/Encore)
+npm run build          # if using a bundler
+
+# 3. Compile AssetMapper assets (if using AssetMapper)
+php bin/console asset-map:compile
+
+# 4. Warm the container, then release to the web server
+php bin/console cache:warmup
+```
+
+Run steps 2 and 3 **once, at deploy time**, not on the request path. In CI you typically produce the built assets in a build artifact so every server receives the identical, already-hashed output — which is exactly what makes the immutable cache headers trustworthy.
+
+##### 14.5.3 Keeping the two systems straight
+
+If (unusually) you mix AssetMapper and a bundler, the rules compose cleanly:
+
+- AssetMapper → `asset-map:compile` → `public/assets/`, referenced with `asset('logical/path')`.
+- Vite/Encore → `npm run build` → `public/build/`, referenced with `reprise_entry_*` / `encore_entry_*`.
+
+In practice, though, you pick **one** system per application. AssetMapper for the no-build lane; a bundler when the ceiling in §14.3 is hit.
+
+---
+
+#### 14.6 Putting it together: the invoicing front end
+
+Let's consolidate what the running project looks like on the AssetMapper path:
+
+```
+assets/
+├── app.js                      # entrypoint; imports the line-item logic
+├── invoice_line_items.js       # recalculates invoice totals
+└── styles/
+    └── app.css                 # global stylesheet
+
+importmap.php                   # 'app' entrypoint (+ any npm packages)
+config/packages/asset_mapper.yaml  # paths: assets/: ''
+public/
+└── assets/                     # produced by asset-map:compile (prod only)
+```
+
+- **`base.html.twig`** renders `<link rel="stylesheet" href="{{ asset('styles/app.css') }}">` and `{{ importmap('app') }}`.
+- **Development** needs nothing but the Symfony dev server. Edit, save, refresh — Turbo auto-reloads tracked assets.
+- **Production** runs `asset-map:compile`, and Nginx serves `public/assets/` with `Cache-Control: public, immutable`.
+- **The line-item editor** is plain ES modules driven by a small `InvoiceLineItems` class, keeping the SaaS tool fast without a build step.
+
+The day a client requests a React chart on the invoice preview, you'll add `vite.config.js`, switch that one entry point to `reprise_entry_script_tags`, and leave the rest of the app untouched. That's the flexibility of choosing the no-build default and keeping the bundler as a known, cheap upgrade.
+
+---
+
+#### Chapter 14 Summary
+
+- **AssetMapper** is the default front-end system: map directories, reference by **logical path** with `asset()`, and let version hashes make long-term caching safe. No build step, no Node toolchain.
+- **Versioning** is mtime-based in `dev` (fresh) and a stable **content hash** in `prod` (cacheable forever with `immutable`).
+- **Hot reload** in dev is just "save and refresh" — assets are served on the fly. With Turbo, tracked assets auto-reload.
+- **Import maps** (`{{ importmap('app') }}`) load your ES modules *and* third-party npm packages (`importmap:require`, `importmap:install`, `importmap:update`) using native browser features.
+- **`debug:asset-map`** lists every mapped asset; **`asset-map:compile`** copies versioned assets into `public/` for production.
+- **Reach for a bundler** when you need TypeScript at scale, JSX/React/Vue/Svelte, heavy CSS pipelines, or code splitting.
+- **Vite via Reprise** is the modern bundler path (`reprise_entry_script_tags` / `reprise_entry_link_tags`, HMR in dev, `npm run build` in prod); it's experimental.
+- **Webpack Encore** is the stable legacy path (`encore_entry_*`) for existing apps.
+- **Production** always means: build/compile once at deploy time, serve the versioned output directly from the web server or CDN with immutable cache headers.
+
+---
+
+#### Exercises
+
+1. **Map a second namespace.** Add a `vendor/` directory to `asset_mapper.paths` with a namespace prefix, drop a `vendor/lib/counter.js` file into it, and import it from `app.js`. Confirm with `php bin/console debug:asset-map counter --no-vendor` that it's *not* listed, then again *without* `--no-vendor` to see it.
+
+2. **Prove the versioning model.** In `dev`, note the versioned URL of `assets/styles/app.css`. Edit a single line, save, and confirm the version suffix changes. Then run `asset-map:compile`, confirm the same logical path now resolves to a file in `public/assets/`, and describe why the compiled version is stable across rebuilds of identical content.
+
+3. **Adopt a third-party package.** Run `php bin/console importmap:require @hotwired/stimulus`. Open `importmap.php`, then write a Stimulus controller that listens for a `click` on `.invoice-line .remove` to delete that row and recalculate the total. Use `importmap:install` on a "fresh" clone of the repo to simulate a teammate's machine and confirm it restores `assets/vendor/`.
+
+4. **Import-map pitfalls.** Try importing a *sub-path* (`import core from 'highlight.js/lib/core'`) without registering that exact sub-path, and read the error. Then register it correctly and confirm it works. In a comment, explain why import maps require exact sub-path matches.
+
+5. **Dev-server discipline.** Run `asset-map:compile` on your development machine, change `app.css`, and observe that the change no longer appears. Diagnose *why* (which directory is now authoritative) and fix it so dynamic serving resumes.
+
+6. **Add a real bundler (optional, Vite).** Install `@symfony/reprise` and create `vite.config.js` with a single `app` entry point that imports `app.css` and a TypeScript file. Start `npm run dev`, wire `base.html.twig` to `reprise_entry_script_tags`/`reprise_entry_link_tags`, and verify HMR (save a style, see the in-place update). Then run `npm run build`, inspect `public/build/entrypoints.json` and `manifest.json`, and write the Nginx `location ^~ /build/` block that serves them immutably.
+
+7. **Design a decision.** Write a short memo for the team stating, with specific references to the invoicing app, the exact trigger that would move you from AssetMapper to Vite — and the one trigger that would *not* justify the switch (so you don't over-engineer).
+
+---
+
+#### Where to next
+
+With the front end in place, your application can finally *do* things beyond a single HTTP request. **Chapter 15** introduces **console commands** — the workhorse of a Symfony app for one-off jobs, data backfills, and long-running maintenance. You'll build the command that seeds your invoicing app's tenant catalog and wire it into the deploy pipeline we've been preparing.
 
 ## Part IV — Beyond the Browser
 **Ch 15. Console Commands**
