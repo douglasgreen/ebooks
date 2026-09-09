@@ -12728,21 +12728,3705 @@ The day a client requests a React chart on the invoice preview, you'll add `vite
 With the front end in place, your application can finally *do* things beyond a single HTTP request. **Chapter 15** introduces **console commands** — the workhorse of a Symfony app for one-off jobs, data backfills, and long-running maintenance. You'll build the command that seeds your invoicing app's tenant catalog and wire it into the deploy pipeline we've been preparing.
 
 ## Part IV — Beyond the Browser
-**Ch 15. Console Commands**
-- Command structure, arguments/options, interactive input
-- Progress bars, output formatting, long-running tasks
 
-**Ch 16. Email and Notifications**
-- Mailer component: transports, templated messages, attachments
-- Handling bounces and failures; testing mail locally (Mailpit)
+### Chapter 15. Console Commands
 
-**Ch 17. Asynchronous Processing with Messenger**
-- Messages, handlers, routing; sync vs. async transports
-- Retries, dead-letter queues, middleware, running workers
+Up to this point, everything we've built has lived inside the HTTP request/response cycle: a browser (or an API client) sends a request, the kernel fires events, a controller does work, and a response flies back out. That model is perfect for user-facing features, but a lot of the work a professional application does never comes from a browser at all.
 
-**Ch 18. Scheduling and Webhooks**
-- The Scheduler component: cron-style tasks, locking
-- The Webhook component: receiving and verifying external events
+Our invoicing SaaS needs to *generate* invoices on the 1st of every month for every tenant, send payment reminders to customers who are overdue, provision brand-new tenants from a CSV export, and reconcile data with our payment provider. None of that is "user clicked a button." It's operational work: it runs on a schedule, it runs in bulk, it runs when nobody's watching, and it has to tell a shell (or a scheduler) whether it succeeded.
+
+Symfony's **Console** component is the answer. It's the same framework we've been using all along, pointed at `php bin/console` instead of `php -S` or Apache. In this chapter you'll learn to:
+
+- Define, register, and run commands with the modern `#[AsCommand]` attribute.
+- Declare and read **arguments** and **options**, including arrays and validation.
+- Ask users questions **interactively** — and behave correctly when run non-interactively.
+- Produce **well-formatted output**: colors, tables, and progress bars.
+- Return meaningful **exit codes**.
+- Tame **long-running** tasks: memory, idempotency, and graceful shutdown.
+
+Throughout the chapter we'll build one real command, `app:invoice:generate`, incrementally — the same "add one thing at a time" approach we've used for the rest of the running project.
+
+> **Note**
+> The repositories and services referenced below (`InvoiceRepository`, `TenantRepository`, `InvoiceGenerator`) come from our Doctrine work in Chapter 13 and the domain services built in Parts III–V. If you're following along, these already exist in your project.
+
+---
+
+#### 15.1. Your first command
+
+A command is just a class that extends `Symfony\Component\Console\Command\Command` and implements `execute()`. To make the framework *discover* it, you attach the `#[AsCommand]` attribute:
+
+```php
+<?php
+// src/Command/GenerateInvoicesCommand.php
+
+namespace App\Command;
+
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
+#[AsCommand(
+    name: 'app:invoice:generate',
+    description: 'Generates invoices for tenants with usage this billing period.',
+)]
+final class GenerateInvoicesCommand extends Command
+{
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $output->writeln('Generating invoices…');
+
+        return Command::SUCCESS; // 0
+    }
+}
+```
+
+That's the entire skeleton. Let's run it:
+
+```console
+$ php bin/console app:invoice:generate
+Generating invoices…
+```
+
+##### Why it registered itself
+
+You never registered this command anywhere, and you didn't add it to a service container config. Here's what Symfony did for you, and it's worth understanding because it explains most "my command isn't showing up" mysteries:
+
+1. `src/Command/` is inside `src/`, so the class is picked up as a **service** by autoconfiguration.
+2. Because the class extends `Command` *and* carries `#[AsCommand]`, autoconfiguration automatically tags it with `console.command`.
+3. When `bin/console` boots, the `AddConsoleCommandPass` compiler pass collects every `console.command`-tagged service and registers it with the console `Application`.
+
+The `name:` you put in the attribute is the command's canonical name. The `description:` is what shows up in `php bin/console list`.
+
+```console
+$ php bin/console list
+Symfony Console
+
+Usage:
+  command [options] [arguments]
+
+Available commands:
+  app:invoice:generate  Generates invoices for tenants with usage this billing period.
+  list                  Lists commands
+  ...
+```
+
+You can always inspect a command's contract (arguments, options, help text) without running it:
+
+```console
+$ php bin/console help app:invoice:generate
+$ php bin/console describe app:invoice:generate
+```
+
+> **Tip**
+> Prefer the `namespace:sub:action` naming convention (e.g. `app:invoice:generate`, `app:tenant:provision`). The colons group commands into logical namespaces, and `php bin/console list app:invoice` will list only the invoice commands as your app grows.
+
+##### Hidden commands
+
+Some commands are for admins or internal tooling and shouldn't clutter `list`. Mark them `hidden: true`:
+
+```php
+#[AsCommand(
+    name: 'app:db:resync',
+    description: 'Forces a full resync with the payment provider.',
+    hidden: true,
+)]
+```
+
+The command still runs fine when called by name, but it disappears from `list` and from tab-completion.
+
+> **Caution**
+> Don't hide a command just because it's "dangerous." Hidden ≠ safe — it's still one typo away from running in production. For genuinely destructive commands, add an explicit confirmation prompt (see §15.4) and a `--yes` override.
+
+##### Injecting services
+
+Commands are regular services, so constructor injection works exactly as it does for controllers:
+
+```php
+final class GenerateInvoicesCommand extends Command
+{
+    public function __construct(
+        private readonly InvoiceRepository $invoices,
+        private readonly TenantRepository $tenants,
+        private readonly InvoiceGenerator $generator,
+    ) {
+        parent::__construct(); // required — the base class has its own constructor
+    }
+
+    // …
+}
+```
+
+> **Note**
+> If you construct the command *by hand* (e.g. in a test), you must still call `parent::__construct()`, or the base `Command` object won't be initialized. This trips up people who are used to controllers, where the base class has no meaningful constructor.
+
+---
+
+#### 15.2. Arguments and options
+
+A command's inputs are declared in `configure()`, using `addArgument()` and `addOption()`. There's a useful distinction:
+
+- **Arguments** are *positional* and usually *required* to have a shape: `php bin/console app:invoice:generate acme`.
+- **Options** are *named flags*: `--dry-run`, `-l 10`, `--overdue-days=14`.
+
+```php
+protected function configure(): void
+{
+    $this
+        ->addArgument(
+            'tenant',                    // name
+            InputArgument::OPTIONAL,     // mode
+            'Slug of one tenant to process (all if omitted).', // description
+            null,                        // default
+        )
+        ->addOption(
+            'dry-run',                   // long name
+            null,                        // no shorthand
+            InputOption::VALUE_NONE,     // a boolean flag
+            'Report what would be generated without persisting.',
+        )
+        ->addOption(
+            'limit',                     // long name
+            'l',                         // shorthand: -l 10
+            InputOption::VALUE_REQUIRED, // takes a value: --limit=10
+            'Generate at most this many invoices per tenant.',
+        );
+}
+```
+
+##### Argument modes
+
+| Mode | Meaning |
+|---|---|
+| `InputArgument::REQUIRED` | Must be present on the command line. |
+| `InputArgument::OPTIONAL` | May be omitted; falls back to its default. |
+| `\| InputArgument::IS_ARRAY` | Accepts *multiple* values: `foo bar baz`. Combine with either of the above using `\|`. |
+
+##### Option modes
+
+| Mode | CLI shape |
+|---|---|
+| `VALUE_NONE` | `--dry-run` (presence = `true`; no value). |
+| `VALUE_REQUIRED` | `--limit 10` or `--limit=10`. |
+| `VALUE_OPTIONAL` | `--limit` (no value) *or* `--limit 10`. |
+| `\| VALUE_IS_ARRAY` | Repeatable, collected into an array: `--exclude foo --exclude bar`. |
+
+##### Reading them in `execute()`
+
+```php
+protected function execute(InputInterface $input, OutputInterface $output): int
+{
+    $tenantSlug = $input->getArgument('tenant');   // string|null
+    $dryRun     = (bool) $input->getOption('dry-run'); // bool
+    $limit      = $input->getOption('limit');       // string|null (always a string!)
+
+    // …
+}
+```
+
+> **Caution**
+> Options are **always strings** (or arrays of strings) coming in from the CLI, even when they look numeric. Cast deliberately: `$limit = (int) $input->getOption('limit')`. If you'd rather the framework cast and validate for you, use a validator on a `Question` (§15.4) or define the option's value and normalize it yourself. Silent string/integer bugs are the most common source of subtle console bugs.
+
+##### Validating input early
+
+Don't let a bad slug blow up halfway through a long run. Validate right after you read it, and fail *fast* with a clean message:
+
+```php
+$tenantSlug = $input->getArgument('tenant');
+
+if (null !== $tenantSlug) {
+    $tenant = $this->tenants->findOneBySlug($tenantSlug);
+    if (null === $tenant) {
+        $output->writeln(sprintf(
+            '<error>Tenant "%s" does not exist.</error>',
+            $tenantSlug,
+        ));
+        return Command::INVALID; // exit code 2 — a usage error
+    }
+}
+```
+
+---
+
+#### 15.3. Writing output
+
+The `$output` object is where you communicate. The most basic tools:
+
+```php
+$output->write('no newline');
+$output->writeln('a full line');
+$output->newLine();        // blank line (pass an int for several)
+```
+
+##### Colors and styles
+
+Output is **formatted** with inline tags. The common shortcuts:
+
+```php
+$output->writeln('<info>Success</info>');           // green
+$output->writeln('<comment>Info</comment>');        // yellow
+$output->writeln('<question>Question?</question>'); // black on yellow
+$output->writeln('<error>Error</error>');           // white on red
+$output->writeln('Total: <b>42</b>');               // bold
+```
+
+For anything fancier, use `<fg=color;bg=color;options>`:
+
+```php
+$output->writeln('<fg=blue;bg=white;options=bold> Banner </fg=blue;bg=white;options=bold>');
+```
+
+> **Tip**
+> Only emit color when the terminal supports it. Wrap decorative output in `if ($output->isDecorated())`, or pipe to a file where `php bin/console … --no-ansi` strips tags automatically.
+
+##### `SymfonyStyle`: the nicest way to format output
+
+Raw `writeln()` works, but for anything more than a few lines, use the `SymfonyStyle` helper. It gives you titles, sections, callouts, tables, and lists with consistent spacing and styling — and it's *context-aware*, so it degrades gracefully for non-interactive output.
+
+```php
+use Symfony\Component\Console\Style\SymfonyStyle;
+
+$io = new SymfonyStyle($input, $output);
+
+$io->title('Invoice Generation');
+
+$io->section('Tenant: acme');
+$io->writeln('12 invoices ready.');
+
+$io->success('All done.');
+$io->warning('3 tenants had no usage.');
+$io->caution('Running in dry-run mode.');
+$io->error('Could not reach the payment provider.');
+```
+
+Tables and lists read far better than hand-built alignment:
+
+```php
+$io->table(
+    ['Tenant', 'Invoices', 'Amount'],
+    [
+        ['acme',  12, '$4,320.00'],
+        ['globex', 7,  '$1,150.00'],
+        ['initech', 0, '$0.00'],
+    ],
+);
+
+$io->heading('Skipped tenants');
+$io->list(['initech (no usage)', 'umbrella (suspended)']);
+```
+
+You'll use `SymfonyStyle` for the rest of this chapter. It's the standard, idiomatic way to present console output in modern Symfony.
+
+---
+
+#### 15.4. Interactive input
+
+Commands often need to ask the user for something — confirm a risky operation, pick a tenant, fill in a missing value. The modern approach is the fluent `Question` object, asked through `$input->ask()`.
+
+##### A plain question with a default
+
+```php
+use Symfony\Component\Console\Question\Question;
+
+$question = new Question('Tenant to process (blank = all): ', '');
+$slug = $input->ask($output, $question); // string|null
+```
+
+##### Validation and normalization
+
+You can attach a `setValidator()` (throw a `RuntimeException` to reject) and a `setNormalizer()` (transform the raw answer):
+
+```php
+$question = (new Question('Tenant slug to process: '))
+    ->setNormalizer(static fn (?string $value): ?string =>
+            (null === $value || '' === $value) ? null : mb_strtolower(trim((string) $value)))
+    ->setValidator(static function (?string $value) {
+        // validation happens after normalization; $value is already lowercase/trimmed
+        return $value; // return the (possibly corrected) value
+    });
+$slug = $input->ask($output, $question);
+```
+
+##### Confirmation and choice — the `SymfonyStyle` shortcuts
+
+For the two most common interactions (yes/no and pick-from-a-list), `SymfonyStyle` wraps the helper for you:
+
+```php
+use Symfony\Component\Console\Style\SymfonyStyle;
+
+$io = new SymfonyStyle($input, $output);
+
+$tenants = $this->tenants->findAllSlugs(); // ['acme', 'globex', 'initech']
+
+if (!$io->isInteractive()) {
+    // non-interactive: process everything (see below)
+} else {
+    // Pick one, or "all"
+    $choice = $io->choice(
+        'Which tenant?',
+        array_merge(['all'], $tenants),
+        'all',
+    );
+}
+```
+
+For a confirmation prompt that returns a `bool`:
+
+```php
+$proceed = $io->askConfirmation(
+    sprintf('Generate invoices for %d tenants? (y/n)', count($tenants)),
+    default: true,
+);
+
+if (!$proceed) {
+    $io->warning('Aborted.');
+    return Command::SUCCESS;
+}
+```
+
+##### The `--no-interaction` contract
+
+Here's a rule that separates toy commands from production ones: **every command must behave correctly when it can't ask questions.** Scheduled runs, CI pipelines, and `sudo` invocations all pass `--no-interaction` (or run with no TTY). You check for it with `$input->isInteractive()` and take a sensible *default* path.
+
+The pattern for our generate command:
+
+```php
+$tenants = $this->tenants->findAllSlugs();
+
+if ($input->isInteractive() && null === $slug) {
+    $choice = $io->choice('Which tenant?', array_merge(['all'], $tenants), 'all');
+    if ('all' !== $choice) {
+        $tenants = [$choice];
+    }
+}
+// If not interactive, just use whatever the argument said (or all tenants).
+```
+
+> **Caution**
+> The dangerous case is a *destructive* default. If your command deletes data, `--no-interaction` must **not** silently delete everything. For destructive commands, require an explicit `--yes` when not interactive, and fail otherwise. Never let "nobody was at the keyboard" mean "do the scary thing."
+
+---
+
+#### 15.5. Progress bars
+
+Bulk commands process *a lot*. A wall of silence is worse than a spinner. The `ProgressBar` helper shows progress, elapsed time, and percent complete:
+
+```php
+use Symfony\Component\Console\Helper\ProgressBar;
+
+$invoices = $this->invoices->findPendingForTenant($tenantId);
+
+$bar = new ProgressBar($output, count($invoices)); // steps known up front
+$bar->start();
+
+foreach ($invoices as $invoice) {
+    $this->generator->finalize($invoice);
+    $bar->advance();
+}
+
+$bar->finish();
+$bar->clear(); // erase the bar from the output
+```
+
+`SymfonyStyle` has a shortcut that does `start()` for you:
+
+```php
+$bar = $io->progressBar($count);
+foreach ($items as $item) {
+    // …
+    $bar->advance();
+}
+$bar->finish();
+```
+
+##### When you don't know the total
+
+If you're streaming from a generator or a DB cursor and can't count up front, create the bar with no step count and drive it manually:
+
+```php
+$bar = new ProgressBar($output); // unknown steps
+$bar->setFormat('normal');
+$bar->start();
+
+foreach ($this->invoices->iterablePending() as $invoice) {
+    $this->generator->finalize($invoice);
+    $bar->advance();
+}
+
+$bar->finish();
+```
+
+> **Tip**
+> Add context to a running bar with a custom format. Define a placeholder in `setFormat()`, then update it with `setMessage($text, $key)`:
+> ```php
+> $bar->setFormat(' %current%/%max% [%bar:] %elapsed% %message:processed%');
+> // …
+> $bar->setMessage(sprintf('Finalized #%d', $invoice->getId()), 'processed');
+> ```
+> Keep it short — long custom messages wrap and make the bar look messy.
+
+##### Progress on nested work
+
+When you have *tenants* (outer) and *invoices* (inner), resist the urge to nest two bars — they fight for the same line and flicker. Pick the level that best represents the user's mental model (usually the outer one) and put the detail behind `-v`.
+
+---
+
+#### 15.6. Exit codes
+
+`execute()` must return an **integer**. It's the only way your command talks back to the world outside PHP — the shell, your CI, your scheduler, a wrapping script. The conventions:
+
+| Code | Meaning | Constant |
+|---|---|---|
+| `0` | Success | `Command::SUCCESS` |
+| `1` | Generic failure (something went wrong) | `Command::FAILURE` |
+| `2` | Invalid usage (bad arguments/options) | `Command::INVALID` |
+| `3`+ | Your own, application-specific failures | — |
+
+Any non-zero code is "failed" as far as `&&`/`||` and `set -e` in a shell script are concerned. So a scheduler that runs `php bin/console app:invoice:generate && php bin/console app:invoice:email` will *skip the email step* if generation returned non-zero. That's usually exactly what you want.
+
+```php
+protected function execute(InputInterface $input, OutputInterface $output): int
+{
+    try {
+        // … do the work …
+        return Command::SUCCESS;
+    } catch (PaymentProviderException) {
+        $io->error('The payment provider is unreachable. No data was written.');
+        return 3; // specific: upstream outage
+    } catch (\Throwable $e) {
+        $io->error(sprintf('Unexpected error: %s', $e->getMessage()));
+        return Command::FAILURE;
+    }
+}
+```
+
+> **Note**
+> Arg parsing failures (unknown option, missing required argument) already return `Command::INVALID` (2) automatically — you don't handle those in `execute()`. You only define codes for the *semantic* failures in your own logic.
+
+---
+
+#### 15.7. Long-running and bulk tasks
+
+A web request is short-lived: it comes in, it does its thing, the process is free. A console command that provisions 2,000 tenants or reconciles a year of invoices runs for minutes. That changes the constraints you must respect.
+
+##### 1. Make it idempotent
+
+A scheduled command can run twice (a scheduler hiccup, a retry, a manual re-run). The single most valuable property of a long-running command is: **running it again does not create bad data.**
+
+For invoice generation, that means "don't generate an invoice a tenant already has for this period." Guard at the top:
+
+```php
+$existing = $this->invoices->countForTenantAndPeriod($tenantId, $period);
+if (0 < $existing && !$force) {
+    $io->comment(sprintf('Skipping %s — %d invoices already exist for %s.', $tenantId, $existing, $period));
+    return Command::SUCCESS;
+}
+```
+
+Idempotency turns "oops, I ran it twice" from a data-integrity incident into a non-event.
+
+##### 2. Batch, and commit per-batch
+
+Don't open one giant database transaction for the whole run. If the process dies at 90%, a single transaction means you roll back *everything* (or, worse, hold a lock for the duration). Commit in small batches so you can **resume**:
+
+```php
+$batch = [];
+$i = 0;
+foreach ($this->invoices->iterablePending() as $invoice) {
+    $this->generator->finalize($invoice);
+    $batch[] = $invoice;
+    $i++;
+
+    if (100 === \count($batch)) {
+        $this->em->flush();     // persist the batch
+        $this->em->clear();     // release all entities from memory
+        $batch = [];
+    }
+}
+$this->em->flush();
+$this->em->clear();
+```
+
+`$this->em->clear()` is the key move: it detaches all managed entities from the identity map. Without it, Doctrine keeps *every* object you've ever touched alive in memory, and your RSS climbs until PHP OOMs.
+
+##### 3. Keep memory bounded
+
+Three practices, in order of importance:
+
+- **`clear()` the EntityManager** at batch boundaries (as above).
+- **Select what you need.** Query scalar columns, not full entity graphs, when you're just counting or iterating IDs.
+- **Nudge the garbage collector** on very long loops:
+  ```php
+  if (0 === $i % 1000) {
+      gc_collect_cycles();
+  }
+  ```
+
+`gc_collect_cycles()` is a gentle hint, not a guarantee — but for a loop that's alive for minutes, it's worth the line.
+
+##### 4. Stream, don't load
+
+If you're about to `->findAll()` on a table with a million rows, stop. Use a Doctrine `iterate()`/`forWriting()` query or a DB cursor so you process one row at a time instead of loading the whole table into an array. (This is the same N+1/large-result-set discipline from Chapter 13, applied to the console.)
+
+##### 5. Graceful shutdown
+
+A `composer`-less `php` process that's been running for five minutes might get a `SIGTERM` (from `supervisorctl restart`, a deploy, or a host reboot). By default PHP just dies mid-loop. For critical long-running work, register a shutdown handler so you can stop cleanly:
+
+```php
+use Symfony\Component\Console\Input\InputInterface;
+
+private bool $shouldStop = false;
+
+protected function execute(InputInterface $input, OutputInterface $output): int
+{
+    // Only works in non-cgi SAPIs, which is fine for the CLI
+    if (function_exists('pcntl_signal')) {
+        pcntl_signal(SIGTERM, function (): void {
+            $this->shouldStop = true;
+        });
+    }
+
+    foreach ($this->invoices->iterablePending() as $invoice) {
+        if ($this->shouldStop) {
+            $io->warning('SIGTERM received — stopping after current batch.');
+            break;
+        }
+        // pcntl_signal_dispatch() is needed to actually run the handler
+        pcntl_signal_dispatch();
+
+        // … process $invoice …
+    }
+
+    return Command::SUCCESS;
+}
+```
+
+Because the command is **idempotent and batch-committed**, a clean stop leaves the system in a consistent state, and the next scheduled run simply picks up where it left off. That's the real payoff of §15.7.1 and §15.7.2 — they make graceful shutdown *safe*.
+
+> **Note — this is where Chapter 17 and Chapter 18 take over**
+> If a task is *inherently* long-running (a worker that processes jobs for hours), a raw `foreach` in a command is the wrong tool. Chapter 17's **Messenger** gives you a real worker with a queue, retries, and dead-letter handling. Chapter 18's **Scheduler** is what *triggers* your command on a cron schedule with locking, so two copies don't run at once. A one-shot command (like `app:invoice:generate`) is the right fit here; an always-on worker is the right fit over there.
+
+##### 6. Verbosity levels
+
+Mirror the "progressive disclosure" we used in the web profiler. Default output should be a summary; `-v`, `-vv`, `-vvv` reveal detail. Guard it with the output's verbosity:
+
+```php
+if ($output->isVerbose()) {
+    $io->writeln(sprintf('  → %s: %d invoice(s)', $tenantId, $count));
+}
+```
+
+```console
+$ php bin/console app:invoice:generate          # summary only
+$ php bin/console app:invoice:generate -v      # per-tenant lines
+$ php bin/console app:invoice:generate -vvv    # per-invoice + timing
+```
+
+---
+
+#### 15.8. Putting it all together
+
+Here's `GenerateInvoicesCommand`, complete, after adding each piece from this chapter. Read it top to bottom — every line maps to a section above.
+
+```php
+<?php
+// src/Command/GenerateInvoicesCommand.php
+
+namespace App\Command;
+
+use App\Repository\InvoiceRepository;
+use App\Repository\TenantRepository;
+use App\Service\InvoiceGenerator;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+
+#[AsCommand(
+    name: 'app:invoice:generate',
+    description: 'Generates invoices for tenants with usage this billing period.',
+)]
+final class GenerateInvoicesCommand extends Command
+{
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly InvoiceRepository $invoices,
+        private readonly TenantRepository $tenants,
+        private readonly InvoiceGenerator $generator,
+    ) {
+        parent::__construct();
+    }
+
+    protected function configure(): void
+    {
+        $this
+            ->addArgument(
+                'tenant',
+                InputArgument::OPTIONAL,
+                'Slug of a single tenant to process (all tenants if omitted).',
+            )
+            ->addOption(
+                'dry-run',
+                null,
+                InputOption::VALUE_NONE,
+                'Report what would be generated without persisting.',
+            )
+            ->addOption(
+                'limit',
+                'l',
+                InputOption::VALUE_REQUIRED,
+                'Generate at most this many invoices per tenant.',
+            );
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $io     = new SymfonyStyle($input, $output);
+        $dryRun = (bool) $input->getOption('dry-run');
+        $limit  = $input->getOption('limit');
+        $limit  = null !== $limit ? (int) $limit : null;   // cast the string!
+
+        // --- Resolve which tenants to process (§15.4) -----------------------
+        $slug = $input->getArgument('tenant');
+
+        if (null !== $slug) {
+            if (null === $this->tenants->findOneBySlug($slug)) {
+                $io->error(sprintf('Tenant "%s" does not exist.', $slug));
+                return Command::INVALID;
+            }
+            $tenantSlugs = [$slug];
+        } elseif ($input->isInteractive()) {
+            $all = $this->tenants->findAllSlugs();
+            $choice = $io->choice('Which tenant?', array_merge(['all'], $all), 'all');
+            $tenantSlugs = 'all' === $choice ? $all : [$choice];
+        } else {
+            $tenantSlugs = $this->tenants->findAllSlugs();   // non-interactive default
+        }
+
+        if ([] === $tenantSlugs) {
+            $io->warning('No tenants to process.');
+            return Command::SUCCESS;
+        }
+
+        // --- Confirm before a bulk, potentially destructive write ----------
+        if ($dryRun) {
+            $io->caution('Dry run: nothing will be written.');
+        } elseif ($input->isInteractive() && 1 < \count($tenantSlugs)) {
+            if (!$io->askConfirmation(
+                sprintf('Generate invoices for %d tenants? (y/n)', \count($tenantSlugs)),
+                true,
+            )) {
+                $io->warning('Aborted.');
+                return Command::SUCCESS;
+            }
+        }
+
+        $io->title('Invoice Generation');
+        $generated = 0;
+
+        // --- The main loop, batched and memory-safe (§15.7) ----------------
+        $bar = $io->progressBar(\count($tenantSlugs));
+
+        foreach ($tenantSlugs as $tenantSlug) {
+            // Idempotency guard: skip tenants that already have this period's invoices.
+            $existing = $this->invoices->countForTenantAndPeriod($tenantSlug, $this->generator->currentPeriod());
+            if (0 < $existing) {
+                if ($output->isVerbose()) {
+                    $io->comment(sprintf('  ~ %s: already has %d, skipping', $tenantSlug, $existing));
+                }
+                $bar->advance();
+                continue;
+            }
+
+            $count = $this->generator->generateForTenant($tenantSlug, $limit, $dryRun);
+            $generated += $count;
+
+            if ($output->isVerbose()) {
+                $io->writeln(sprintf('  → %s: %d invoice(s)', $tenantSlug, $count));
+            }
+
+            $bar->advance();
+
+            // Keep memory flat over very large runs.
+            $this->em->clear();
+        }
+
+        $bar->finish();
+        $bar->clear();
+
+        $io->success(sprintf(
+            '%s %d invoice(s) across %d tenant(s).',
+            $dryRun ? 'Would generate' : 'Generated',
+            $generated,
+            \count($tenantSlugs),
+        ));
+
+        return Command::SUCCESS;
+    }
+}
+```
+
+Run it the way a user or a scheduler would:
+
+```console
+$ php bin/console app:invoice:generate acme            # one tenant, interactively
+$ php bin/console app:invoice:generate --dry-run -l 5  # preview, capped at 5/tenant
+$ php bin/console app:invoice:generate --no-interaction   # scheduled, non-interactive
+```
+
+Every decision in that class is deliberate and traceable back to a section: the attribute for discovery (§15.1), the argument/option declarations and string casts (§15.2), `SymfonyStyle` for output (§15.3), the interactive path with a non-interactive fallback (§15.4), the progress bar (§15.5), the exit codes (§15.6), and the idempotency guard, batching, `clear()`, and verbosity (§15.7).
+
+> **Aside — testing console commands**
+> The `CommandTester` in `Symfony\Component\Console\Tester` lets you drive a command without a real terminal: feed it an argument array, capture the output, and assert on the exit code. It's the natural tool for covering `execute()` in your test suite — we'll use it in Chapter 22 when we build out functional tests.
+
+---
+
+#### 15.9. Summary
+
+The Console component turns any piece of operational work into a testable, self-documenting, exit-code-reporting service:
+
+- **`#[AsCommand]` + autoconfiguration** registers your command for free — no manual wiring.
+- **Arguments** are positional; **options** are named flags. Remember option values arrive as **strings** — cast them.
+- **`SymfonyStyle`** handles titles, sections, callouts, tables, and lists, and degrades cleanly when non-interactive.
+- **Interactivity is optional.** Always branch on `input->isInteractive()` and provide a safe default for `--no-interaction`. Never let "nobody at the keyboard" trigger a destructive default.
+- **Progress bars** (`ProgressBar` / `$io->progressBar()`) make bulk work legible. Use one bar, not nested ones.
+- **Exit codes** are your contract with the shell and scheduler: `0` success, `1` failure, `2` invalid usage, `3+` your own.
+- **Long-running work** must be **idempotent**, **batch-committed** (with `em->clear()` to bound memory), **streamed** rather than fully loaded, and able to **shut down gracefully**. When the task is *inherently* always-on, that's Messenger's job (Chapter 17); when it needs a schedule, that's the Scheduler's (Chapter 18).
+
+You now have the tools to do the unglamorous-but-essential work that keeps a SaaS alive when no browser tab is open. Next, we turn to another "beyond the browser" responsibility: sending **email and notifications** reliably.
+
+---
+
+#### Exercises
+
+Work in the running invoicing app.
+
+1. **Payment reminders.** Create `app:invoice:remind` that emails customers with overdue invoices. It should take:
+   - an **option** `--overdue-days` (`VALUE_REQUIRED`, default `7`),
+   - an **argument** `tenant` (`OPTIONAL`, a slug),
+   - an **option** `--dry-run` (`VALUE_NONE`).
+   On a dry run, print a table of `[Customer, Invoice #, Days Overdue, Amount]` instead of sending. Validate that `--overdue-days` is a positive integer and return `Command::INVALID` otherwise.
+
+2. **Idempotency.** Make `app:invoice:remind` safe to re-run the same day: a customer should receive at most one reminder per invoice per calendar day. Add a guard (a `reminded_at` column or a query) and verify by running it twice.
+
+3. **Tenant import.** Write `app:tenant:import` that reads a CSV file (path as a **required argument**) and creates new tenants. Add a `ProgressBar` keyed to the row count. Make it **stream** the CSV row by row rather than loading all rows into an array, and `em->clear()` every 100 rows.
+
+4. **Interactive selection.** In `app:tenant:import`, if the file has a `status` column, *interactively* confirm the number of tenants to be created before proceeding, and require a `--yes` option when run with `--no-interaction`. What happens if someone runs `--no-interaction` *without* `--yes`? Make it fail safely.
+
+5. **Exit codes.** Change `app:invoice:generate` so that if *any* tenant fails mid-loop, it logs which tenants succeeded, continues with the rest, and returns `Command::FAILURE` at the end if even one failed — while returning `Command::SUCCESS` if all succeeded. Explain why returning failure *at the end* (rather than aborting immediately) is usually the better choice for a scheduled bulk job.
+
+6. **A functional test.** Using `CommandTester`, write a test that runs `app:invoice:generate --dry-run -l 3` with a known tenant fixture and asserts (a) the exit code is `0`, (b) the output contains the expected success line, and (c) *no* invoices were actually persisted. (We'll formalize this in Chapter 22.)
+
+7. **Graceful shutdown.** Add the `SIGTERM` handler from §15.7.5 to `app:tenant:import`. Simulate it by starting the import against a large CSV and sending `kill -TERM` mid-run. Confirm it stops after the current batch, leaves the database in a consistent state, and that re-running it resumes cleanly without duplicating tenants.
+
+---
+
+*In the next chapter, Chapter 16 — Email and Notifications — we give the SaaS its voice: the Mailer component, templated messages, attachments, and how to test mail locally with Mailpit.*
+
+I'll research the current state of Symfony's Mailer component to ensure the chapter is accurate for Symfony 7.4/8.x, then write it.
+
+
+
+Let me fetch the official Symfony Mailer documentation to get the details right.
+
+
+
+Let me confirm the failure-handling and async-sending specifics.
+
+
+
+Let me verify the testing utilities (`InMemoryTransport`, `MailerAssertionsTrait`) so the test section is correct.
+
+
+
+Let me verify the CSS-inlining and TemplatedEmail specifics so I don't state anything inaccurate.
+
+
+
+I have everything I need. Here is Chapter 16.
+
+---
+
+### Chapter 16 — Email and Notifications
+
+By now your invoicing app has a working UI: tenants create customers, generate invoices, and mark them as paid. But an invoicing system only does its job when it *leaves the browser*. A customer should get an email the moment an invoice is ready, a receipt when payment lands, and a polite reminder when one goes overdue. This chapter gives you the tools to build those notifications reliably.
+
+We'll cover the **Mailer** component — its transports, its message objects, and how to render them with Twig — and then focus on the parts that separate a demo from production: **testing mail locally** with Mailpit, and **handling failures, bounces, and retries**.
+
+> **Chapter objectives**
+> - Configure the Mailer with a DSN and a global envelope.
+> - Choose and understand the built-in and third-party transports, including failover and load-balancing DSNs.
+> - Build plain and Twig-templated messages, with attachments and inline images.
+> - Capture and inspect mail locally using Mailpit (and the `null`/in-memory transports).
+> - Make sending asynchronous with Messenger, handle failures and bounces, and avoid duplicate sends.
+> - Wrap everything in a tenant-aware service for the running project.
+
+---
+
+#### 16.1 Two things, one component: the *Mime* and the *Mailer*
+
+Before we write any code, it helps to internalize a split that the component makes deliberately. There are two distinct jobs:
+
+1. **Composing a message** — building the MIME structure (headers, body parts, attachments). This lives in the **`symfony/mime`** component and is represented by plain PHP objects such as `Email`, `Address`, and `Attachment`.
+2. **Delivering a message** — talking to an SMTP server, a sendmail binary, or a provider's HTTP API. This lives in the **`symfony/mailer`** component and is represented by a *transport*.
+
+Keeping these separate is the whole design: your message objects are dumb, serializable data (a few kilobytes), and the transport is a swappable strategy. You can build the exact same `Email` object and send it to Mailpit on your laptop, to Postmark in staging, and to SES in production — by changing one DSN string, without touching a line of application code.
+
+Installing the component pulls in the Mime component automatically. To render templates with Twig you'll also want the Twig bridge, and if you use a provider's HTTP API you'll want the HttpClient:
+
+```bash
+$ composer require symfony/mailer
+# Twig bridge (for TemplatedEmail) and HttpClient are usually already present
+# in a full-stack app; require them explicitly if not:
+$ composer require symfony/twig-bridge symfony/http-client
+```
+
+The central service you'll inject is `Symfony\Component\Mailer\MailerInterface`:
+
+```php
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+
+final class InvoiceMailer
+{
+    public function __construct(private MailerInterface $mailer) {}
+
+    public function sendInvoiceReady(string $to): void
+    {
+        $email = (new Email())
+            ->from('billing@invoicely.dev')
+            ->to($to)
+            ->subject('Your invoice is ready')
+            ->text('Hi, your invoice is ready.');
+
+        $this->mailer->send($email);
+    }
+}
+```
+
+That's the entire contract: build an `Email` (or a richer subtype), pass it to `send()`. Everything else in this chapter is about doing that well.
+
+---
+
+#### 16.2 Configuring a transport
+
+##### 16.2.1 The DSN
+
+A transport is described by a **DSN** (Data Source Name) — a URI-like string that encodes the protocol, credentials, host, and options. You keep it in `.env` so it differs per machine and per environment:
+
+```dotenv
+# .env
+MAILER_DSN=smtp://user:pass@smtp.example.com:587
+```
+
+```yaml
+# config/packages/mailer.yaml
+framework:
+    mailer:
+        dsn: '%env(MAILER_DSN)%'
+```
+
+The anatomy of the DSN is the same as a URL:
+
+```
+smtp://user:pass@smtp.example.com:587
+       └─┬─┘└┬┘ └────────┬────────┘└┬┘
+     scheme  auth        host       port
+```
+
+Two gotchas bite people here:
+
+- **URL-encode credentials.** If a username or password contains a character that is special in a URI (`: / ? # [ ] @ ! $ & ' ( ) * + , ; =`), encode it. A SendGrid key or an AWS secret containing `+` or `/` is the classic case: `smtp://user:pass%2Bwith%2Fslash@host`. When in doubt, use `urlencode()` on the value.
+- **The port is only part of the DSN for the generic `smtp` transport.** The provider-specific transports (covered next) do not honor a port you append; use the plain `smtp` scheme if you need to control it.
+
+##### 16.2.2 Built-in transports
+
+For a self-hosted mail server or a sendmail binary, the built-in transports are enough:
+
+| Scheme | Example | Notes |
+| --- | --- | --- |
+| `smtp` | `smtp://user:pass@smtp.example.com:587` | Speaks SMTP directly to any server. |
+| `sendmail` | `sendmail://default` | Pipes to the local `sendmail` binary. |
+| `native` | `native://default` | Uses PHP's `sendmail_path` from `php.ini`. |
+
+> **Avoid `native://default` in production.** It delegates entirely to whatever `sendmail_path` is configured, so you have no control over the `-t` behavior, you lose error reporting, and `Bcc` headers may leak. Prefer `sendmail://default` (which you can reason about) or a real SMTP/API transport.
+
+The default timeout for a socket send is PHP's `default_socket_timeout` ini value; slow SMTP servers will surface as exceptions, which is exactly what you want so failures are loud (see §16.7).
+
+##### 16.2.3 Third-party providers
+
+Most production apps use a dedicated mail provider — Postmark, SendGrid, Amazon SES, Mailgun, Brevo, Mailjet, MailerSend, Resend, MailPace, and many more — because they handle deliverability, retries, and reporting for you. Each is a small **bridge** package:
+
+```bash
+$ composer require symfony/postmark-mailer
+# or: symfony/sendgrid-mailer, symfony/amazon-mailer, symfony/mailgun-mailer, ...
+```
+
+Each bridge ships a Flex recipe that adds a commented DSN to your `.env`. For Postmark:
+
+```dotenv
+# .env
+MAILER_DSN=postmark+api://SERVER_TOKEN@default
+```
+
+The DSN's *scheme* selects the provider, and the bridge knows how to translate it into the correct protocol, endpoint, and authentication. Most providers offer up to three transports, and the bridge picks the best one by default:
+
+- `+smtp` — deliver over the provider's SMTP endpoint.
+- `+https` / `+api` — deliver over the provider's HTTP API (requires `symfony/http-client`).
+
+You can force a specific one:
+
+```dotenv
+# Force SMTP instead of the default API transport
+MAILER_DSN=sendgrid+smtp://SENDGRID_KEY@default
+# Region option for Amazon SES / Mailgun / Scaleway
+MAILER_DSN=ses+api://ACCESS_KEY:SECRET_KEY@default?region=eu-west-1
+```
+
+> **Tip — overriding the host.** To debug *what* a transport would send without hitting the provider, replace the trailing `default` host with any capture endpoint: `MAILER_DSN=mailgun+https://KEY:DOMAIN@requestbin.com`. The protocol stays HTTPS; only the host changes.
+
+##### 16.2.4 High availability: failover and round-robin
+
+A single provider is a single point of failure. The Mailer can wrap several transports in a composite DSN.
+
+**Failover** tries the first transport, and if it fails, retries with the next, until one succeeds or all fail:
+
+```dotenv
+MAILER_DSN="failover(postmark+api://ID@default sendgrid+smtp://KEY@default)"
+```
+
+**Round-robin** spreads load across transports, starting from a random one and rotating for each message (and still retrying until success):
+
+```dotenv
+MAILER_DSN="roundrobin(postmark+api://ID@default sendgrid+smtp://KEY@default)"
+```
+
+For failover you can tune how long to wait before retrying with the `retry_period` query parameter:
+
+```dotenv
+MAILER_DSN="failover(postmark+api://ID@default sendgrid+smtp://KEY@default)?retry_period=15"
+```
+
+For the invoicing app, a Postmark primary with a SendGrid failover is a reasonable, low-drama choice: you never lose an invoice notification to a single provider outage.
+
+##### 16.2.5 A global envelope
+
+Every message needs a `From` and a `Sender`. Rather than repeat them, configure a default envelope. This sets the *envelope* (the routing addresses the SMTP protocol uses), which is subtly different from the visible `From` header but worth setting once:
+
+```yaml
+# config/packages/mailer.yaml
+framework:
+    mailer:
+        dsn: '%env(MAILER_DSN)%'
+        envelope:
+            sender: 'no-reply@invoicely.dev'
+            # Optional: a fallback recipient for messages that fail delivery.
+            recipients: 'ops@invoicely.dev'
+```
+
+When the per-message `From` is absent, the mailer uses this default. In a multi-tenant app you'll typically *override* it per message (§16.4.3), but a safe global default is still a good safety net.
+
+---
+
+#### 16.3 Building and sending messages
+
+##### 16.3.1 The `Email` builder
+
+`Symfony\Component\Mime\Email` is a fluent, immutable-by-convention builder. The methods you'll use constantly:
+
+| Method | Purpose |
+| --- | --- |
+| `from()`, `to()`, `cc()`, `bcc()` | Set recipients. Accept an address string, an `Address`, or an array of either. |
+| `replyTo()` | The `Reply-To` header. |
+| `subject()` | The subject line. |
+| `text()`, `html()` | Set a plain-text and/or an HTML body. Providing both yields a `multipart/alternative` message. |
+| `priority(int)` | `Email::PRIORITY_HIGHEST` (1) … `PRIORITY_LOWEST` (5). Defaults to `PRIORITY_NORMAL` (3). |
+| `addHeader(string $name, string $value)` | Attach an arbitrary header — handy for provider-specific tracking headers or your own correlation IDs. |
+
+Recipients with a display name use the `Address` value object:
+
+```php
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
+
+$email = (new Email())
+    ->from(new Address('billing@acme.com', 'Acme Billing'))
+    ->to(new Address('jane@example.com', 'Jane Smith'))
+    ->cc(['manager@example.com'])
+    ->replyTo('billing@acme.com')
+    ->subject('Invoice #1042 is due')
+    ->text('Hi Jane, invoice #1042 is due on 15 March.')
+    ->html('<p>Hi Jane, invoice <strong>#1042</strong> is due on 15 March.</p>')
+    ->priority(Email::PRIORITY_HIGH);
+```
+
+`from()`, `to()`, etc. *replace* the previous value when called again, and `addFrom()`, `addTo()` *append*. That asymmetry is worth remembering when you build recipients in a loop.
+
+##### 16.3.2 Many recipients
+
+To email one customer list without exposing addresses, use `bcc()` — the transport strips Bcc headers before delivery, so no one sees the full list:
+
+```php
+$email->bcc($customerEmails); // array of strings or Address objects
+```
+
+For a tenant-wide "monthly statement" digest, BCC is usually the right call over a shared `To`, both for privacy and to avoid the "Reply All" stampede.
+
+##### 16.3.3 Raw messages and envelopes
+
+`Email` covers the 95% case. When you need full control over MIME structure (nested multipart, custom header ordering, pre-built bodies), the `Email` object can be wrapped in — or replaced by — a `Symfony\Component\Mime\RawMessage`, and the delivery addresses separated into a `Symfony\Component\Mailer\Envelope`:
+
+```php
+use Symfony\Component\Mailer\Envelope;
+use Symfony\Component\Mime\Address;
+
+$envelope = new Envelope(
+    new Address('bounce@acme.com'),      // actual "From" (MAIL FROM)
+    [new Address('jane@example.com')]    // RCPT TO list
+);
+
+$this->mailer->send($email, $envelope);
+```
+
+You rarely need this in application code; it mostly matters when you build a bundle or need a bounce address that differs from the visible sender.
+
+---
+
+#### 16.4 Templated messages with Twig
+
+Writing HTML by hand in PHP strings is miserable and untestable. The Twig bridge lets you describe a message as templates, exactly like a normal view.
+
+##### 16.4.1 `TemplatedEmail`
+
+`Symfony\Bridge\Twig\Mime\TemplatedEmail` extends `Email` and adds three methods:
+
+- `htmlTemplate(string $name)` — Twig template for the HTML part.
+- `textTemplate(string $name)` — Twig template for the plain-text part.
+- `context(array $variables)` — variables exposed to the template.
+
+The Twig integration is autoconfigured in a full-stack app (it needs `symfony/twig-bridge` and a Twig environment). Send one like this:
+
+```php
+use App\Entity\Invoice;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+
+final class InvoiceMailer
+{
+    public function __construct(private MailerInterface $mailer) {}
+
+    public function sendInvoiceReady(Invoice $invoice): void
+    {
+        $email = (new TemplatedEmail())
+            ->from('billing@invoicely.dev')
+            ->to($invoice->getCustomer()->getEmail())
+            ->subject(sprintf('Your invoice #%s is ready', $invoice->getNumber()))
+            ->htmlTemplate('email/invoice.html.twig')
+            ->textTemplate('email/invoice.txt.twig')
+            ->context([
+                'invoice' => $invoice,
+                'number'  => $invoice->getNumber(),
+                'total'   => money_format('%.2f', $invoice->getTotal()),
+                'due'     => $invoice->getDueDate()->format('F j, Y'),
+            ]);
+
+        $this->mailer->send($email);
+    }
+}
+```
+
+##### 16.4.2 A shared base layout
+
+Every transactional email repeats the same header, footer, and links. Model that once with template inheritance, using the dedicated `html_body` and `text_body` blocks:
+
+```twig
+{# templates/email/base.html.twig #}
+<!DOCTYPE html>
+<html>
+  <body style="font-family: Arial, sans-serif; color: #222;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4; padding:24px 0;">
+      <tr><td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="background:#fff; border-radius:8px; padding:24px;">
+          <tr><td>
+            <img src="{{ logo_url }}" width="120" alt="{{ brand_name }}">
+          </td></tr>
+          <tr><td style="padding-top:24px;">
+            {% block html_body %}{% endblock %}
+          </td></tr>
+          <tr><td style="padding-top:32px; font-size:12px; color:#888; border-top:1px solid #eee;">
+            You're receiving this email because you use {{ brand_name }}.
+            <a href="{{ unsubscribe_url }}">Unsubscribe</a>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>
+```
+
+```twig
+{# templates/email/base.txt.twig #}
+{% block text_body %}{% endblock %}
+
+--
+You're receiving this email because you use {{ brand_name }}.
+Unsubscribe: {{ unsubscribe_url }}
+```
+
+```twig
+{# templates/email/invoice.html.twig #}
+{% extends 'email/base.html.twig' %}
+
+{% block html_body %}
+  <h2 style="color:#1a1a2e;">Invoice #{{ number }}</h2>
+  <p>Hi,</p>
+  <p>Your invoice for <strong>{{ total }}</strong> is now available and due on {{ due }}.</p>
+  <p><a href="{{ pay_url }}"
+        style="background:#1a1a2e; color:#fff; padding:10px 18px; border-radius:6px; text-decoration:none;">
+      Pay now
+    </a></p>
+{% endblock %}
+```
+
+```twig
+{# templates/email/invoice.txt.twig #}
+{% extends 'email/base.txt.twig' %}
+
+{% block text_body %}
+Invoice #{{ number }}
+
+Hi,
+
+Your invoice for {{ total }} is now available and due on {{ due }}.
+
+Pay now: {{ pay_url }}
+{% endblock %}
+```
+
+##### 16.4.3 Multi-tenant branding
+
+Because this is a multi-tenant SaaS, tenants expect their own look: their logo, their name, and usually their own sending domain (their own `From` gives the best deliverability). You push that branding in through the `context` and the message headers:
+
+```php
+public function sendInvoiceReady(Invoice $invoice): void
+{
+    $tenant = $invoice->getTenant();
+
+    $email = (new TemplatedEmail())
+        // Per-tenant sender; falls back to the global envelope when null.
+        ->from($tenant->getBounceAddress() ?? 'billing@invoicely.dev')
+        ->to($invoice->getCustomer()->getEmail())
+        ->subject(sprintf('[%s] Invoice #%s is ready', $tenant->getName(), $invoice->getNumber()))
+        ->htmlTemplate('email/invoice.html.twig')
+        ->textTemplate('email/invoice.txt.twig')
+        ->context([
+            'invoice'        => $invoice,
+            'number'         => $invoice->getNumber(),
+            'total'          => money_format('%.2f', $invoice->getTotal()),
+            'due'            => $invoice->getDueDate()->format('F j, Y'),
+            'pay_url'        => $invoice->getPayUrl(),
+            'brand_name'     => $tenant->getName(),
+            'logo_url'       => $tenant->getLogoUrl(),
+            'unsubscribe_url'=> $invoice->getUnsubscribeUrl(),
+        ]);
+
+    $this->mailer->send($email);
+}
+```
+
+Notice what *didn't* change: the templates, the service, the transport. A new tenant joining simply means a new row of branding data.
+
+##### 16.4.4 Automatic CSS inlining
+
+Email clients are hostile to `<style>` blocks and external stylesheets; many strip them, leaving your markup naked. With `TemplatedEmail`, the Twig body renderer **inlines your CSS automatically** — selectors in a `<style>` block (or linked stylesheet) are moved into the elements they match, so the same markup renders far more consistently across Gmail, Outlook, and Apple Mail. You get this for free as long as you're using `TemplatedEmail` and the Twig bridge; no extra package is required.
+
+That said, email remains the one place where you should still test the *rendered* output in a few real clients (or a previewer like Litmus). Inlining solves the majority of breakage but not all of it — table-based layout, explicit widths, and `msot`/`<!--[if mso]>` conditionals are still your friends for Outlook.
+
+> **Text is not optional.** Always ship a `textTemplate`. If you provide only an HTML template, Symfony can derive a plain-text version from the HTML, but the conversion is a heuristic: links, tables, and images degrade unpredictably. An explicit text template is cheap, reliable, and respected by screen readers and plain-text clients.
+
+---
+
+#### 16.5 Attachments and inline images
+
+##### 16.5.1 Regular attachments
+
+An attachment is added with `attachment()` — the first argument is the binary content, then a filename and a MIME type:
+
+```php
+$email->attachment($pdfBytes, 'invoice-1042.pdf', 'application/pdf');
+```
+
+If the file is on disk, `attachFromPath()` reads it for you:
+
+```php
+$email->attachFromPath('/var/invoices/1042.pdf', 'invoice-1042.pdf', 'application/pdf');
+```
+
+For the invoicing app, the invoice-ready email is a poor notification without the actual PDF attached. We generate it on demand (the running project's `InvoicePdfRenderer` builds it from the same `Invoice` entity the template uses):
+
+```php
+public function sendInvoiceReady(Invoice $invoice): void
+{
+    $pdf = $this->pdfRenderer->render($invoice); // returns a string of PDF bytes
+
+    $email = (new TemplatedEmail())
+        // ... from/to/subject/templates/context as before ...
+        ->attachFromPath($pdf->path(), $pdf->filename(), 'application/pdf');
+
+    $this->mailer->send($email);
+}
+```
+
+> **Caution with large attachments + Messenger.** If you later route mail through Messenger (§16.7) and use a database-backed transport, the message (including any binary attachment) must be serialized into the queue. Big PDFs can blow up your queue table. Options: keep attachments small and store a *reference* (an ID or signed URL) in the queued message, materializing the file only when a worker actually sends; use a transport comfortable with payloads (e.g. SQS, AMQP, Redis); or send attachments synchronously and only queue the notification. We'll revisit this in Chapter 17.
+
+##### 16.5.2 Inline images (cid: references)
+
+A logo or a chart that should appear *inside* the HTML body — not as a downloadable file — is an *embedded* image. `embed()` returns a content-id you reference from the markup with the `cid:` scheme:
+
+```php
+$logo = $email->embed($logoPng, 'logo.png', 'image/png'); // returns a ContentId
+
+$email->html(sprintf(
+    '<img src="cid:%s" alt="Acme" width="120">',
+    $cid: '' // placeholder — see note
+));
+```
+
+The clean pattern, and the one that keeps the template and the PHP decoupled, is to embed in the service and pass the resulting content-id into the template context, then use `cid:` in the template:
+
+```php
+$logoCid = $email->embed($tenant->getLogoPng(), 'logo.png', 'image/png');
+
+$email->context([
+    // ...
+    'logo_cid' => $logoCid,
+]);
+```
+
+```twig
+{# inside base.html.twig #}
+<img src="cid:{{ logo_cid }}" width="120" alt="{{ brand_name }}">
+```
+
+Remote images (`https://...`) work in many clients but are blocked by default in a few (Outlook, some corporate gateways), which is another reason to `embed()` critical branding like a logo.
+
+> **Why a template `{{ logo_url }}` vs `cid:`.** A hosted `logo_url` is simpler and caches well, but risks being stripped by picky clients; a `cid:` embed is self-contained and always renders. For the logo, embed it. For decorative or secondary images, a URL is fine.
+
+---
+
+#### 16.6 Testing mail locally with Mailpit
+
+Developing email without a real inbox is slow and, worse, teaches you to ignore the output. **Mailpit** is a single-binary, open-source SMTP server and web UI that swallows every message and shows it to you instantly. It's the best "first inbox" for a Symfony app.
+
+##### 16.6.1 Run Mailpit
+
+Mailpit listens for SMTP on **port 1025** and serves its web UI on **port 8025**. Run it however you like — a binary, a systemd service, or a container. In the project's `docker-compose.yml`:
+
+```yaml
+services:
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI + REST API
+    environment:
+      MP_SMTP_AUTH: optional
+```
+
+Now point the app at it. Keep it in `.env.local` so it never leaks into version control or CI:
+
+```dotenv
+# .env.local  (per-developer, not committed)
+MAILER_DSN=smtp://127.0.0.1:1025
+```
+
+Send any email and open <http://localhost:8025>. You get a list of messages, a rendered HTML view, the raw source, headers, and attachments — plus a REST API (`GET /api/v1/messages`) if you want to script against it.
+
+##### 16.6.2 The `null` and in-memory transports
+
+Two special transports are worth knowing for *other* contexts:
+
+- `MAILER_DSN=null://` — accepts and immediately discards every message. Use it in CI and in the **test** environment so tests never try to open a real socket.
+- `MAILER_DSN=in_memory://` — holds messages in memory for the lifetime of the process. Useful in functional tests where you want to inspect what *would* have been sent.
+
+The recommended split for this project:
+
+```dotenv
+# .env.local        — you, on your laptop: real rendering in Mailpit
+MAILER_DSN=smtp://127.0.0.1:1025
+
+# .env.test         — the test environment: never deliver, but let us assert
+MAILER_DSN=null://
+```
+
+Other catchers — MailHog, Mailtrap's sandbox, the Symfony Mailer "Mail catcher" in the dev toolbar — do similar jobs; Mailpit is simply the one that's a single static binary and has a clean API. Pick one and standardize the team on it.
+
+##### 16.6.3 Asserting on mail in functional tests
+
+When `framework.mailer.message_logger` is enabled, the framework records every message that passes through — even when the transport is `null://` — and the `MailerAssertionsTrait` gives you a rich assertion API for functional tests:
+
+```yaml
+# config/packages/test/framework.yaml
+framework:
+    mailer:
+        message_logger: true   # required for the assertions below
+```
+
+```php
+// tests/Functional/InvoiceNotificationTest.php
+namespace App\Tests\Functional;
+
+use App\Tests\...;              // your base test case / client factory
+use Symfony\Bundle\FrameworkBundle\Test\MailerAssertionsTrait;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+
+final class InvoiceNotificationTest extends WebTestCase
+{
+    use MailerAssertionsTrait;
+
+    public function testMarkingInvoicePaidSendsAResceipt(): void
+    {
+        $client = self::createClient();
+        $client->followRedirects();
+
+        // Log in as a tenant admin and drive the "mark paid" action...
+        // $client->request('POST', '/invoices/1042/mark-paid', ...);
+
+        // Exactly one message was produced.
+        $this->assertEmailCount(1);
+
+        $email = $this->getMailerMessage();
+        $this->assertEmailSubjectContains($email, 'Receipt');
+        $this->assertEmailTextBodyContains($email, 'Thank you for your payment');
+        $this->assertEmailAttachmentCount($email, 1); // the PDF receipt
+    }
+}
+```
+
+The trait's methods worth memorizing (all are static, so `$this->` or `self::` both work):
+
+- `assertEmailCount(int $count)` and `assertQueuedEmailCount(int $count)` — how many were sent (or, if you're on Messenger, merely *queued*).
+- `getMailerMessage(int $index = 0)` / `getMailerMessages()` — the `RawMessage` objects, for direct inspection.
+- Body: `assertEmailTextBodyContains()`, `assertEmailHtmlBodyContains()` and their `NotContains` twins.
+- Headers: `assertEmailHasHeader()`, `assertEmailHeaderSame()`, `assertEmailAddressContains()`, `assertEmailSubjectContains()`.
+- Attachments: `assertEmailAttachmentCount()`.
+
+Because the assertions read from the message-logger listener, they work whether you send synchronously or queue asynchronously — which makes them stable across the refactor in §16.7.
+
+---
+
+#### 16.7 Handling failures, bounces, and retries
+
+"Did the mail go through?" has two very different answers, and conflating them is the source of most silent mail bugs:
+
+1. **Transport failure** — the SMTP server or provider API rejected or errored on send (bad credentials, a timeout, a rate limit). This happens *now*, in `send()`, and surfaces as an exception / a `MessageFailedEvent`.
+2. **Delivery failure (bounce)** — the message was *accepted* by your provider, then bounced later because the recipient doesn't exist, the mailbox is full, or the domain rejects you. This happens *minutes to days later* and never appears in your PHP process.
+
+You need a strategy for both.
+
+##### 16.7.1 Observing synchronous send results
+
+The Mailer dispatches events around each send: `MessageEvent` (before, and lets you mutate the message/envelope), `MessageSentEvent`, and `MessageFailedEvent`. A subscriber that logs failures gives you an immediate signal and a place to alert:
+
+```php
+// src/EventListener/MailerFailureSubscriber.php
+namespace App\EventListener;
+
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Mailer\Event\MessageFailedEvent;
+use Symfony\Component\Messenger\Handler\HandlersLocator; // (if needed later)
+use Symfony\Component\Mime\Address;
+
+final class MailerFailureSubscriber
+{
+    public function __construct(private LoggerInterface $logger) {}
+
+    public function onMessageFailed(MessageFailedEvent $event): void
+    {
+        $email = $event->getMessage();
+        $to = $email instanceof \Symfony\Component\Mime\Email
+            ? (string) ($email->getTo()[0] ?? new Address('unknown'))
+            : 'unknown';
+
+        $this->logger->error('Mail delivery failed', [
+            'to'    => $to,
+            'error' => $event->getError()->getReason(),
+        ]);
+        // In production, page someone: forward to your alerting channel here.
+    }
+}
+```
+
+```php
+#[AsEventListener(event: 'Symfony\Component\Mailer\Event\MessageFailedEvent', method: 'onMessageFailed')]
+```
+
+> **Attribute vs. tag.** Subscribing via `#[AsEventListener]` with the FQCN event name works for a plain subscriber. If you prefer the `EventSubscriberInterface` form, return the mapping in `getSubscribedEvents()`. Both register the same listener with the dispatcher.
+
+Logging is necessary but not sufficient: a `MessageFailedEvent` on a transient SMTP hiccup means you've *lost* an invoice notification. That's what the next section fixes.
+
+##### 16.7.2 Making sending asynchronous (and retryable) with Messenger
+
+The robust pattern is to not talk to the mail provider from the request at all. Route mail through **Messenger** (Chapter 17) so it's durable, retryable, and off the critical path. One line of config does it: point the Mailer at a Messenger bus.
+
+```yaml
+# config/packages/mailer.yaml
+framework:
+    mailer:
+        dsn: '%env(MAILER_DSN)%'
+        bus: 'messenger.default'     # dispatch through Messenger instead of sending inline
+        envelope:
+            sender: 'no-reply@invoicely.dev'
+```
+
+With `bus` set, `mailer->send()` no longer opens a socket. It dispatches an envelope onto the bus; a worker (`bin/console messenger:consume async`) picks it up later and performs the real send. A failed request no longer means a lost email — the message is already safely queued.
+
+Pair that bus with a retry strategy and a failure transport so transient errors are retried, and permanent ones are parked where you can inspect them:
+
+```yaml
+# config/packages/messenger.yaml
+framework:
+    messenger:
+        transports:
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'   # e.g. amqp://, doctrine://, redis://
+                retry_strategy:
+                    max_retries: 3
+                    delay: 1000            # ms between attempts
+                    multiplier: 2          # back off exponentially
+                    max_delay: 60000
+                failure_transport: failed
+```
+
+```dotenv
+# .env
+MESSENGER_TRANSPORT_DSN=amqp://guest:guest@localhost:5672/%2f/mailer
+```
+
+Now the failure lifecycle is:
+
+1. `send()` → message queued. Request returns fast.
+2. Worker delivers. Transient SMTP error → Messenger retries with backoff (up to 3×).
+3. Still failing → message lands on the `failed` transport.
+4. You investigate and replay: `bin/console messenger:failed`, `bin/console messenger:retry <id>`, or `bin/console messenger:failed --limit=50`.
+
+Your §16.7.1 subscriber and §16.6.3 assertions still work unchanged, because they observe the Mailer's events and message logger regardless of the transport's timing.
+
+> **Keep the queued payload light.** Remember the attachment caveat from §16.5.1: what travels on the bus is your `Email` object, serialized. Prefer storing a reference to a generated artifact (its path or an ID) in a small, custom message and building the `TemplatedEmail` inside the *handler*. That keeps the queue lean and the retry/replay semantics clean.
+
+##### 16.7.3 Bounces and complaints (the other failure)
+
+A provider's webhook tells you about *later* delivery outcomes — hard bounces, soft bounces, spam complaints, blocks. The provider-specific bridges that support webhooks (SendGrid, Postmark, Mailgun, Brevo, Mailjet, MailerSend, Resend, and others) ship a handler that implements `Symfony\Component\Webhook\WebhookHandlerInterface` and is tagged with the `webhook_message_handler` tag. You expose a public route that receives the provider's callback and the framework routes it to that handler:
+
+```php
+// A handler you register for bounce events (illustrative; the bridge provides
+// much of the parsing). See Chapter 18 for the full Webhook component.
+#[AsWebhookMessageHandler]
+final class BounceHandler
+{
+    public function __construct(private CustomerRepository $customers,
+                                private LoggerInterface $logger) {}
+
+    public function __invoke(object $event): void
+    {
+        if ($event instanceof BounceEvent) {
+            // Mark the address as bounced; stop sending to it; alert ops.
+            $this->customers->markBounced($event->getTo());
+            $this->logger->warning('Hard bounce', ['to' => $event->getTo()]);
+        }
+        // ComplaintEvent (spam report), BlockEvent, etc.
+    }
+}
+```
+
+The full mechanics of webhook routing, signing, and idempotency are Chapter 18's job; here the point is that **bounce handling is a separate input channel** (an inbound webhook) from the send path (outbound transport). A mature invoicing app suppresses mail to a hard-bounced address, retries a soft-bounced one on a schedule, and halts to an address that generates a complaint.
+
+##### 16.7.4 Don't double-send
+
+Once sending is asynchronous and retryable, you must make your *business* operation idempotent, or a retried handler can send the same receipt twice. Two cheap, reliable guards:
+
+- **A persisted flag/state.** Only send "invoice ready" when the invoice transitions *into* the `sent` state, guarded by an atomic update:
+
+  ```php
+  $updated = $this->invoices
+      ->createQueryBuilder('i')
+      ->where('i.id = :id')->andWhere('i.status = :from')
+      ->set('i.status', ':to')->setParameter('id', $invoice->getId())
+      ->setParameter('from', Invoice::STATUS_DRAFT)
+      ->setParameter('to', Invoice::STATUS_SENT)
+      ->execute();
+
+  if ($updated === 1) {          // only the first writer wins
+      $this->mailer->sendInvoiceReady($invoice);
+  }
+  ```
+
+- **A correlation / dedupe key.** Put a stable id (e.g. `invoice:<id>:ready`) in a header and de-dupe on it in the handler or at the provider, so a redelivered queue message is recognized as a repeat.
+
+---
+
+#### 16.8 A short deliverability checklist
+
+The code gets the message *out*; these settings get it *delivered* (i.e., not landing in spam):
+
+- **Authenticate your sending domain** with SPF, DKIM, and DMARC records. Your provider's dashboard will give you the exact DNS TXT records. Sending from `@invoicely.dev` (or, for multi-tenant, each tenant's own domain) without these is how you end up in the junk folder.
+- **Use a real, monitored sender and a working `Reply-To`.** `no-reply@` for pure notifications, but always a `Reply-To` a human can answer.
+- **Respect `List-Unsubscribe`** on anything that could be considered marketing (statements, digests). Include the header and a working link.
+- **Warm up new sending domains** gradually rather than blasting volume on day one.
+- **Keep an eye on the bounces/complaints feed** (§16.7.3) and suppress offenders promptly — your sender reputation depends on it.
+- **Be deliberate about tracking.** Open/click pixels are easy to add (a 1×1 image whose URL encodes the recipient + a correlation id) but are privacy-sensitive and, for a transactional invoicing app, usually unnecessary. If you do track, say so, honor your jurisdiction's rules, and never gate the payment link behind a tracking pixel.
+
+---
+
+#### 16.9 Bringing it together in the running project
+
+Pull the pieces into one tenant-aware service that the rest of the app calls without ever touching a transport, DSN, or template name. The service is the *only* thing that knows mail exists:
+
+```php
+// src/Service/Notification/InvoiceMailer.php
+namespace App\Service\Notification;
+
+use App\Entity\Invoice;
+use App\Service\Invoice\InvoicePdfRenderer;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+
+final class InvoiceMailer
+{
+    public function __construct(
+        private MailerInterface $mailer,
+        private InvoicePdfRenderer $pdfRenderer,
+    ) {}
+
+    public function sendInvoiceReady(Invoice $invoice): void
+    {
+        $tenant = $invoice->getTenant();
+
+        $email = (new TemplatedEmail())
+            ->from($tenant->getBounceAddress() ?? new Address('billing@invoicely.dev'))
+            ->to($invoice->getCustomer()->getEmail())
+            ->subject(sprintf('[%s] Invoice #%s is ready', $tenant->getName(), $invoice->getNumber()))
+            ->htmlTemplate('email/invoice.html.twig')
+            ->textTemplate('email/invoice.txt.twig')
+            ->attachFromPath($this->pdfRenderer->render($invoice)->path(),
+                             'invoice-'.str_replace('#', '', $invoice->getNumber()).'.pdf',
+                             'application/pdf')
+            ->context([
+                'invoice'         => $invoice,
+                'number'          => $invoice->getNumber(),
+                'total'           => money_format('%.2f', $invoice->getTotal()),
+                'due'             => $invoice->getDueDate()->format('F j, Y'),
+                'pay_url'         => $invoice->getPayUrl(),
+                'brand_name'      => $tenant->getName(),
+                'logo_url'        => $tenant->getLogoUrl(),
+                'unsubscribe_url' => $invoice->getUnsubscribeUrl(),
+            ]);
+
+        $this->mailer->send($email);   // queues to Messenger when `bus` is set
+    }
+
+    // sendReceipt(), sendPaymentReminder(), sendDunning() follow the same shape...
+}
+```
+
+The controller or domain service triggers it at the right lifecycle moment (invoice marked sent, payment recorded, due date passed); a console command (Chapter 15) sweeps for overdue invoices and calls `sendPaymentReminder()`. Because sending is queued, none of this adds latency to the request that created the invoice — and because it's tenant-aware, onboarding a new customer costs nothing.
+
+---
+
+#### Key takeaways
+
+- **Message and transport are separate.** `Email`/`TemplatedEmail` (Mime) are data; the transport (Mailer) is a swappable delivery strategy selected by a DSN.
+- **One DSN to rule the environment.** Keep `MAILER_DSN` in `.env`/`.env.local`/`.env.test`; use `smtp` for self-hosting, a provider bridge for production, and `failover(...)`/`roundrobin(...)` to hedge against a single provider.
+- **Templated + base layout = maintainable email.** Put shared chrome in `email/base.*.twig`, CSS inlining is automatic, and always ship a real text template.
+- **Mailpit on :1025 (UI on :8025) is your development inbox.** `null://` for tests/CI, `in_memory://` when you need to hold messages; assert with `MailerAssertionsTrait` + `message_logger: true`.
+- **There are two failures.** Transport errors are synchronous (log via `MessageFailedEvent`, retry via Messenger); bounces are asynchronous (handle via provider webhooks). Make the business operation idempotent so retries never double-send.
+
+---
+
+#### Exercises
+
+1. **Wire up Mailpit.** Add a `mailpit` service to the project's `docker-compose.yml`, set `MAILER_DSN=smtp://127.0.0.1:1025` in `.env.local`, and confirm a test email from your console command lands in the UI with its attachment intact.
+
+2. **Tenant branding.** Add `bounce_address`, `name`, and `logo` to your `Tenant` entity and to the invoice template context. Verify two tenants produce visually distinct emails (different logo and `From`) using the same templates.
+
+3. **Failure transport.** Set `framework.mailer.bus` to your default Messenger bus and add a `retry_strategy` + `failure_transport`. Temporarily point `MAILER_DSN` at a non-existent SMTP host, trigger a send, and confirm the message is retried then appears in `bin/console messenger:failed`. Replay it and confirm it delivers once the DSN is fixed.
+
+4. **Idempotent send.** Add an atomic "mark as sent" guard to `InvoiceMailer::sendInvoiceReady()` (as in §16.7.4) and write a functional test that invokes the same action twice, asserting `assertEmailCount(1)` — proving the guard prevents a duplicate.
+
+5. **Functional assertions.** Using `MailerAssertionsTrait`, write a test that the "mark paid" action produces exactly one email whose subject contains "Receipt", whose text body mentions the amount, and which has exactly one PDF attachment.
+
+6. **Bounce webhook (preview).** Stand up a local route and a minimal `BounceHandler` (full details in Ch 18). Use a provider sandbox (or a stubbed payload) to deliver a hard-bounce event and confirm the affected customer's address is suppressed from future mail.
+
+7. **Deliverability.** For your sending domain, generate SPF, DKIM, and DMARC records from your provider's dashboard and publish them as DNS. Send a test email and check the result on a deliverability checker; note the `List-Unsubscribe` header on any digest email and wire it to a working opt-out endpoint.
+
+I'll research the current Symfony Messenger component details to make sure the code examples match the 7.4/8.x target, then write the chapter.
+
+
+
+Let me fetch the full official Messenger docs for the exact 7.4 syntax on routing, rate limiting, stamps, middleware, and testing.
+
+
+
+Let me get the middleware, stamps, failed-transport/dead-letter, rate-limiting, and testing specifics.
+
+
+
+Let me verify the exact rate-limiter routing syntax and the custom middleware attribute for 7.4.
+
+
+
+Let me fetch the rate-limiter doc for the exact worker rate-limiting config, and the SymfonyCasts middleware page for the custom middleware signature.
+
+
+
+Let me pull the raw Messenger 7.4 docs to confirm rate-limiting, middleware, stamps, and worker options exactly.
+
+
+
+I have the core docs. Let me confirm the custom-middleware attribute and the messenger rate-limiting/worker specifics before writing.
+
+
+
+Let me confirm the `#[AsMiddleware]` attribute details and the failed-message console commands.
+
+
+
+I have everything I need. Here is Chapter 17.
+
+---
+
+### Chapter 17: Asynchronous Processing with Messenger
+
+By now our invoicing app does something a little uncomfortable. When a tenant saves a new invoice, the controller (or a service) persists the `Invoice` entity, renders a PDF, and sends the email to the customer — all in the middle of an HTTP request. In Chapter 16 we wired up the Mailer and it *works*. But rendering a PDF with an embedded logo, line items, and a multi‑page statement can take half a second to a few seconds, and the email round‑trip adds more. The tenant who clicked **Save** is still staring at a spinner while all of that happens, and if the PDF library or the mail provider hiccups, the whole invoice creation fails — even though the invoice itself was saved fine.
+
+This chapter is about breaking that dependency. **Symfony Messenger** lets us *decide* to do work — "generate this PDF", "send this email" — and then hand that decision to the framework to act on *later*, on a background worker, instead of blocking the request. We'll build the same invoice flow from Chapter 16 the asynchronous way, and in doing so learn the whole mental model of Messenger: messages, handlers, the bus, transports, the envelope and its stamps, the middleware pipeline, retries, dead‑letter queues, and running real workers.
+
+> **Where this fits.** Messenger is a *component*, so you could use it in any PHP project, but here we use it the way it ships in the full framework: wired into the service container, configured under `framework.messenger`, and run through `bin/console`. Everything in this chapter builds on the service container (Chapter 5), events (Chapter 7), Doctrine (Chapter 13), and the Mailer (Chapter 16).
+
+#### 17.1 The architecture at a glance
+
+Before writing code, internalize the six roles Messenger plays. Once you can picture them, the rest of the chapter is just filling in details.
+
+| Role | What it is | In our app |
+|---|---|---|
+| **Message** | A plain, serializable PHP object carrying data | `InvoiceCreated`, `SendInvoiceEmail` |
+| **Bus** | The entry point; `dispatch()` a message onto it | `messenger.default_bus` |
+| **Middleware** | Cross‑cutting steps that wrap the flow (serialize, validate, log, retry) | the default stack + our own |
+| **Envelope + Stamps** | The wrapper around a message, plus its metadata | "which queue", "which bus", "retry count" |
+| **Transport** | Where a queued message *lives* (DB table, Redis, RabbitMQ, or `sync://`) | `async`, `email`, `failed` |
+| **Handler** | The code that actually does the work | `GenerateInvoicePdfHandler` |
+
+There are two halves to the pipeline, and it's worth keeping them distinct because they run in *different processes*:
+
+- **Send half** (your web request): you `dispatch()` a message. Middleware serializes it and hands it to a *sender*, which drops it on a transport. The request is done and can respond `201 Created` immediately.
+- **Receive half** (a worker process, `bin/console messenger:consume`): a *receiver* pulls an envelope off a transport, deserializes it, and runs it back through the middleware stack down to the *handler*, which does the real work.
+
+The key insight: **the message is the contract between two processes.** The web request and the worker may not even run the same version of the code at the same time (a deploy can land between them), so the message must be self‑describing and serializable. We'll come back to that in §17.5 when we talk about not putting Doctrine entities in messages.
+
+Let's install the component and see the send half working synchronously first.
+
+#### 17.2 A first message, a first handler
+
+```bash
+$ composer require symfony/messenger
+```
+
+The Flex recipe creates `config/packages/messenger.yaml` and drops a couple of commented DSNs into your `.env`. We'll fill those in as we go.
+
+##### The message
+
+A message has **no** required shape other than "can be serialized." For our invoice flow, we'll model it as an *event* — something that *has happened* — because the PDF and the email are both *reactions* to an invoice being created:
+
+```php
+// src/Message/InvoiceCreated.php
+namespace App\Message;
+
+final class InvoiceCreated
+{
+    public function __construct(
+        public readonly int $tenantId,
+        public readonly int $invoiceId,
+        public readonly string $locale,
+    ) {
+    }
+}
+```
+
+Note that it carries **IDs and a locale string**, not the `Invoice` entity itself. We'll justify that in §17.5; for now, treat it as a rule of thumb.
+
+##### The handler
+
+A handler is any callable. The idiomatic form is a class annotated with `#[AsMessageHandler]` whose `__invoke()` is type‑hinted with the message class. Autoconfiguration does the rest: because the parameter is `InvoiceCreated`, Symfony knows this handler is for `InvoiceCreated`.
+
+```php
+// src/MessageHandler/GenerateInvoicePdfHandler.php
+namespace App\MessageHandler;
+
+use App\Message\InvoiceCreated;
+use App\Service\InvoicePdfGenerator;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+
+#[AsMessageHandler]
+final class GenerateInvoicePdfHandler
+{
+    public function __construct(
+        private InvoicePdfGenerator $pdfGenerator,
+    ) {
+    }
+
+    public function __invoke(InvoiceCreated $message): void
+    {
+        // Expensive work: render, store, (eventually) attach to the invoice row.
+        $this->pdfGenerator->generate($message->tenantId, $message->invoiceId, $message->locale);
+    }
+}
+```
+
+`#[AsMessageHandler]` isn't just a marker; it takes arguments you'll want shortly:
+
+```php
+// Bind this handler to a *specific* transport (see §17.4):
+#[AsMessageHandler(fromTransport: 'email')]
+// Or to a *specific* bus (see §17.3 for a second, event‑only bus):
+#[AsMessageHandler(bus: 'messenger.event_bus')]
+// Or point at a named method instead of __invoke:
+#[AsMessageHandler(method: 'handleInvoiceCreated')]
+```
+
+##### Dispatching
+
+Inject the bus (it autowires through the `MessageBusInterface` type) and `dispatch()`. Let's do it in a domain service rather than the controller so the "decide to do work" logic lives with the invoice:
+
+```php
+// src/Service/InvoiceManager.php
+namespace App\Service;
+
+use App\Entity\Invoice;
+use App\Entity\Tenant;
+use App\Message\InvoiceCreated;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
+
+final class InvoiceManager
+{
+    public function __construct(
+        private EntityManagerInterface $em,
+        private MessageBusInterface $bus,   // autowires to messenger.default_bus
+    ) {
+    }
+
+    public function createInvoice(Tenant $tenant, array $lineItems): Invoice
+    {
+        $invoice = new Invoice($tenant, $lineItems);
+        $this->em->persist($invoice);
+        $this->em->flush();                 // invoice is safely committed
+
+        // Decide to do the rest later. This returns an Envelope, and — with no
+        // transport configured yet — the handler runs *right now, synchronously*.
+        $this->bus->dispatch(new InvoiceCreated(
+            $tenant->getId(),
+            $invoice->getId(),
+            $tenant->getLocale(),
+        ));
+
+        return $invoice;
+    }
+}
+```
+
+To see what Symfony has wired up for you:
+
+```bash
+$ php bin/console debug:messenger
+```
+
+That command lists every bus and every handler it discovered, along with the message class each handler is bound to. It's the single most useful thing to run when a message "disappears" — if your handler isn't in that list, it isn't registered.
+
+At this point, dispatching `InvoiceCreated` runs `GenerateInvoicePdfHandler` **inline** — same as before, just with nicer separation. Nothing is asynchronous yet. The magic comes from routing the message to a transport.
+
+#### 17.3 Routing messages: the bus and where it sends them
+
+A **transport** is what makes a message async. It's a place messages are *stored* so a worker can pick them up later. But first we must tell Messenger *which* messages go to *which* transport. That's **routing**.
+
+There are two ways to declare routing, and you can use both at once:
+
+1. **On the message class**, with the `#[AsMessage]` attribute (added in Symfony 7.2) — the "default" routing.
+2. **In configuration** (`framework.messenger.routing`) — which **always wins** over the attribute.
+
+```php
+// src/Message/InvoiceCreated.php
+use Symfony\Component\Messenger\Attribute\AsMessage;
+
+#[AsMessage('async')]          // route to the transport named "async"
+final class InvoiceCreated { /* ... */ }
+```
+
+```yaml
+# config/packages/messenger.yaml
+framework:
+    messenger:
+        routing:
+            'App\Message\SendInvoiceEmail': email     # a specific message -> specific transport
+            'App\Message\*': async                    # everything else in App\Message -> async
+```
+
+Why both? The attribute keeps routing close to the code and is the natural default. The config file is where you *override* per environment — which is exactly what we'll do to force messages synchronous in tests (§17.10).
+
+A few routing rules that save real pain:
+
+- **Wildcard namespaces.** `'App\Message\*'` matches every message under that namespace. The `*` must be at the *end*. This is how most apps avoid a giant routing table.
+- **A literal `'*'`** is a catch‑all default: *any* message that matches nothing else. Handy for guaranteeing "nothing runs synchronously by accident." The one catch: Mailer's `SendEmailMessage` also passes through here when Messenger is available, and a `Email` object with a PHP resource/stream attachment is *not* serializable. So if you use a global `'*'`, make sure your emails serialize cleanly (Chapter 16 already does, because we build them from templates and scalar attachments).
+- **Inheritance and interfaces.** You can route by a parent class or interface, and child *and* parent rules both apply. A common pattern is an abstract `AbstractAsyncMessage` or an `AsyncMessageInterface` that all background work implements, routed to `async` once.
+- **Multiple transports.** A message can fan out: `#[AsMessage(['async', 'audit'])]` or, in config, `'My\Message\Foo': [async, audit]`. Both transports receive a copy. Combined with `#[AsMessageHandler(fromTransport: ...)]`, this is how you run *different* logic per destination.
+
+##### More than one bus
+
+`messenger.default_bus` is the one that autowires by default. But Messenger happily runs several buses, and it's a clean way to separate *commands* (imperative: "do X") from *events* (declarative: "X happened, react if you like"). Define a second bus and autowire it with the `#[Bus]` attribute:
+
+```yaml
+framework:
+    messenger:
+        buses:
+            messenger.default_bus: ~      # exists by default; shown for clarity
+            messenger.event_bus: ~
+```
+
+```php
+use Symfony\Component\Messenger\Attribute\Bus;
+
+public function publish(#[Bus('messenger.event_bus')] MessageBusInterface $events, Invoice $invoice): void
+{
+    $events->dispatch(new InvoiceCreated($invoice->tenantId, $invoice->getId(), $invoice->getLocale()));
+}
+```
+
+Handlers opt into a bus with `#[AsMessageHandler(bus: 'messenger.event_bus')]`. For the invoicing app, an event bus is a natural home for `InvoiceCreated`; we'll keep using the default bus for the rest of the chapter so we don't split focus, but keep this tool in your pocket — it's how a lot of "in depth" Symfony apps scale.
+
+#### 17.4 Transports: sync vs. async
+
+Now the heart of the chapter. A transport is registered with a **DSN** (like a DSN for a database). The `framework.messenger.transports` map gives each DSN a *name*, and that name is what you use in routing.
+
+```yaml
+# config/packages/messenger.yaml
+framework:
+    messenger:
+        transports:
+            async: "%env(MESSENGER_TRANSPORT_DSN)%"   # short form: name -> DSN
+            email:
+                dsn: "%env(MESSENGER_EMAIL_TRANSPORT_DSN)%"
+                rate_limiter: invoice_email_limiter     # see §17.9
+```
+
+```dotenv
+# .env
+MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=not_required
+# MESSENGER_TRANSPORT_DSN=redis://localhost:6379/messages
+# MESSENGER_TRANSPORT_DSN=amqp://guest:guest@localhost:5672/%2f/messages
+```
+
+Let's walk the four transports you'll actually meet, from simplest to most serious.
+
+##### 1. `sync://` — "just run it now, but through the pipeline"
+
+```yaml
+transports:
+    sync: 'sync://'
+```
+
+There's no storage and no worker. A message routed to `sync://` is handled immediately, *as if* it had round‑tripped. You reach for this in two situations: (a) you want a message to always be synchronous but still flow through the same middleware/handler machinery, and (b) **tests** (next chapter's trick, and §17.10 here). It's also a handy fallback so that messages you haven't explicitly routed don't accidentally pile up on a queue you forgot to start a worker for.
+
+##### 2. `doctrine://` — the pragmatic default for small/medium apps
+
+```dotenv
+MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=not_required
+```
+
+The queue *is a table* in your existing database (named `messenger_messages` by default). No extra infrastructure, trivial to run, and good enough for a lot of production SaaS. `?auto_setup=not_required` means Messenger won't silently try to create the table for you — you create it explicitly so it's part of your migrations:
+
+```bash
+$ php bin/console doctrine:migrations:diff   # picks up the messenger_messages table
+$ php bin/console doctrine:migrations:migrate
+# (or, for the transport table alone:)
+$ php bin/console messenger:setup-transports
+```
+
+The Doctrine transport uses a *locking, polling* strategy to make concurrent workers safe, so you can run several `messenger:consume` processes against the same table without double‑processing. Two practical notes:
+
+- Polling adds a little latency and some DB load. That's fine until you're processing hundreds of messages a second.
+- Because the queue lives in your DB, a big backlog grows that table — you may want a partitioned or time‑based cleanup strategy later. For an invoicing app's message volumes, it's a non‑issue.
+
+If you prefer a dedicated broker, `composer require symfony/doctrine-messenger` (already pulled in by the Flex recipe) gives you the transport; the DSN is the whole story.
+
+##### 3. `redis://` — low latency, still simple
+
+```dotenv
+MESSENGER_TRANSPORT_DSN=redis://localhost:6379/messages
+```
+
+Redis gives you fast, non‑blocking queues without the operational weight of a full broker. It's a popular step up from the Doctrine transport once DB polling starts to sting. Same DSN philosophy: the path (`/messages`) is effectively your queue name.
+
+##### 4. `amqp://` (RabbitMQ) — the "serious scale" option
+
+```dotenv
+MESSENGER_TRANSPORT_DSN=amqp://guest:guest@localhost:5672/%2f/messages
+```
+
+RabbitMQ (via the AMQP transport) is where you go for high throughput, multiple queues off one exchange, per‑queue workers, priorities, and rock‑solid delivery semantics. The DSN can encode a lot: exchange name, routing key, vhost, prefetch, queues, etc.
+
+```yaml
+transports:
+    async:
+        dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+        options:
+            exchange: { name: invoices, type: direct, arguments: { durable: true } }
+            queues:
+                invoices: { arguments: { durable: true } }
+```
+
+For the purposes of this book, the important takeaway is that **the DSN is pluggable**: the same `async` name in your routing can point at `doctrine://` in `.env`, `redis://` in `.env.staging`, and `amqp://` in production — *without changing a line of routing or handler code*. That's the whole point of abstracting storage behind a transport.
+
+> **Choosing.** `sync` for tests and always‑inline work. `doctrine` to get moving with zero extra infra. `redis` when polling latency matters. `amqp` when you need a real broker, multiple queues, or high volume. You can start on one and move to another later — your messages and handlers don't change.
+
+#### 17.5 What to put in a message (and what to keep out)
+
+The message is the contract between the process that *sends* and the process that *handles*. Treat it like a data transfer object across a network boundary, because that's effectively what it is. Three rules:
+
+**1. Send IDs (or the few fields the handler needs), not entities.** A Doctrine entity is not something to serialize across processes. If you pass the `Invoice` object, you'll hit detached‑entity errors, stale data, and a giant serialized blob. Pass the ID and re‑query:
+
+```php
+// src/MessageHandler/SendInvoiceEmailHandler.php
+final class SendInvoiceEmailHandler
+{
+    public function __construct(
+        private EntityManagerInterface $em,
+        private TransportInterface $mailer,   // the Mailer, Chapter 16
+    ) {
+    }
+
+    #[AsMessageHandler]
+    public function __invoke(SendInvoiceEmail $message): void
+    {
+        /** @var Invoice|null $invoice */
+        $invoice = $this->em->find(Invoice::class, $message->invoiceId);
+        if (null === $invoice) {
+            return;   // deleted in the meantime — nothing to send
+        }
+
+        $this->mailer->send(/* build the templated email from the fresh $invoice */);
+    }
+}
+```
+
+Re‑querying guarantees the handler sees **fresh, committed** data — which matters a lot for money. (It also means the handler must handle the "it's gone" case, as above.)
+
+**2. Make it serializable, and keep it small.** Scalars, strings, ints, enums, `DateTimeImmutable` (serialize by its ISO string if in doubt), and nested plain objects are all fine. PHP resources, open DB connections, and closures are not. If a message *can't* serialize, you'll find out at dispatch time with a `RuntimeException` from `SerializeMiddleware` — a good thing to fail fast on.
+
+**3. Design for version skew.** A message can be sitting in the queue *while you deploy a new version of the code*. The worker that eventually reads it might be newer than the code that wrote it. Two safe patterns:
+
+- **Adding a field?** Make the new constructor argument optional with a default:
+
+  ```php
+  final class SendInvoiceEmail
+  {
+      public function __construct(
+          public readonly int $invoiceId,
+          public readonly string $locale,
+          public readonly ?string $trackingId = null,   // added in v2; old messages still deserialize
+      ) {
+      }
+  }
+  ```
+
+- **Changing meaning or removing a field?** Don't mutate the old class. Introduce `SendInvoiceEmailV2`, deploy *both* the old and new handlers, drain the queue, and only then remove the old one. Removing a property is also a trap because a stale message may still carry it and PHP 8.2+ deprecates dynamic properties — if you must remove one, keep it temporarily or handle deserialization carefully.
+
+This "keep the old and new alive until the queue drains" dance is the single most common real‑world source of "it worked locally but the worker is throwing on old messages in production." Get in the habit of thinking about it whenever you touch a message class.
+
+#### 17.6 Running workers
+
+The send half is all your web app does. The receive half is a long‑running process you operate yourself. That's the `messenger:consume` command, and it's a **worker**:
+
+```bash
+$ php bin/console messenger:consume async -vv
+```
+
+The first argument is the *transport name* you're consuming. `-vv` prints each message as it's handled. By default it runs forever, pulling the next available message and blocking until one arrives. To consume from every configured transport at once (added in 7.1):
+
+```bash
+$ php bin/console messenger:consume --all
+```
+
+##### Concurrency
+
+A single process handles messages one at a time. To get parallelism, pass the *same* transport more than once — each argument spawns one worker on that transport:
+
+```bash
+# three parallel workers on "async"
+$ php bin/console messenger:consume async async async -vv
+# or mix queues in one command:
+$ php bin/console messenger:consume async email -vv
+```
+
+In production you'd typically not type this by hand. You run workers under a process supervisor (systemd, Docker, a platform's background jobs) so they restart on crash, and you set the parallelism by running N instances or N arguments. The important operational habits:
+
+- **Restart workers on deploy.** A worker is a long‑lived PHP process holding an old codebase in memory; if you deploy new message classes, you must bounce the workers to pick them up (this is also how you complete the "drain then remove" version dance from §17.5).
+- **Cap the workers.** More workers than messages (or more than your downstream — DB, mail API — can absorb) just causes contention and errors. Start small and scale up.
+
+##### Throttling the worker
+
+`messenger:consume` has options that let a worker politely stop so a supervisor can recycle it (preventing unbounded memory growth over days):
+
+```bash
+# Stop after 1000 messages, or 1 hour, or 128 MB — whichever comes first.
+$ php bin/console messenger:consume --all \
+    --limit=1000 \
+    --time-limit=3600 \
+    --memory-limit=128M \
+    --sleep=3 -vv
+```
+
+| Option | Meaning |
+|---|---|
+| `--limit` / `-l` | Stop after N messages |
+| `--failure-limit` | Stop after N failed messages (poison‑pill protection) |
+| `--time-limit` / `-t` | Stop after N seconds |
+| `--memory-limit` | Stop once memory exceeds X (a number or `128M`) |
+| `--sleep` / `-s` | Seconds to pause between messages when a queue is empty |
+| `--queue-max-size` | Max messages fetched from a queue per cycle |
+| `--no-reset` | Don't rebuild the container between messages (faster, but services aren't reset) |
+
+That last one deserves a word. By default, Messenger **resets the service container after each message** (via a `ResetInterface` listener). That's a small cost you pay to guarantee that nothing a handler mutated in a singleton (a service holding state, a connection, a cache) leaks into the *next* message. If you benchmark and find it's a bottleneck and your services are cleanly stateless, `--no-reset` is a legitimate optimization — but it's an escape hatch, not the default, and it's how you can subtly introduce state‑leak bugs under load. Leave it on unless you have a reason.
+
+#### 17.7 The envelope and stamps
+
+When you `dispatch()`, you don't pass the message around by itself. You pass an **`Envelope`** — the message plus a bag of **stamps**, which are small metadata objects. Stamps are how the parts of the pipeline talk to each other without coupling: a transport drops a `ReceivedStamp` on it, the serializer records a `SerializerStamp`, the bus name is recorded, and so on.
+
+You rarely construct an envelope by hand, but you do two things with them:
+
+**Attach extra metadata at dispatch time:**
+
+```php
+use Symfony\Component\Messenger\Envelope;
+
+$envelope = Envelope::create(new InvoiceCreated($tenantId, $invoiceId, $locale))
+    ->with(new DispatchedAtStamp(new \DateTimeImmutable()));
+
+$this->bus->dispatch($envelope);
+```
+
+`DispatchedAtStamp` above is *your* custom stamp — just a class that implements `StampInterface` (an interface with no methods; it's a marker). You can put anything serializable in one.
+
+**Read stamps in a handler.** The most useful is `ReceivedStamp`, which tells you *which transport and queue* a message came from:
+
+```php
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Symfony\Component\Messenger\Stamp\ReceivedStamp;
+
+#[AsMessageHandler]
+public function __invoke(InvoiceCreated $message, Envelope $envelope): void
+{
+    // Only generate the "pretty" PDF if this came from the high‑priority queue.
+    $transportName = $envelope->last(ReceivedStamp::class)?->getTransportName();
+    // ...
+}
+```
+
+Type‑hinting `Envelope $envelope` as a *second* argument on your handler is the standard way to inspect a message's journey. A handful of stamps you'll meet:
+
+- `SentStamp` / `ReceivedStamp` — marks the send/receive boundary; `ReceivedStamp` exposes transport + queue + original message id.
+- `SerializerStamp` — records which serializer context was used.
+- `TransportNamesStamp` — the list of transports a message was (or should be) routed to.
+- `NonSendableStampInterface` — a stamp that should *not* be serialized to the queue (e.g., a live object you only use in‑memory).
+- `SentWithRedeliveryStamp` / `RedeliveryStamp` — present when a message is being *retried* (§17.9); a great signal to log "attempt N."
+
+One powerful escape hatch: `TransportNamesStamp` lets you **override routing at runtime**. If a message is normally routed to `async` but *this particular* invoice is for a premium tenant, you can steer it to a priority transport:
+
+```php
+use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
+
+$envelope = Envelope::create(new InvoiceCreated($tenantId, $invoiceId, $locale))
+    ->with(new TransportNamesStamp(['premium']));   // override the configured routing
+
+$this->bus->dispatch($envelope);
+```
+
+That's the mechanism behind tenant‑tiered queues — the same code path, different destination based on business logic.
+
+#### 17.8 Middleware
+
+This is where Messenger earns its keep as a *framework* rather than a "queue wrapper." A bus is a **pipeline of middleware**, and your message's envelope flows through each one in turn. Middleware handle cross‑cutting concerns — things that apply to *every* message but aren't business logic: serialize/deserialize, validate, deduplicate, wrap in a Doctrine transaction, log, rate‑limit. Each middleware can do work *before* it calls the next one and *after*, and can inspect, mutate, or even short‑circuit the envelope.
+
+The default bus already runs a stack. The ones worth knowing:
+
+- **`SerializeMiddleware`** — serializes the message before it's sent to a transport, deserializes it back on receive. If your message can't serialize, *this* is where it blows up.
+- **`ValidationMiddleware`** — runs the Validation component (Chapter 11) on the message before dispatch, so a malformed message fails fast *at the producer*, not in a worker an hour later. (Requires `symfony/validator`, which you have.)
+- **`DoctrineSendMiddleware`** (from `default_middleware: [doctrine]`) — defers sending until the *current Doctrine transaction commits*. This is important for us: we don't want to enqueue "invoice created" if the invoice insert then rolls back. Enable it in config:
+
+  ```yaml
+  framework:
+      messenger:
+          default_middleware:
+              - doctrine
+  ```
+
+- **`SendFailedMessageForRetryListener`** — the engine behind retries (§17.9); it re‑queues a failed message with the right delay.
+- **`HandlingMessageIdMiddleware`** — deduplicates by message id (opt‑in), so a redelivered message isn't processed twice.
+- **`StopWorkerOnMessageException`** — converts a handler exception into a graceful worker stop rather than a hard crash loop.
+
+##### Writing your own middleware
+
+For this multi‑tenant app, a genuinely useful custom middleware is an **audit trail**: log every handled message with the tenant, the transport, and how long it took. Middleware are registered with the `#[AsMiddleware]` attribute (added in 6.4):
+
+```php
+// src/Messenger/Middleware/HandleDurationMiddleware.php
+namespace App\Messenger\Middleware;
+
+use App\Stamp\TenantStamp;               // our custom stamp, below
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Messenger\Attribute\AsMiddleware;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Handler\StackInterface;
+use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
+use Symfony\Component\Messenger\Stamp\ReceivedStamp;
+
+#[AsMiddleware]   // defaults: bus = messenger.default_bus, priority = 0
+final class HandleDurationMiddleware implements MiddlewareInterface
+{
+    public function __construct(
+        private LoggerInterface $logger,
+    ) {
+    }
+
+    public function handle(Envelope $envelope, StackInterface $stack): Envelope
+    {
+        $start = microtime(true);
+
+        // Do "before" work here, then hand off to the rest of the pipeline.
+        $envelope = $stack->next()->handle($envelope, $stack);
+
+        // Do "after" work here, using whatever the pipeline returned.
+        $this->logger->info('messenger.handled', [
+            'message'  => get_debug_type($envelope->getMessage()),
+            'tenant'   => $envelope->last(TenantStamp::class)?->tenantId(),
+            'transport'=> $envelope->last(ReceivedStamp::class)?->getTransportName() ?? 'sync',
+            'duration_ms' => round((microtime(true) - $start) * 1000, 2),
+        ]);
+
+        return $envelope;
+    }
+}
+```
+
+Three things to notice:
+
+- **The contract is `handle(Envelope $envelope, StackInterface $stack): Envelope`.** You must call `$stack->next()->handle(...)` to let the pipeline continue (and you return the envelope it gives back — a downstream middleware may have changed it). Skipping `$stack->next()` *short‑circuits* the bus: the message is swallowed.
+- **Priority controls ordering.** Middleware run in priority order; a *higher* priority runs *earlier* (i.e., it wraps the others on the way in, and is the *last* to run on the way out). `#[AsMiddleware(priority: 100)]` places this one closer to the front of the stack. Use a high priority if you want to wrap as much as possible (like our "time the whole thing" logger); use a low priority if you want to sit right around the handler.
+- **It's auto‑configured.** Because the class implements `MiddlewareInterface` and carries `#[AsMiddleware]`, it's registered with the container and injected into the bus for you. No YAML needed.
+
+A middleware is also the natural home for *tenant scoping*: if your app switches databases or connection parameters per tenant, a middleware that sets that context *before* the handler runs (and clears it after) keeps every handler clean. The "wrap it, then `$stack->next()`, then unwind" shape above is exactly that lifecycle.
+
+#### 17.9 Retries and dead‑letter queues
+
+Background work fails. The mail provider times out, a downstream API is down, a lock is briefly held. You almost never want a transient blip to lose a message — but you also don't want a *permanent* failure (a bug, a bad record) to be retried forever, burning CPU and clogging the queue. Messenger gives you both sides of that balance.
+
+##### Configuring retries
+
+Retries are configured **per transport** via `retry_strategy`. The defaults are 3 retries with a fixed delay; let's make it exponential with a cap and a little randomness:
+
+```yaml
+framework:
+    messenger:
+        failure_transport: failed        # where permanently‑failed messages go (§ below)
+        transports:
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    max_retries: 3        # give up after 3 *retries* (4 attempts total)
+                    delay: 1000           # wait 1s before the first retry (ms)
+                    multiplier: 5         # then 5s, 25s, 125s...
+                    max_delay: 60000      # ...but never more than 60s between retries
+                    jitter: 0.2           # randomize by up to 20% so a burst of failures
+                                          # doesn't all retry at the same instant
+```
+
+The `jitter` is underrated. Without it, fifty messages that fail together all retry at exactly the same moment and stampede the flaky dependency all at once; jitter spreads them out.
+
+The flow on failure: a handler throws → the message is re‑queued with a delay (it'll carry a `RedeliveryStamp`) → after `max_retries` exhausted attempts, it's **not** discarded. It's moved to the **failure transport** — a.k.a. the **dead‑letter queue (DLQ)** — where it waits, with full metadata, for a human.
+
+##### The dead‑letter queue
+
+The `failure_transport` you named above (`failed`) is a transport of its own, typically with retries disabled:
+
+```yaml
+transports:
+    # ...
+    failed:
+        dsn: '%env(MESSENGER_FAILED_TRANSPORT_DSN)%'
+        retry_strategy:
+            max_retries: 0      # a DLQ should not retry; it should *hold*
+```
+
+You don't normally *consume* the DLQ with a worker (that would just re‑fail things). You inspect it and decide:
+
+```bash
+# List what's dead, and how long it's been there:
+$ php bin/console messenger:failed
+
+# See the actual message payload for a given id:
+$ php bin/console messenger:failed --show-message
+
+# Retry one manually (back through its original transport + retries):
+$ php bin/console messenger:retry-failure 1a2b3c
+
+# Or give up permanently and delete it:
+$ php bin/console messenger:abandon-failure 1a2b3c
+
+# Clear the whole DLQ (e.g., after a big cleanup):
+$ php bin/console messenger:empty-failure
+```
+
+> **A dead message retried can fail again.** `messenger:retry-failure` re‑enqueues through the normal path, so if the underlying problem isn't fixed, it'll burn its retries and land back in the DLQ. That's usually *correct* behavior — the DLQ is a triage inbox, not a place messages live forever. Watch your DLQ depth as a health metric: a DLQ that keeps growing means a real problem, not a transient one.
+
+##### Failing fast and stopping the worker
+
+Two escape valves for when the default "retry then DLQ" isn't right:
+
+- **Skip retries for a specific exception.** If a message fails because *its data is invalid* (not because a dependency was slow), retrying is pointless. The clean way to express that is a custom `RetryStrategyInterface` that returns `0` retries for that exception type:
+
+  ```php
+  // src/Messenger/Retry/NoRetryOnInvalidData.php
+  use App\Exception\InvalidInvoiceDataException;
+  use Symfony\Component\Messenger\Envelope;
+  use Symfony\Component\Messenger\Retry\RetryDecision;
+  use Symfony\Component\Messenger\Retry\RetryStrategyInterface;
+
+  final class NoRetryOnInvalidData implements RetryStrategyInterface
+  {
+      public function getRetryDecision(
+          \Throwable $exception,
+          Envelope $envelope,
+          int $retryCount,
+      ): RetryDecision {
+          if ($exception instanceof InvalidInvoiceDataException) {
+              return new RetryDecision(false);            // straight to the DLQ, no retries
+          }
+          return new RetryDecision(true);                 // otherwise: keep the normal policy
+      }
+  }
+  ```
+
+  Reference it by service in the transport's `retry_strategy: { service: 'App\Messenger\Retry\NoRetryOnInvalidData' }`. (You can also layer this: keep the exponential config *and* add a strategy that zeroes out the non‑retryable cases.)
+- **Stop the worker on purpose.** Inside a handler, throw `StopWorkerException` to tell the worker to stop *gracefully* without treating it as a failed message. Useful for "I've hit a condition that means I should pause and let an operator look" (a full DLQ, a circuit‑breaker tripping, a maintenance flag).
+
+##### Rate‑limiting a transport
+
+Sometimes the *dependency* is the constraint — e.g., your email provider caps you at 50 sends/minute, or you don't want to hammer an external PDF/print API. Messenger can attach a **rate limiter** (the RateLimiter component from the security chapter's toolkit) to a transport. When the limit is hit, the *worker blocks* until a token is available instead of throwing the provider into a rate‑limit error:
+
+```yaml
+# config/packages/rate_limiter.yaml
+framework:
+    rate_limiter:
+        invoice_email_limiter:
+            policy: 'token_bucket'
+            limit: 50
+            interval: '1 minute'
+```
+
+```yaml
+# config/packages/messenger.yaml
+framework:
+    messenger:
+        transports:
+            email:
+                dsn: '%env(MESSENGER_EMAIL_TRANSPORT_DSN)%'
+                rate_limiter: invoice_email_limiter   # worker self‑throttles
+```
+
+> **Run a rate‑limited transport on its own worker.** Because hitting the limit *blocks the whole worker*, a rate‑limited transport can stall every message that worker is also consuming. The fix is operational, not configurational: give `email` a dedicated worker (`messenger:consume email`) so its throttling never backs up `async`.
+
+#### 17.10 Testing Messenger
+
+Testing background work is straightforward once you stop fighting the transport. Two complementary strategies:
+
+**1. Unit‑test the handler directly.** A handler is just a class. Instantiate it with mocks and call it — no bus, no transport, no container:
+
+```php
+// tests/Unit/MessageHandler/GenerateInvoicePdfHandlerTest.php
+final class GenerateInvoicePdfHandlerTest extends TestCase
+{
+    public function testItGeneratesThePdfForTheRightTenant(): void
+    {
+        $generator = $this->createMock(InvoicePdfGenerator::class);
+        $generator
+            ->expects(self::once())
+            ->method('generate')
+            ->with(1, 42, 'en');
+
+        $handler = new GenerateInvoicePdfHandler($generator);
+        $handler(new InvoiceCreated(1, 42, 'en'));   // __invoke
+    }
+}
+```
+
+This is fast and covers your business logic. Do it for every handler.
+
+**2. Functionally test the *pipeline* with the in‑memory transport.** Override the transport in the test environment to `in-memory://` so no external broker is needed, then assert that dispatching a message lands it in the transport:
+
+```yaml
+# config/packages/test/messenger.yaml
+framework:
+    messenger:
+        transports:
+            async: 'in-memory://'
+```
+
+```php
+// tests/Functional/InvoiceMessageFlowTest.php
+final class InvoiceMessageFlowTest extends KernelTestCase
+{
+    public function testCreatingAnInvoiceEnqueuesThePdfMessage(): void
+    {
+        self::bootKernel();
+        $container = self::getContainer();   // the test container reaches private services
+
+        $bus = $container->get('messenger.default_bus');
+        $bus->dispatch(new InvoiceCreated(1, 42, 'en'));
+
+        // The in‑memory transport is a service too: messenger.transport.{name}
+        $transport = $container->get('messenger.transport.async');
+        $envelope  = $transport->get();      // pulls the queued message
+
+        self::assertInstanceOf(InvoiceCreated::class, $envelope->getMessage());
+    }
+}
+```
+
+Transports are registered as `messenger.transport.{name}` services implementing `TransportInterface` (`get()`/`ack()`/`send()`), so they're easy to assert against in tests. (For a *fully* end‑to‑end "the PDF actually got generated" assertion, either drive the in‑memory queue with the consumer, or — simpler — override routing to `sync://` in the test env so the handler runs inline and you assert on its side effects.)
+
+> **The in‑memory transport is per‑process.** Anything you `dispatch()` is visible to `get()` *in the same PHP process*. It's perfect for tests and for local scripts; it's not a way to share messages between your web app and a separate worker. For local development with a real worker, use `doctrine://` or `redis://` instead.
+
+#### 17.11 Bringing it together: the invoicing app's Messenger setup
+
+Let's consolidate what we've built into the configuration the running app actually ships with. It has three queues — a general `async`, a rate‑limited `email`, and a dead‑letter `failed` — plus Doctrine‑safe sending and a retry policy:
+
+```yaml
+# config/packages/messenger.yaml
+framework:
+    messenger:
+        default_middleware:
+            - doctrine                 # only send after the DB transaction commits
+
+        failure_transport: failed
+
+        transports:
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'          # doctrine/redis/amqp per env
+                retry_strategy:
+                    max_retries: 3
+                    delay: 1000
+                    multiplier: 5
+                    max_delay: 60000
+                    jitter: 0.2
+
+            email:
+                dsn: '%env(MESSENGER_EMAIL_TRANSPORT_DSN)%'
+                rate_limiter: invoice_email_limiter             # §17.9
+
+            failed:
+                dsn: '%env(MESSENGER_FAILED_TRANSPORT_DSN)%'
+                retry_strategy:
+                    max_retries: 0
+
+        routing:
+            'App\Message\SendInvoiceEmail': email               # email has its own queue + limiter
+            'App\Message\*': async                              # everything else (PDFs, etc.)
+```
+
+```dotenv
+# .env
+MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=not_required
+MESSENGER_EMAIL_TRANSPORT_DSN=doctrine://default?auto_setup=not_required&queue_name=email
+MESSENGER_FAILED_TRANSPORT_DSN=doctrine://default?auto_setup=not_required&queue_name=failed
+```
+
+And the worker we run under our process supervisor in production:
+
+```bash
+$ php bin/console messenger:consume --all \
+    --time-limit=3600 --memory-limit=128M --sleep=3 -vv
+```
+
+The story this config tells: **creating an invoice commits to the DB and returns to the user fast**; the PDF lands on `async`, the email lands on the rate‑limited `email` queue, anything that keeps failing after a few exponential retries parks itself in `failed` for an operator, and `HandleDurationMiddleware` writes an auditable, tenant‑scoped log line for everything that runs. That's a genuinely production‑shaped async backbone, built entirely out of pieces we've now met.
+
+**Console cheat‑sheet for this chapter:**
+
+```
+debug:messenger            # list buses + discovered handlers
+messenger:consume [name]   # run a worker (--all for every transport)
+messenger:stats            # how many messages are waiting per transport
+messenger:setup-transports # create transport tables (doctrine/amqp)
+messenger:failed           # list dead‑letter messages
+messenger:failed --show-message
+messenger:retry-failure <id>
+messenger:abandon-failure <id>
+messenger:empty-failure
+```
+
+#### Summary
+
+- A **message** is a small, serializable DTO; a **handler** is a callable bound to it with `#[AsMessageHandler]`; the **bus** is where you `dispatch()`.
+- **Routing** decides which **transport** a message goes to — via the `#[AsMessage]` attribute (default) or config (which wins, and is where you override per environment).
+- **Transports** are swappable by DSN: `sync://` (immediate), `doctrine://` (DB table), `redis://`, and `amqp://` (real broker). Your messages and handlers don't change when you switch.
+- **Workers** (`messenger:consume`) do the receiving; scale with multiple instances/arguments, and throttle with `--time-limit`/`--memory-limit`/`--failure-limit`. The container resets between messages by default.
+- The **envelope** carries **stamps** (metadata): read `ReceivedStamp` in handlers, add your own stamps, and override destinations at runtime with `TransportNamesStamp`.
+- **Middleware** are the pipeline — serialize, validate, Doctrine‑safe sending, retries — and you can add your own with `#[AsMiddleware]`.
+- **Retries** (`retry_strategy`) handle transient failures with exponential backoff + jitter; exhausted attempts go to a **failure transport** (DLQ) that you triage with the `messenger:failed*` commands. Custom `RetryStrategyInterface`s let specific errors skip straight to the DLQ.
+- Test by **unit‑testing handlers directly** and by **functionally asserting on the `in-memory://` transport** in the test environment.
+
+#### Exercises
+
+1. **Make the email async.** In Chapter 16 the invoice email was sent inline. Create a `SendInvoiceEmail` message (carry `invoiceId` + `locale`, not the entity), a `SendInvoiceEmailHandler`, and route it to its own `email` transport. Refactor `InvoiceManager` to dispatch it instead of calling the Mailer directly. Verify end‑to‑end by running `messenger:consume email -vv`.
+
+2. **Deduplicate a queue.** Add a `CalculateInvoiceTotals` message that recalculates an invoice's line totals and dispatches it on a separate `async` queue. Add a second, *high‑priority* variant for invoices over a threshold by attaching a `TransportNamesStamp(['premium'])` at dispatch, and a matching `#[AsMessageHandler(fromTransport: 'premium')]`. Watch the two queues drain at different rates with `messenger:stats`.
+
+3. **Write an audit middleware.** Extend (or write from scratch) a `#[AsMiddleware]` that adds a `HandledBy` custom stamp and logs the handler class, message type, tenant, and duration. Confirm with `debug:messenger`‑level reasoning that it runs in the order you expect, and that it does *not* swallow the message (i.e., it still calls `$stack->next()`).
+
+4. **Break it on purpose.** Make `GenerateInvoicePdfHandler` throw for the first two attempts (use a `RedeliveryStamp` count to decide) and succeed on the third. Configure `retry_strategy` with a short `delay` and watch `messenger:stats` / logs show the redeliveries. Then make it throw *always* and confirm the message lands in the `failed` transport; use `messenger:failed`, `--show-message`, `retry-failure`, and `abandon-failure` to triage it.
+
+5. **Fail fast on bad data.** Introduce an `InvalidInvoiceDataException` and a custom `RetryStrategyInterface` that returns no retries for it. Prove that a message failing with that exception goes straight to the DLQ while a message failing with a generic `RuntimeException` still retries.
+
+6. **Test it.** Write (a) a unit test for `SendInvoiceEmailHandler` with a mocked `TransportInterface` (mailer), and (b) a functional test using the `in-memory://` override that dispatches an `InvoiceCreated` and asserts the envelope is retrievable from `messenger.transport.async`. Add `config/packages/test/messenger.yaml` so the tests never touch your dev transport.
+
+7. **Challenge — rate limit and protect the worker.** Attach `invoice_email_limiter` to the `email` transport, run it on a dedicated worker, and flood it with email messages in a loop. Observe the worker blocking to stay under the limit instead of erroring. Then add `--failure-limit` and throw a non‑retryable exception from the email handler to confirm the worker backs off instead of crash‑looping on a poison pill.
+
+---
+
+*Next chapter (18): Scheduling and Webhooks.* The dunning flow we've been hinting at — "remind tenants about overdue invoices every morning" — is exactly the kind of *time‑driven* work Messenger doesn't schedule for you. We'll add the Scheduler component to run cron‑style jobs (locking them so two workers don't double‑send) and the Webhook component to receive external payment events from a provider, verifying their signatures before we dispatch messages onto the bus we just built.
+
+I have what I need. Let me verify the current webhook "sending" API details and the Scheduler attributes to make sure the chapter code is accurate.
+
+
+
+I have enough verified detail on both the Scheduler and Webhook/RemoteEvent components to write the chapter. Here is Chapter 18.
+
+---
+
+### Chapter 18 — Scheduling and Webhooks
+
+So far in this book, work has started at the *request*: a user clicks a button, a browser fires an HTTP call, and your kernel responds. But a professional application also has to do things that no one asked for *at that moment*:
+
+- Send every tenant's invoice for the new billing cycle **at midnight**.
+- Reconcile payment status **every 15 minutes**.
+- Purge expired sessions and old audit rows **once a week**.
+- React the instant a bank gateway tells you a payment was **captured, disputed, or refunded** — even though the bank's server, not the user's, is the one making the call.
+
+The first cluster of problems is *time-driven automation*. The second is *inbound callbacks from external systems*. Symfony answers each with a first-class component:
+
+| Problem | Component | Since |
+|---|---|---|
+| Run a task on a schedule (cron, interval, custom) | **Scheduler** | 5.1 (redesigned on top of Messenger in 6.3) |
+| Receive and verify external events (webhooks) | **Webhook** + **RemoteEvent** | 6.3 |
+
+This chapter is the natural companion to Chapter 17 (Messenger). The Scheduler component is *built on* Messenger: a scheduled task is just a message that a special transport fabricates on a recurring schedule. And a webhook consumer is, by default, a RemoteEvent that you can optionally push through Messenger to process asynchronously. Understanding those two facts turns both components from "magic" into a small set of patterns you already know.
+
+We'll build both into the running invoicing SaaS:
+
+- **Scheduler** → a `SendMonthlyInvoiceReminders` job, a per-tenant monthly reconciliation, and a weekly cleanup — including a *dynamic* schedule driven by each tenant's billing cycle (the one thing OS-level cron can't do).
+- **Webhook** → a Stripe `invoice.payment_succeeded` / `invoice.payment_failed` endpoint that updates an invoice's state, with signature verification, asynchronous processing, and a custom parser you'll write from scratch.
+
+> **Where this chapter fits.** Part IV ("Beyond the Browser") covers the surfaces of your application other than the browser: the console (Ch 15), email (Ch 16), async work (Ch 17), and now time and external events (this chapter). You should have read Chapter 17 first — the scheduler's entire model is a Messenger transport in disguise.
+
+---
+
+#### 18.1 Scheduling: why not just cron?
+
+Every PHP developer's first instinct is the OS `crontab`:
+
+```cron
+# /etc/cron.d/myapp
+0 0 * * *  www-data  /usr/bin/php /var/www/app/bin/console app:send-invoice-reminders
+```
+
+That works, and for a single small job it's fine. But in a multi-tenant SaaS it quickly falls apart:
+
+1. **Schedules live outside the app.** Your cron table is a text file on a box, versioned nowhere. Onboarding a new tenant with a *different* billing cycle is impossible — cron has no notion of "tenant 42 is billed on the 14th."
+2. **Everything runs at the same instant.** Ten jobs configured for midnight all fire at `00:00:00`, spiking your CPU, database, and memory simultaneously.
+3. **No per-job configuration in code.** A job's frequency is a string in a crontab, not a typed value in a class you can review in a pull request.
+4. **Deployment coupling.** A new scheduled job requires a new cron entry on *every* server. Forgetting one box means a job silently never runs there.
+
+The Symfony **Scheduler component** moves the *scheduling decision* into your application while still using a single, ordinary process to drive it. You end up with:
+
+- Schedules as **typed, testable classes** in `src/Scheduler/`.
+- **Dynamic, per-entity schedules** (the whole point for a SaaS).
+- **Jitter and hashing** to spread midnight load automatically.
+- **One process to run** (`messenger:consume scheduler_*`) — no per-job crontab.
+
+You still need *something* external to wake the process. In production that "something" is almost always a single cron line or a systemd timer that runs every minute — the same pattern Laravel's scheduler uses. The difference is that the *schedule definitions* now live in your codebase.
+
+> **The key mental model:** the Scheduler does not *run* your job. It *decides when a message is due* and hands that message to Messenger. Messenger's worker is what actually executes the handler. So your "job runner" in production is a Messenger consumer, not a special scheduler daemon.
+
+---
+
+#### 18.2 Installing the component
+
+```bash
+composer require symfony/scheduler dragonmantank/cron-expression
+```
+
+Flex registers the extension and creates a skeleton `src/Scheduler/` layout and a `config/packages/scheduler.yaml`. The `dragonmantank/cron-expression` package is only needed if you use **cron expression** triggers (the most common case) — the Scheduler has a hard dependency on nothing else for the interval-based triggers.
+
+Let's confirm the pieces are in place:
+
+```bash
+php bin/console debug:container | grep -i scheduler
+```
+
+You should see the `SchedulerExtension` and, once you define a schedule, a transport named `scheduler_default`.
+
+> **Naming convention.** Each *schedule* produces a transport named `scheduler_` + the schedule name. The default schedule is called `default`, so its transport is `scheduler_default`. Multiple named schedules → multiple transports (e.g. `scheduler_billing`). You can consume them all with one regular expression: `messenger:consume 'scheduler_.*'`.
+
+---
+
+#### 18.3 The core model: schedule → trigger → recurring message → handler
+
+Before any code, internalize the four concepts and their types:
+
+| Concept | Class | Analogy |
+|---|---|---|
+| **Trigger** | `TriggerInterface` | *When* — a rule for computing the next run time |
+| **Recurring message** | `RecurringMessage` | *What + when* — a message paired with a trigger |
+| **Schedule** | `Schedule` | A collection of recurring messages |
+| **Schedule provider** | `ScheduleProviderInterface` (tagged `#[AsSchedule]`) | *Where it's registered* — the service that owns a schedule |
+| **Handler** | any service tagged `#[AsMessageHandler]` | *What to do* — the actual job body |
+
+Flow of a single tick:
+
+```
+  OS cron (every minute)
+          │
+          ▼
+  messenger:consume scheduler_*          ← your resident worker process
+          │
+          ▼
+  SchedulerTransport::get()              ← "are any recurring messages due?"
+          │  for each due RecurringMessage, fabricate the inner message
+          ▼
+  Message Bus  ──►  #[AsMessageHandler]  ← the job actually runs
+          │
+          ▼
+  next run time is recorded; trigger computes the following one
+```
+
+The `SchedulerTransport` is the linchpin. It is a **custom Messenger transport** (see Chapter 17) whose `get()` method doesn't read a queue table — it consults each registered schedule, asks every trigger "is your next run due now?", and if so, synthesizes the inner message and dispatches it. That's why the Scheduler needs no new worker: it piggybacks on Messenger's `messenger:consume`.
+
+> **Why messages instead of methods?** Because it inherits everything from Messenger for free: retry policies, dead-letter/failure transports, `HandleMessageMiddleware`, Sentry middleware, and the ability to run handlers in separate, horizontally-scalable worker processes. If your scheduler message lands on a *real* transport (e.g. the same `async` DSN as Chapter 17), the "decide when" and "execute" steps can even run on different machines.
+
+---
+
+#### 18.4 Your first job: `SendInvoiceReminders`
+
+Let's define the job that emails every tenant whose invoices are due in the next few days.
+
+##### 18.4.1 The message
+
+A Scheduler message is just a serializable DTO, exactly like a Messenger message from Chapter 17. Keep it small and carry only what the handler needs.
+
+```php
+// src/Scheduler/Message/SendInvoiceReminders.php
+namespace App\Scheduler\Message;
+
+final class SendInvoiceReminders
+{
+    public function __construct(
+        public readonly int $tenantId,
+    ) {
+    }
+}
+```
+
+Note the **tenant is a parameter of the message**, not a global. This is what makes the schedule dynamic: the same handler runs once *per tenant*, once per cycle.
+
+##### 18.4.2 The handler
+
+```php
+// src/Scheduler/Handler/SendInvoiceRemindersHandler.php
+namespace App\Scheduler\Handler;
+
+use App\Entity\Invoice;
+use App\Entity\Tenant;
+use App\Mailer\InvoiceMailer;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use App\Scheduler\Message\SendInvoiceReminders;
+
+#[AsMessageHandler]
+final class SendInvoiceRemindersHandler
+{
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly InvoiceMailer $mailer,
+    ) {
+    }
+
+    public function __invoke(SendInvoiceReminders $message): void
+    {
+        $tenant = $this->em->getRepository(Tenant::class)->findOneById($message->tenantId);
+        if (null === $tenant) {
+            return; // tenant was deleted; nothing to do
+        }
+
+        $dueInvoices = $tenant->getInvoices()->filter(
+            static fn (Invoice $i): bool => $i->isDueWithinDays(7)
+        );
+
+        foreach ($dueInvoices as $invoice) {
+            $this->mailer->sendReminder($invoice);
+        }
+    }
+}
+```
+
+This handler is deliberately **idempotent and tolerant** — the two cardinal rules for scheduled work (Section 18.10). It never throws on "no invoices," and sending an already-sent reminder is recoverable because the mailer dedupes (see `InvoiceMailer` in Chapter 16).
+
+##### 18.4.3 The schedule provider
+
+The provider is where the trigger and the message meet. For a *single, fixed* schedule the simplest trigger is a cron expression.
+
+```php
+// src/Scheduler/Schedule/DefaultSchedule.php
+namespace App\Scheduler\Schedule;
+
+use App\Scheduler\Message\SendInvoiceReminders;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Scheduler\Attribute\AsSchedule;
+use Symfony\Component\Scheduler\RecurringMessage;
+use Symfony\Component\Scheduler\Schedule;
+use Symfony\Component\Scheduler\ScheduleProviderInterface;
+use Symfony\Component\Scheduler\Trigger\CronExpressionTrigger;
+
+#[AsSchedule]   // registers on the default schedule → transport "scheduler_default"
+final class DefaultSchedule implements ScheduleProviderInterface
+{
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+    ) {
+    }
+
+    public function getSchedule(): Schedule
+    {
+        return $this->schedule ??= new Schedule()
+            ->with(
+                // Send reminders every day at 07:15 (tenant timezone-independent: server TZ)
+                RecurringMessage::cron(
+                    '15 7 * * *',
+                    new SendInvoiceReminders(/* filled per-tenant below */)
+                )
+            );
+    }
+}
+```
+
+> **Hold on — where do the tenants come from?** A `RecurringMessage` carries *one* message instance, but we need one per tenant. There are two clean ways to handle this, and the choice matters:
+>
+> 1. **Static message, handler fans out.** The message carries *no* tenant; the handler queries *all* active tenants itself. Simplest, but the whole population runs in one message — fine when you have a few hundred tenants.
+> 2. **One `RecurringMessage` per tenant.** The provider builds the schedule by iterating tenants and emitting a message per tenant. Scales to many tenants, and each message retries *independently*.
+>
+> For a multi-tenant SaaS we want option 2, and it also lets each tenant run on its *own* cycle. Let's do that in 18.6. For now, the fixed-schedule version above proves the wiring.
+
+---
+
+#### 18.5 Triggers, in detail
+
+A `TriggerInterface` has exactly one method — everything else hangs off it:
+
+```php
+public function getNextRunDate(\DateTimeImmutable $run): ?\DateTimeImmutable;
+```
+
+"Given a start time, when is the next (or the) run? Return `null` if there are no more runs." Triggers are **stateless and pure** — they never store the last run; the transport tracks that. Because they're pure, they're trivially unit-testable.
+
+Symfony ships five triggers, plus two that *decorate* others:
+
+| Trigger | Purpose | Stateful/decorator? |
+|---|---|---|
+| `CronExpressionTrigger` | Classic 5-field cron (`15 7 * * *`) | No |
+| `PeriodicalTrigger` | Fixed interval (`every 15 minutes`) | No |
+| `CallbackTrigger` | A closure decides the next run | No |
+| `JitterTrigger` | Adds a random delay to spread load | **Decorator** |
+| `ExcludeTimeTrigger` | Skips runs falling in a "dead" window | **Decorator** |
+
+Let's walk through each, because the decorators are where the Scheduler earns its keep.
+
+##### 18.5.1 Cron expressions
+
+```php
+RecurringMessage::cron('15 7 * * *', $message);              // daily at 07:15
+RecurringMessage::cron('@daily',    $message);               // daily at midnight
+RecurringMessage::cron('@weekly',   $message);               // weekly, midnight Sunday
+RecurringMessage::cron('@monthly',  $message);               // monthly, midnight, 1st
+
+// pin to a specific timezone so cron doesn't drift with the server's TZ:
+RecurringMessage::cron(
+    '0 2 * * 1',
+    $message,
+    new \DateTimeZone('Europe/Berlin')
+);
+```
+
+Special aliases map to canonical expressions:
+
+| Alias | Equivalent cron |
+|---|---|
+| `@yearly` / `@annually` | `0 0 1 1 *` |
+| `@monthly` | `0 0 1 * *` |
+| `@weekly` | `0 0 * * 0` |
+| `@daily` / `@midnight` | `0 0 * * *` |
+| `@hourly` | `0 * * * *` |
+
+For building expressions, [crontab.guru](https://crontab.guru) is the reference. The five fields are `minute hour day-of-month month day-of-week`.
+
+##### 18.5.2 Hashed cron: spreading the midnight stampede
+
+This is the Scheduler's signature feature for large fleets. If you have 5,000 tenants and every reconciliation fires at `00:00`, your database takes a hammer blow for 60 seconds. Hashed cron *deterministically* randomizes the exact run time **per message** while keeping the interval intact.
+
+```php
+RecurringMessage::cron('# # * * *', $message);   // daily at some time, consistent per message
+RecurringMessage::cron('#daily',    $message);   // alias for "# # * * *"
+RecurringMessage::cron('#hourly',   $message);   // alias for "# * * * *"
+RecurringMessage::cron('#midnight', $message);   // daily, somewhere between 00:00–02:59
+```
+
+How does "random but consistent" work? The hash is derived from the message's string representation, so a given message *always* resolves to the same minute. You can also constrain the range:
+
+```php
+# daily, but always between midnight and 06:59
+RecurringMessage::cron('# #(0-6) * * *', $message);
+```
+
+> **When to use it.** Use hashed cron on *high-volume* jobs where the exact minute doesn't matter (reminders, reports, cache warmups). Do **not** hash jobs where timing is contractually meaningful (a `00:00` billing cutoff that other systems depend on).
+
+##### 18.5.3 Periodic intervals
+
+When the interval, not the wall-clock time, is what matters:
+
+```php
+RecurringMessage::every('15 minutes',        $message);
+RecurringMessage::every('2 hours',           $message);
+RecurringMessage::every('first Monday of next month', $message);
+
+// with an explicit start anchor so it doesn't wait a full interval after boot:
+$from = new \DateTimeImmutable('08:00', new \DateTimeZone('UTC'));
+RecurringMessage::every('1 day', $message, $from);
+
+// …and an end date, so the job stops itself:
+$until = new \DateTimeImmutable('2026-12-31');
+RecurringMessage::every('1 day', $message, null, $until);
+```
+
+The `every()` method accepts any PHP relative date string. Note it does **not** accept comma-separated weekday lists — for "Mondays and Thursdays" use cron: `RecurringMessage::cron('5 12 * * 1,4', $message)`.
+
+##### 18.5.4 `JitterTrigger` — a decorator for load spreading
+
+Jitter is the "add a random delay" decorator. Where hashed cron reshapes the *base* schedule, jitter is applied on top of *any* trigger, and the delay varies **per run** (not fixed per message like hashing):
+
+```php
+use Symfony\Component\Scheduler\Trigger\JitterTrigger;
+
+RecurringMessage::trigger(
+    new JitterTrigger(
+        CronExpressionTrigger::fromSpec('@hourly'),
+        max: new \DateInterval('PT5M')   // add up to 5 minutes, randomly, each hour
+    ),
+    $message
+);
+```
+
+##### 18.5.5 `ExcludeTimeTrigger` — a decorator for "dead" windows
+
+Skip runs that would land inside a maintenance or business-closed window:
+
+```php
+use Symfony\Component\Scheduler\Trigger\ExcludeTimeTrigger;
+
+$trigger = new ExcludeTimeTrigger(
+    CronExpressionTrigger::fromSpec('@hourly'),
+    // never run between 23:00 and 01:00
+    [
+        ['start' => '23:00', 'end' => '23:59'],
+        ['start' => '00:00', 'end' => '00:59'],
+    ]
+);
+
+RecurringMessage::trigger($trigger, $message);
+```
+
+##### 18.5.6 Composing decorators
+
+Both decorators implement `AbstractDecoratedTrigger`, so you can stack them and inspect the chain:
+
+```php
+$trigger = new ExcludeTimeTrigger(
+    new JitterTrigger(
+        CronExpressionTrigger::fromSpec('#hourly'),
+        max: new \DateInterval('PT3M')
+    ),
+    [['start' => '22:00', 'end' => '08:00']]
+);
+
+$trigger->inner();        // JitterTrigger
+$trigger->decorators();   // [ExcludeTimeTrigger, JitterTrigger]
+```
+
+Read that as: *"hourly, but never between 22:00 and 08:00, and add up to 3 minutes of jitter."*
+
+##### 18.5.7 Custom triggers
+
+Anything that answers "when next?" can be a trigger. Implement `TriggerInterface`:
+
+```php
+// src/Scheduler/Trigger/NextBusinessDay.php
+namespace App\Scheduler\Trigger;
+
+use Symfony\Component\Scheduler\Trigger\TriggerInterface;
+
+final class NextBusinessDay implements TriggerInterface
+{
+    public function __construct(private readonly \DateTimeZone $tz)
+    {
+    }
+
+    public function __toString(): string
+    {
+        return 'next business day 09:00';
+    }
+
+    public function getNextRunDate(\DateTimeImmutable $run): \DateTimeImmutable
+    {
+        $next = $run->setTime(9, 0);
+
+        while (in_array($next->format('N'), [6, 7], true)) { // 6=Sat, 7=Sun
+            $next = $next->modify('+1 day');
+        }
+
+        return $next;
+    }
+}
+```
+
+Then use it like any other trigger:
+
+```php
+RecurringMessage::trigger(
+    new NextBusinessDay(new \DateTimeZone('Europe/Berlin')),
+    $message
+);
+```
+
+A more advanced pattern is a *custom decorator* that wraps an existing trigger and filters it — e.g. "daily, except public holidays" (Section 18.6.3).
+
+---
+
+#### 18.6 The SaaS pattern: a schedule that fans out per tenant
+
+This is the payoff for a multi-tenant app, and the reason to reach for the Scheduler over cron. We'll build **one schedule** that produces **one message per active tenant**, each on **that tenant's own billing cycle**.
+
+##### 18.6.1 The `Tenant` model (recap from Part III)
+
+```php
+// src/Entity/Tenant.php  (relevant bits)
+final class Tenant
+{
+    // … id, name, settings …
+    public function __construct(
+        public int $id,
+        public string $name,
+        public int $billingDayOfMonth,   // 1–28
+        public bool $active = true,
+    ) {
+    }
+}
+```
+
+The crucial field is `billingDayOfMonth`. Tenant "Acme" is billed on the 1st; "Globex" on the 15th.
+
+##### 18.6.2 Building a per-tenant schedule
+
+```php
+// src/Scheduler/Schedule/BillingSchedule.php
+namespace App\Scheduler\Schedule;
+
+use App\Entity\Tenant;
+use App\Scheduler\Message\ProcessMonthlyBilling;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Scheduler\Attribute\AsSchedule;
+use Symfony\Component\Scheduler\RecurringMessage;
+use Symfony\Component\Scheduler\Schedule;
+use Symfony\Component\Scheduler\ScheduleProviderInterface;
+use Symfony\Component\Scheduler\Trigger\JitterTrigger;
+use Symfony\Component\Scheduler\Trigger\PeriodicalTrigger;
+
+#[AsSchedule('billing')]   // → transport "scheduler_billing"
+final class BillingSchedule implements ScheduleProviderInterface
+{
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+    ) {
+    }
+
+    public function getSchedule(): Schedule
+    {
+        return $this->schedule ??= $this->build();
+    }
+
+    private function build(): Schedule
+    {
+        $schedule = new Schedule();
+
+        /** @var Tenant[] $tenants */
+        $tenants = $this->em->getRepository(Tenant::class)->findBy(['active' => true]);
+
+        foreach ($tenants as $tenant) {
+            // monthly, on this tenant's billing day, with jitter so all
+            // "1st of the month" tenants don't hit the DB at the same second
+            $trigger = new JitterTrigger(
+                $this->monthlyOnDay($tenant->billingDayOfMonth),
+                max: new \DateInterval('PT10M')
+            );
+
+            $schedule->with(
+                RecurringMessage::trigger($trigger, new ProcessMonthlyBilling($tenant->id))
+            );
+        }
+
+        return $schedule;
+    }
+
+    private function monthlyOnDay(int $dayOfMonth): PeriodicalTrigger
+    {
+        // "monthly on day N" is a cron expression: minute 0, hour 0, day=N
+        // (handled by a small helper below)
+        throw new \LogicException('implemented in 18.6.3');
+    }
+}
+```
+
+There are two things worth pausing on:
+
+1. **The schedule is memoized** (`$this->schedule ??= $this->build()`). The transport *asks* for the schedule on every tick; without memoization you'd re-query the DB and rebuild hundreds of triggers every minute. Memoizing is explicitly recommended by the docs. (The trade-off — new tenants added mid-run aren't picked up until the worker restarts — is acceptable; see 18.9.)
+2. **"Monthly on day N" is really a cron expression**, not a `PeriodicalTrigger`. A `DateInterval` of `1 month` is relative to the *last run*, not to a calendar anchor. For calendar-anchored monthly jobs, cron is the right tool.
+
+##### 18.6.3 Monthly-on-day via cron, plus a holiday-exclusion decorator
+
+Let's fix the helper and add the custom decorator that makes this genuinely useful: skip a tenant's billing run if the billing day is a public holiday, deferring to the next business day.
+
+```php
+// src/Scheduler/Trigger/OnBusinessDayOrNext.php
+namespace App\Scheduler\Trigger;
+
+use App\Service\HolidayCalendar;
+use Symfony\Component\Scheduler\Trigger\TriggerInterface;
+
+final class OnBusinessDayOrNext implements TriggerInterface
+{
+    public function __construct(
+        private readonly TriggerInterface $inner,
+        private readonly HolidayCalendar $holidays,
+    ) {
+    }
+
+    public function __toString(): string
+    {
+        return $this->inner.' (defers past public holidays)';
+    }
+
+    public function getNextRunDate(\DateTimeImmutable $run): \DateTimeImmutable
+    {
+        if (null === $next = $this->inner->getNextRunDate($run)) {
+            throw new \LogicException('Inner trigger has no next run.');
+        }
+
+        while ($this->holidays->isPublicHoliday($next)
+            || in_array($next->format('N'), [6, 7], true)
+        ) {
+            $next = $next->modify('+1 day');
+        }
+
+        return $next;
+    }
+}
+```
+
+```php
+// back in BillingSchedule::build():
+use Symfony\Component\Scheduler\Trigger\CronExpressionTrigger;
+use App\Scheduler\Trigger\OnBusinessDayOrNext;
+use App\Service\HolidayCalendar;
+
+public function __construct(
+    private readonly EntityManagerInterface $em,
+    private readonly HolidayCalendar $holidays,
+) {
+}
+
+// in build(), per tenant:
+$base = new OnBusinessDayOrNext(
+    CronExpressionTrigger::fromSpec(sprintf('0 0 %d * *', $tenant->billingDayOfMonth)),
+    $this->holidays
+);
+// (wrap in JitterTrigger if desired)
+```
+
+Now each tenant's monthly billing job:
+- fires on *its own* calendar day,
+- defers past weekends and public holidays,
+- is jittered so the 5,000 tenants who bill on the 1st don't collide.
+
+This exact scenario — *dynamic, per-tenant, calendar-aware scheduling* — is what you simply cannot express in a `crontab`. It's the headline argument for the component.
+
+##### 18.6.4 The attribute shortcut: `#[AsCronTask]` and `#[AsPeriodicTask]`
+
+For simple, *non-dynamic* jobs you don't need a provider class at all. You can tag the handler itself:
+
+```php
+namespace App\Scheduler\Handler;
+
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Symfony\Component\Scheduler\Attribute\AsCronTask;
+use Symfony\Component\Scheduler\Attribute\AsPeriodicTask;
+
+#[AsMessageHandler]
+final class PurgeExpiredSessions
+{
+    // cron form: runs at 03:30 daily on the default schedule
+    #[AsCronTask('30 3 * * *')]
+    public function runCron(): void
+    {
+        // … purge …
+    }
+
+    // periodic form: every 10 minutes
+    #[AsPeriodicTask('10 minutes')]
+    public function runPeriodic(): void
+    {
+        // … short, cheap check …
+    }
+}
+```
+
+The attributes register the task on the **default schedule** and auto-configure the transport. Use them for one-off maintenance; reach for a full `ScheduleProviderInterface` when you need per-entity fan-out, decorators, or a *named* schedule (its own transport/consumption rate).
+
+---
+
+#### 18.7 Running the scheduler
+
+Because the Scheduler is a Messenger transport, you run it with `messenger:consume`. In production you run **one resident process** that consumes all scheduler transports:
+
+```bash
+php bin/console messenger:consume 'scheduler_.*' -vv
+```
+
+And you give it a **heartbeat** — a single cron line that ensures the process is alive and ticks at least once a minute:
+
+```cron
+# one line, every minute — this is the *only* OS cron you need
+* * * * *  www-data  cd /var/www/app && php bin/console messenger:consume 'scheduler_.*' --time-limit=50 --stop-timeout=10 >> var/log/scheduler.log 2>&1
+```
+
+The flags matter:
+
+- `--time-limit=50`: the worker stops after ~50 s of continuous work, letting cron start a fresh, clean process (bounded memory).
+- `--stop-timeout=10`: let in-flight jobs finish for up to 10 s before the process exits.
+
+> **One process or many?** The default is a single worker consuming *all* scheduler transports. If a long-running billing batch would starve a 15-minute reconciliation, split them: run one consumer for `scheduler_billing` and a separate one for `scheduler_default`. Because it's just Messenger, you get `messenger:stats`, per-transport concurrency (`-e` / `-n` flags), and the ability to scale workers independently — all from Chapter 17.
+
+##### 18.7.1 Inspecting and testing locally
+
+You rarely want to wait a minute (let alone a day) in development. The Scheduler plays nicely with the tools you already have:
+
+```bash
+# 1. See every scheduled task, its trigger, and its next run time
+php bin/console debug:scheduler
+
+# 2. Force a specific message to run *now* by dispatching it to the bus
+#    (write a tiny console command, or use a service)
+php bin/console messenger:consume scheduler_.* --limit=1 -vv
+```
+
+`debug:scheduler` is your best friend during development: it prints each `RecurringMessage`, the trigger's `__toString()`, and the computed next run. That's how you verify that "monthly on the 15th, deferring holidays, with jitter" actually resolves to the date you think it does.
+
+> **Testing triggers.** Because a trigger is a pure function (`getNextRunDate(\DateTimeImmutable)`), a unit test is a handful of assertions:
+>
+> ```php
+> public function testDefersPastWeekend(): void
+> {
+>     $inner = new CronExpressionTrigger(CronExpression::create('0 0 15 * *'));
+>     $trigger = new OnBusinessDayOrNext($inner, $this->createMock(HolidayCalendar::class));
+>
+>     $run = $trigger->getNextRunDate(new \DateTimeImmutable('2026-08-01'));
+>     self::assertSame('2026-08-15', $run->format('Y-m-d'));
+> }
+> ```
+
+---
+
+#### 18.8 Locking: why it matters and how the Scheduler handles it
+
+Here's the subtle failure mode that bites people who move *from* cron *to* the Scheduler: **you can end up with more than one worker**.
+
+- Two replicas of your app, both running `messenger:consume 'scheduler_.*'`.
+- A long job still running when the next tick arrives.
+- A dev box and a CI job both pointed at the same DSN.
+
+If two processes decide "07:15 is due" and both dispatch, you double-send every reminder. Cron has the same problem (which is why you see `flock` wrappers all over the place), so why is the Scheduler different?
+
+**It isn't — and that's by design.** The Scheduler, like Messenger, gives you the *mechanism* but expects *you* to guarantee a single consumer per transport in production. The two levers are:
+
+1. **One consumer process per transport** — the operational rule from 18.7. Run the scheduler worker as a *singleton* (a systemd `OnFailure=` + `Restart=`, a single container replica, or an external lock like a Redis/DB advisory lock around the whole worker).
+2. **Per-job idempotency** — make the handler safe to run twice (Section 18.10). This is your *defense in depth*: even if a lock leaks, a double-run is harmless.
+
+If you run the scheduler worker as a normal horizontally-scaled service, add an explicit distributed lock around the tick using the **Lock component** (Chapter 26) so exactly one replica consumes:
+
+```php
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Lock;
+
+final class SchedulerConsumer
+{
+    public function __construct(private readonly LockFactory $lockFactory) {}
+
+    public function tick(\Closure $consume): void
+    {
+        /** @var Lock $lock */
+        $lock = $this->lockFactory->createLock('scheduler.tick', ttl: 60);
+        if (!$lock->acquire()) {
+            return; // another replica is mid-tick; skip
+        }
+        try {
+            $consume();
+        } finally {
+            $lock->release();
+        }
+    }
+}
+```
+
+> **The rule of thumb:** in a multi-replica deployment, the scheduler worker must be a **single, locked process**, while *regular* Messenger handlers (`async`, web-triggered) can scale freely. The scheduler decides; only one decider is allowed.
+
+---
+
+#### 18.9 Operations: the practical checklist
+
+**Deployment.** A new scheduled job is a code change, not a crontab change. Deploy as usual; the worker picks up the new schedule on its next restart (or the next tick, if you reload the schedule provider). That kills the "forgot to update box 3" class of bug entirely.
+
+**When does a schedule provider reload?** `getSchedule()` is called each tick, and we memoize inside the provider. Memoizing means the provider's *first* call in a process wins. So:
+
+- The schedule reflects tenants **as they were when the worker process started**.
+- A tenant created at 14:00 is picked up when the worker next restarts (e.g. your nightly deploy or a `systemctl restart`).
+
+If that lag is unacceptable (you need same-minute pickup of new tenants), don't memoize and add a cheap cache on the tenant query instead — but weigh that against rebuilding 5,000 triggers every minute. In practice, "new tenants bill next cycle" is the correct business behavior anyway.
+
+**Backfill and catch-up.** The Scheduler only fires *forward* from now. If a worker was down for three days, you don't get three replayed runs — you get the next scheduled one. For anything where a missed window is business-critical (billing!), make the handler **reconcile by state**, not by trigger time: "find all tenants whose `last_billed_month < current_month` and bill them." That makes the job self-healing regardless of how the worker was scheduled. (This is the same "idempotent + state-driven" rule, applied at the business level.)
+
+**Timezones.** Set a single, explicit application timezone (in your deployment env: `TZ=UTC`), and let each *trigger* carry the timezone that matters for the *user* (e.g. `Europe/Berlin`). Don't rely on the host's TZ — it drifts across machines.
+
+**Observability.** Every scheduled run is a normal Messenger message, so:
+
+- It appears in `messenger:stats` and your dead-letter handling.
+- Wrap it in a logging event subscriber (Chapter 7) to log "scheduled run started/finished for tenant 42."
+- If a scheduled job is *supposed* to run daily and doesn't, monitor the *absence* (a "dead man's switch"): alert if no `invoice.reminders` messages were dispatched within, say, 26 hours.
+
+---
+
+#### 18.10 Making scheduled jobs safe (the two rules)
+
+Scheduled work is unattended. It runs at 3 a.m. with no human watching and no way to "undo." Two rules cover 95% of the pain:
+
+1. **Idempotency.** Running the same job twice must be safe. Achieve it by making operations *state-driven and guarded*, not *count-driven*:
+   ```php
+   // BAD: count-driven — double run = double email
+   $this->mailer->sendReminder($invoice);
+
+   // GOOD: state-driven — the second run finds the flag already set
+   if (!$invoice->isReminderSent()) {
+       $this->mailer->sendReminder($invoice);
+       $invoice->markReminderSent();
+       $this->em->flush();
+   }
+   ```
+2. **Bounded, resumable work.** Never loop "over all tenants" unbounded in one message. Process in **chunks** and/or one message per tenant (as in 18.6), so a failure at tenant 2,000 doesn't re-do tenants 1–1,999, and memory stays flat. Batch with `SET FETCH FIRST :limit ROWS ONLY` + `WHERE id > :cursor`.
+
+Together with the retry/failure machinery from Chapter 17, these two rules mean a 3 a.m. run can fail and recover without you ever being paged.
+
+---
+
+#### 18.11 Webhooks: receiving external events
+
+Now the other half of the chapter. A **webhook** is the inverse of an API call: instead of *you* calling a service, the service calls *you* when something happens. For the invoicing SaaS, the obvious example is a **payment gateway**: when the bank captures, disputes, or refunds a charge, it POSTs to a URL you registered.
+
+You *could* write this as a normal controller (Chapter 4): a `POST /webhooks/stripe` route that reads the body, verifies the signature, and updates the invoice. And for a single, simple webhook, that's actually a defensible choice. But the dedicated **Webhook** + **RemoteEvent** components give you, for free:
+
+- A **centralized endpoint** (`/webhook/{routing-name}`) instead of a route per provider.
+- **Signature verification as a first-class, testable step** (the parser).
+- A **normalized event object** (`RemoteEvent`) so your business logic doesn't touch raw provider payloads.
+- **Asynchronous processing** via Messenger (Section 18.14), so you can return `200` to the provider *immediately* and do the slow work later — critical, because payment providers **retry** if you don't acknowledge fast.
+- **Built-in parsers** for many providers (Stripe isn't among them yet, which is why we'll write one).
+
+##### 18.11.1 Install
+
+```bash
+composer require symfony/webhook
+```
+
+That pulls in the `RemoteEvent` component too (it's a dependency). Flex enables `framework.webhook`.
+
+##### 18.11.2 The lifecycle
+
+Every inbound webhook flows through the same four steps, and each maps to a concrete type:
+
+```
+  POST /webhook/stripe_invoice
+            │
+            ▼
+  ① WebhookController            ← single entry point (built-in)
+            │  picks a parser by routing name
+            ▼
+  ② RequestParser                 ← verify signature, normalize
+            │  (throws RejectWebhookException if bad; returns a RemoteEvent)
+            ▼
+  ③ RemoteEvent                   ← "what happened", decoupled from the payload format
+            │
+            ▼
+  ④ Consumer (ConsumerInterface)  ← your business logic, sync or async (Messenger)
+```
+
+| Step | Type | Your job |
+|---|---|---|
+| ① Receive | `WebhookController` (built-in) | Nothing — it's wired for you |
+| ② Verify + normalize | `RequestParserInterface` / `AbstractRequestParser` | **Write it** |
+| ③ Event | `RemoteEvent` | Produced by the parser |
+| ④ Consume | `ConsumerInterface` (`#[AsRemoteEventConsumer]`) | **Write it** |
+
+##### 18.11.3 Wiring the route and the routing name
+
+The framework ships a controller that turns any `/webhook/…` URL into a webhook dispatch. Wire it in `config/routes/webhook.yaml`:
+
+```yaml
+webhook:
+    resource: '@FrameworkBundle/Resources/config/routing/webhook.php'
+    prefix: /webhook
+```
+
+Now each provider you register gets its own sub-path: `/webhook/stripe_invoice`, `/webhook/mailtrap`, etc. The **routing name** (`stripe_invoice`) is the keystone — it connects the URL to a parser *and* to your consumer. It must match in two places (config and the `#[AsRemoteEventConsumer]` attribute).
+
+Register the parser and its secret in `config/packages/webhook.yaml`:
+
+```yaml
+framework:
+    webhook:
+        routing:
+            stripe_invoice:
+                service: App\Webhook\StripeInvoiceRequestParser
+                secret: '%env(STRIPE_WEBHOOK_SECRET)%'
+```
+
+The `secret` is the signing key Stripe gave you when you created the endpoint. Store it in your secrets system (Chapter 6) — never in the repo:
+
+```bash
+php bin/console secrets:set STRIPE_WEBHOOK_SECRET   # paste the sk_... key
+```
+
+> **Security warning (real, not theoretical):** if `secret` is empty, *some* parsers will verify, but *others will skip verification entirely and accept the request from anyone*. In production a missing secret means anyone on the internet can POST a forged `invoice.payment_succeeded` to your app and mark invoices as paid. Always set it. The component can't fully protect you here — that's on your configuration.
+
+##### 18.11.4 Writing the parser: verifying the Stripe signature
+
+Stripe signs each request body with an HMAC over the payload plus the timestamp, in the `Stripe-Signature` header: `t=<timestamp>,v1=<hex hmac>`. We verify it and, on success, hand back a `RemoteEvent`.
+
+```php
+// src/Webhook/StripeInvoiceRequestParser.php
+namespace App\Webhook;
+
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestMatcher\ChainRequestMatcher;
+use Symfony\Component\HttpFoundation\RequestMatcher\MethodRequestMatcher;
+use Symfony\Component\HttpFoundation\RequestMatcher\RequestMatcherInterface;
+use Symfony\Component\RemoteEvent\RemoteEvent;
+use Symfony\Component\Webhook\Client\AbstractRequestParser;
+use Symfony\Component\Webhook\Exception\RejectWebhookException;
+
+final class StripeInvoiceRequestParser extends AbstractRequestParser
+{
+    protected function getRequestMatcher(): RequestMatcherInterface
+    {
+        // must be a POST (Stripe only ever POSTs)
+        return new ChainRequestMatcher([
+            new MethodRequestMatcher('POST'),
+        ]);
+    }
+
+    protected function doParse(Request $request, #[\SensitiveParameter] string $secret): ?RemoteEvent
+    {
+        $signatureHeader = $request->headers->get('Stripe-Signature');
+        if (null === $signatureHeader || '' === $secret) {
+            throw new RejectWebhookException(403, 'Missing Stripe-Signature header.');
+        }
+
+        // 1) verify the HMAC (constant-time)
+        $this->verifySignature($request->getContent(), $signatureHeader, $secret);
+
+        // 2) tolerate re-delivery: Stripe retries until we 200; a replayed
+        //    event is fine as long as consumers are idempotent (see 18.14)
+        $payload = json_decode($request->getContent(), true, 512, \JSON_THROW_ON_ERROR);
+
+        return new RemoteEvent(
+            name: $payload['type'],               // e.g. "invoice.payment_succeeded"
+            id: $payload['data']['object']['id'], // stable event/object id
+            payload: $payload,
+        );
+    }
+
+    private function verifySignature(string $payload, string $header, string $secret): void
+    {
+        // header format: t=1526549888, v1=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e06e55338e9c8bf0e9ae4
+        $parts = array_map('trim', explode(',', $header));
+        $timestamp = null; $v1 = null;
+        foreach ($parts as $part) {
+            [$key, $value] = array_pad(explode('=', $part, 2), 2, null);
+            if ('t' === $key) { $timestamp = (int) $value; }
+            if ('v1' === $key) { $v1 = $value; }
+        }
+
+        if (null === $timestamp || null === $v1) {
+            throw new RejectWebhookException(400, 'Malformed Stripe-Signature header.');
+        }
+
+        // reject events older than 5 minutes (replay protection)
+        if (abs(time() - $timestamp) > 300) {
+            throw new RejectWebhookException(400, 'Webhook timestamp too old.');
+        }
+
+        $expected = hash_hmac('sha256', $timestamp.'.'.$payload, $secret);
+        if (!hash_equals($expected, $v1)) {
+            throw new RejectWebhookException(403, 'Signature verification failed.');
+        }
+    }
+}
+```
+
+Walk the three things that make this *secure*, not just "working":
+
+1. **`hash_equals()`**, not `===`. Constant-time comparison prevents timing attacks on the HMAC.
+2. **Timestamp tolerance.** Reusing an old valid signature is a replay attack; bounding the `t` window (5 min here) kills it. Stripe re-sends with a fresh timestamp, so legitimate redeliveries still pass.
+3. **`RejectWebhookException`** with the right status. Throwing it turns a bad webhook into a `4xx` so the provider knows it didn't arrive — and it's a single, consistent failure path you can log.
+
+> **`#[\SensitiveParameter]`** on `$secret` keeps it out of stack traces and logs. Small habit, big payoff when a 500 dumps an exception page.
+
+##### 18.11.5 The consumer: acting on the event
+
+The consumer is where business logic lives. It's decoupled from *how* the event was delivered — the same consumer works whether the event came from a webhook or, hypothetically, a message you dispatched yourself.
+
+```php
+// src/RemoteEvent/StripeInvoiceConsumer.php
+namespace App\RemoteEvent;
+
+use App\Entity\Invoice;
+use App\Service\InvoiceService;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\RemoteEvent\Attribute\AsRemoteEventConsumer;
+use Symfony\Component\RemoteEvent\Consumer\ConsumerInterface;
+use Symfony\Component\RemoteEvent\RemoteEvent;
+
+#[AsRemoteEventConsumer('stripe_invoice')]   // MUST equal the routing name
+final class StripeInvoiceConsumer implements ConsumerInterface
+{
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly InvoiceService $invoiceService,
+    ) {
+    }
+
+    public function consume(RemoteEvent $event): void
+    {
+        $type = $event->getName();
+        $payload = $event->getPayload();
+        $invoiceId = $payload['data']['object']['id'];   // e.g. "in_1AbC..."
+
+        match ($type) {
+            'invoice.payment_succeeded' => $this->invoiceService->markPaid($invoiceId),
+            'invoice.payment_failed'    => $this->invoiceService->markFailed($invoiceId),
+            'charge.dispute.created'    => $this->invoiceService->flagDispute($invoiceId),
+            default => null, // events we don't act on
+        };
+    }
+}
+```
+
+Because the routing name is a *string* shared with config, this is where mistakes live. The `make:webhook` command (next section) generates both the parser and this consumer with the name wired up for you, which is the recommended path in real projects.
+
+##### 18.11.6 `make:webhook`: the fast path
+
+```bash
+php bin/console make:webhook
+```
+
+The command (from MakerBundle ≥ 1.58) asks for the provider and routing name, then scaffolds the parser, the consumer, and the `webhook.yaml` routing entry in one shot. Use it as a template; you'll still replace `doParse()` with your provider's real verification (as we did for Stripe).
+
+##### 18.11.7 Built-in parsers (so you don't rewrite what exists)
+
+Symfony ships parsers for a range of mail and SMS providers out of the box. For those, you skip writing a parser entirely — just register the built-in service name:
+
+```yaml
+# config/packages/webhook.yaml
+framework:
+    webhook:
+        routing:
+            mailer_sendgrid:
+                service: 'mailer.webhook.request_parser.sendgrid'
+                secret: '%env(MAILER_SENDGRID_SECRET)%'
+```
+
+Then consume the *typed* events instead of a raw `RemoteEvent`:
+
+```php
+use Symfony\Component\RemoteEvent\Event\Mailer\MailerDeliveryEvent;
+use Symfony\Component\RemoteEvent\Attribute\AsRemoteEventConsumer;
+use Symfony\Component\RemoteEvent\Consumer\ConsumerInterface;
+use Symfony\Component\RemoteEvent\RemoteEvent;
+
+#[AsRemoteEventConsumer('mailer_sendgrid')]
+final class SendgridDeliveryConsumer implements ConsumerInterface
+{
+    public function consume(RemoteEvent $event): void
+    {
+        if ($event instanceof MailerDeliveryEvent) {
+            // $event->getRecipient(), isBounced(), isDelivered(), …
+        }
+    }
+}
+```
+
+This is exactly the integration the outline calls for in the running project: hook the **Mailer** provider (Chapter 16) so bounces of your *invoice emails* are captured. A bounced invoice email should flag the tenant's billing contact for follow-up — wire that here.
+
+---
+
+#### 18.12 Payload converters: normalizing messy providers
+
+When a provider's payload is awkward (nested, uses its own event names), don't cram mapping logic into `doParse()`. Extract a **`PayloadConverterInterface`** that turns the raw array into a clean `RemoteEvent`:
+
+```php
+// src/RemoteEvent/StripePayloadConverter.php
+namespace App\RemoteEvent;
+
+use Symfony\Component\RemoteEvent\PayloadConverterInterface;
+use Symfony\Component\RemoteEvent\RemoteEvent;
+
+final class StripePayloadConverter implements PayloadConverterInterface
+{
+    public function convert(array $payload): RemoteEvent
+    {
+        // map Stripe's event vocabulary to your domain's
+        $name = match ($payload['type']) {
+            'invoice.payment_succeeded' => 'stripe.invoice_paid',
+            'invoice.payment_failed'    => 'stripe.invoice_failed',
+            'charge.dispute.created'    => 'stripe.dispute',
+            default => 'stripe.unknown',
+        };
+
+        return new RemoteEvent($name, $payload['id'], $payload);
+    }
+}
+```
+
+Then the parser shrinks to a guard + a call:
+
+```php
+// in StripeInvoiceRequestParser::doParse(), after verifySignature():
+return $this->converter->convert(json_decode($request->getContent(), true, 512, \JSON_THROW_ON_ERROR));
+```
+
+Inject it via the constructor. This keeps *verification* (parser) and *interpretation* (converter) separate, each testable in isolation. For a reference implementation of this split, read the built-in `MailgunPayloadConverter` in the Mailer bridge.
+
+---
+
+#### 18.13 Testing webhooks: the fixture-driven base class
+
+Webhook parsers are the highest-risk code in this chapter — a bug here is a security hole. The `AbstractRequestParserTestCase` gives you a data-driven harness: drop a `*.json` payload in `Fixtures/` and a `*.php` expectation file beside it, and the base class asserts the parser turns the former into the latter (and rejects the bad ones).
+
+```
+tests/
+└── Webhook/
+    ├── StripeInvoiceRequestParserTest.php
+    └── Fixtures/
+        ├── payment.succeeded.json
+        ├── payment.succeeded.php
+        ├── missing.signature.json
+        └── missing.signature.php
+```
+
+```php
+// tests/Webhook/StripeInvoiceRequestParserTest.php
+namespace App\Tests\Webhook;
+
+use App\Webhook\StripeInvoiceRequestParser;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Webhook\Test\AbstractRequestParserTestCase;
+
+class StripeInvoiceRequestParserTest extends AbstractRequestParserTestCase
+{
+    protected function createRequestParser(): StripeInvoiceRequestParser
+    {
+        return new StripeInvoiceRequestParser();
+    }
+
+    // add the real Stripe-Signature header per fixture
+    protected function createRequest(string $payload): Request
+    {
+        return Request::create('/', 'POST', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_Stripe-Signature' => $this->signForFixture($payload),
+        ], $payload);
+    }
+
+    protected function getSecret(): string
+    {
+        return 'test_secret'; // must match the key used in signForFixture()
+    }
+
+    private function signForFixture(string $payload): string
+    {
+        $t = time();
+        return sprintf('t=%d, v1=%s', $t, hash_hmac('sha256', $t.'.'.$payload, 'test_secret'));
+    }
+}
+```
+
+Each `payment.succeeded.php` returns the expected `RemoteEvent`; a `missing.signature.json` with no header yields an expectation that the parser *rejects*. You get a real regression net over your verification logic — the thing most teams skip and then get forged webhooks.
+
+> **Functional test tip.** A `WebTestCase` (Chapter 22) can hit `POST /webhook/stripe_invoice` end-to-end. The trick is generating a *valid* signature in the test — reuse `signForFixture()` from the parser test. This proves the whole chain: route → controller → parser → (sync) consumer → DB change.
+
+---
+
+#### 18.14 Asynchronous webhook processing (return 200 fast, work later)
+
+By default the consumer runs **synchronously** inside the HTTP request. That's wrong for payment webhooks, for two reasons:
+
+1. **Providers retry on slow responses.** If marking an invoice paid, updating the ledger, and emailing the customer takes 4 s, the gateway may time out and re-send. You want to `200` in milliseconds.
+2. **Coupling failure to the caller.** Your DB being slow shouldn't make the provider think you didn't receive the event.
+
+The fix is to route the `RemoteEvent` through Messenger so the webhook request only *enqueues* and the *worker* does the work:
+
+```yaml
+# config/packages/messenger.yaml
+framework:
+    messenger:
+        routing:
+            'Symfony\Component\RemoteEvent\Messenger\ConsumeRemoteEventMessage': async
+```
+
+Now the flow is:
+
+```
+POST /webhook/stripe_invoice
+   → verify signature (fast, ~1 ms)
+   → wrap in ConsumeRemoteEventMessage, dispatch to "async" transport
+   → return 200                     ← provider is happy, no retry
+                …(later, in a worker)…
+   → ConsumeRemoteEventHandler → your StripeInvoiceConsumer::consume()
+```
+
+This reuses the *same* `async` transport and worker pool from Chapter 17, so you get retries, a failure transport, and horizontal scaling for free.
+
+> **Idempotency is non-negotiable now.** Once processing is async and retriable, a *double delivery* is possible (a redelivery that both lands in the queue, or a retry after a handler crash). Your consumer **must** be idempotent — the exact same rule as scheduled jobs (18.10). Use a stable event/object id (`$event->getId()`) to record "already processed" in a table or via an optimistic state check:
+>
+> ```php
+> if ($invoice->isAlreadyPaid()) { return; }  // second delivery → no-op
+> $this->invoiceService->markPaid($invoiceId);
+> ```
+>
+> A small `processed_webhook_events (event_id PK, created_at)` table keyed on `$event->getId()` is the most explicit guard.
+
+> **Sync vs async — decide per endpoint.** A webhook that just flips a flag can stay synchronous (simpler, and "did you get it?" is answered by your response). A webhook that does real work (update money, send mail, call another service) should be asynchronous. The rule: *if the consumer can be slow or fail, make it async and idempotent.*
+
+---
+
+#### 18.15 Sending webhooks (bonus)
+
+The Webhook component can also be the **sender** — notifying *your* customers or partner systems when something happens in your app (e.g. "invoice paid"). This is less common in a SaaS, but the pattern is symmetric:
+
+- Define a `RemoteEvent` for the outbound event.
+- A **transport** (`TransportInterface` on the server side) serializes it and POSTs it to registered endpoints.
+- The framework signs the outgoing request so the receiver can verify it the same way we verified Stripe's.
+
+In practice many teams handle outbound webhooks with a small Messenger handler + HTTP client (Chapter 17) because the "who to call" is per-tenant configuration. The component's sending side is most useful when you're building a *platform* that many third parties subscribe to. Treat this as a pointer to the docs rather than a SaaS requirement.
+
+---
+
+#### 18.16 Scheduling vs webhooks: when to use which
+
+Both are "do work when an external thing happens," and they overlap. Use this to choose:
+
+| Signal | Use |
+|---|---|
+| The trigger is **time** (daily, monthly, every 15 min) | **Scheduler** |
+| The trigger is **an external system telling you something happened** | **Webhook** |
+| You must *poll* because the external system has no webhook | A scheduled job that *pulls* (Scheduler + HTTP client) — see "reconciliation" below |
+| The work is slow / must not block the caller | Make it **async via Messenger** (both do this) |
+| You need per-tenant, dynamic timing | **Scheduler** (webhooks can't express "on the 14th of each month") |
+
+**Hybrid — the reconciliation pattern.** Real payment integrations use *both*: the webhook gives you *prompt* updates, and a **scheduled reconciliation job** is the *source of truth* that periodically pulls the full state from the provider ("get all invoices, compare, fix drift"). The webhook optimizes latency; the scheduled job guarantees correctness. Never rely on webhooks alone for money — they can be delayed, dropped, or (if you misconfigure) replayed.
+
+> **Reconciliation is what makes the system correct.** Webhooks are a *hint*; the scheduled pull is the *truth*. This is the single most important reliability idea in this chapter, and it applies to *every* external integration you'll ever build — payments, shipping, auth providers, CRM.
+
+---
+
+#### 18.17 Common pitfalls
+
+1. **Forgetting the secret.** An empty `secret` means *some* parsers accept anyone's POST. Your invoices get marked paid by a random attacker. Set it; store it in secrets.
+2. **Routing name mismatch.** The `#[AsRemoteEventConsumer('…')]` name must equal the key under `webhook.routing`. A typo here fails *silently* — the webhook 200s (or 404s) and nothing is consumed. `make:webhook` prevents this.
+3. **Slow synchronous consumers.** A 4 s consumer makes the provider retry and pile up duplicates. Async it (18.14).
+4. **Non-idempotent handlers.** The moment anything retries — Messenger, a webhook redelivery, a double scheduler tick — non-idempotent code double-spends. Guard by state (18.10, 18.14).
+5. **Unbounded per-tenant fan-out.** Building a schedule that loops all tenants *without* memoization re-queries the DB every tick. Memoize; or chunk the handler.
+6. **Relying on host timezone.** Set `TZ=UTC` in the env and give *triggers* explicit timezones. Midnight "stampedes" come from everyone sharing `0 0 * * *` — hash or jitter them.
+7. **Multiple unlocked scheduler workers.** Two replicas both deciding "it's due" = double runs. Run the scheduler worker as a single, locked process (18.8).
+8. **Treating webhooks as the source of truth.** They're a hint. Add a scheduled reconciliation that pulls and diffs (18.16).
+
+---
+
+#### 18.18 Summary
+
+- The **Scheduler** is a Messenger transport that *fabricates* messages on a schedule. You define **triggers** (cron, interval, callback, plus `Jitter`/`ExcludeTime` decorators) and **recurring messages**; a **provider** tagged `#[AsSchedule]` registers them. You run it with `messenger:consume 'scheduler_.*'` and a one-line cron heartbeat.
+- Its power for a **multi-tenant SaaS** is *dynamic, per-entity schedules*: one provider builds a message per tenant, each on its own billing cycle, deferring holidays and jittered to avoid stampedes — something `crontab` can't express.
+- Use the attribute shortcuts `#[AsCronTask]` / `#[AsPeriodicTask]` for simple maintenance jobs.
+- **Webhooks** flow: built-in `WebhookController` → your **parser** (verify + normalize) → **`RemoteEvent`** → your **consumer** (`#[AsRemoteEventConsumer]`, name = routing name).
+- Make webhook consumers **asynchronous** (route `ConsumeRemoteEventMessage` to `async`) so you `200` fast, and make every handler **idempotent** so retries and redeliveries are safe.
+- **Reconcile by schedule**: webhooks optimize latency, a scheduled pull is the truth.
+
+---
+
+#### Exercises
+
+**1. Weekly cleanup job.** Add a scheduled job `PurgeExpiredSessions` that runs weekly (choose your own cron) on the `default` schedule, deleting session rows older than 30 days. Use `#[AsPeriodicTask]` if you can, a provider if you prefer. Confirm with `php bin/console debug:scheduler` that the next run time is what you expect.
+
+**2. Per-tenant fan-out.** Build a `BillingSchedule` that emits one `ProcessMonthlyBilling` message per active tenant, each on that tenant's `billingDayOfMonth`, jittered by up to 10 minutes. Verify in `debug:scheduler` that two tenants with different billing days resolve to different next-run dates, and that the schedule is memoized (add a `dump()` in the provider and confirm it's called once per process, not per tick).
+
+**3. Custom decorator.** Write a `NotOnPublicHolidays` trigger decorator (like `OnBusinessDayOrNext` but excluding weekends *and* a list of holiday dates) and unit-test it with three cases: a normal date, a weekend, and a holiday.
+
+**4. Hashed cron.** Add a daily "warm the invoice PDF cache" job that fires *every day but not at the same minute as your other jobs*. Use a hashed cron (`# # * * *`). Explain, in a comment, why hashing is preferable to jitter here (fixed-per-message vs. varies-per-run).
+
+**5. Stripe webhook parser.** Implement `StripeInvoiceRequestParser` (Section 18.11.4). Write a `StripeInvoiceRequestParserTest` with fixtures for: a valid `invoice.payment_succeeded`, a valid `invoice.payment_failed`, a request with a missing signature, and a request with a stale timestamp. All four must be asserted correctly.
+
+**6. Async + idempotent consumer.** Route `ConsumeRemoteEventMessage` to `async`. Then make `StripeInvoiceConsumer` idempotent using a `processed_webhook_events` table keyed on `$event->getId()`. Write a test that delivers the *same* event twice and asserts the invoice state changes exactly once.
+
+**7. Reconciliation.** Add a scheduled job (hourly) `ReconcileInvoices` that pulls open invoices from the (stubbed) gateway, compares against your DB, and marks discrepancies. Explain in a comment why this job is the source of truth while the webhook is only a fast path.
+
+**8. Dead man's switch.** Add a mechanism (a scheduled check or a monitoring rule) that alerts if `invoice.reminders` produced no messages in the last 26 hours. Think about how you'd implement "absence of an event" with the tools in Chapter 23.
+
+---
+
+*Next — Chapter 19 (REST APIs with the Serializer) turns the browser-facing app into a machine-facing one: serialization groups, denormalizers, format negotiation, and the error formats your API consumers will depend on.*
 
 ## Part V — APIs
 **Ch 19. REST APIs with the Serializer**
