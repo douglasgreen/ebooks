@@ -7765,16 +7765,6 @@ return new Response($response, 200, [
 
 *Next chapter: [Chapter 10 — Forms](#). You'll build the invoice creation form with a dynamic line-item collection, custom field types, and validation integration—tying together the form theme work from §9.6 with the full `Form` component.*
 
-I'll verify a couple of current Symfony form API details (factory method signatures and any recent deprecations) so the chapter's code is accurate for 7.4/8.x, then write it.
-
-
-
-Let me confirm the exact signatures from the source.
-
-
-
-Signatures confirmed (`create(type, data, options)`, `createBuilder(type, data, options)`). I have what I need. Here's Chapter 10.
-
 ---
 
 ### Chapter 10 — Forms
@@ -9425,24 +9415,6 @@ The Validation component is small in API surface but powerful in composition. Co
 
 In the next chapter we move to **Security**—the layer that decides *who* can create, read, update, and delete the very invoices we just learned to validate.
 
-I'll research the current state of Symfony's security system to make sure the chapter is accurate for Symfony 7.4 LTS / 8.x, then write it in the book's style.
-
-
-
-Let me fetch the official docs to ground the configuration details accurately.
-
-
-
-Let me confirm the session fixation and full config structure from the official reference.
-
-
-
-I have most details. Let me verify the exact `login_throttling` YAML structure to be precise.
-
-
-
-I have everything I need, grounded in the current Symfony 7.4/8.x docs. Here is Chapter 12.
-
 ---
 
 ### Chapter 12 — Security
@@ -10725,28 +10697,6 @@ The next chapter finally gives this security a database to defend.
 **7. (Design discussion, no code)** Our app now has a `stateless` `api` firewall (Part V). Explain in a short paragraph: why `login_throttling` as configured here does *not* protect the API firewall, what the `username + IP` / `IP` limiter keys assume that breaks under a CDN or load balancer, and how you'd move brute-force protection to the API side (hint: a different key space — API key + IP — and possibly a different component).
 
 **8. (Going further)** Research the four `access_decision_manager` strategies. In a SaaS where *some* voters are "policy" (security-critical) and some are "preference" (UX), the built-in strategies may not suffice. Sketch — in code or pseudocode — a **custom `AccessDecisionStrategyInterface`** that treats a DENY from any *policy* voter as an absolute veto, while letting *preference* voters use the default `affirmative` rule. What would you name the two voter "kinds," and how would a voter declare which kind it is?
-
-I'll verify a few current framework facts first so the chapter is accurate for the Symfony 7.4 LTS / 8.x and PHP 8.2+ target, then write the chapter.
-
-
-
-Let me confirm the Symfony 7.4 details and Doctrine version compatibility.
-
-
-
-I have the key facts. Let me confirm one Doctrine 3 API detail that affects type-hints throughout the chapter.
-
-
-
-Let me pull the ORM 3 upgrade notes to get the exact `EntityManager` typing and removed APIs right.
-
-
-
-Let me confirm the `EntityManagerInterface` status in ORM 3 from the official upgrade notes.
-
-
-
-Below is **Chapter 13**, written to match the book's conventions (attribute-based config, PHP 8.2+, the multi‑tenant SaaS invoicing running project) and current for the Symfony 7.4 LTS / Doctrine 3 target. It continues the running project where Chapter 12 left off (users and tenants already exist).
 
 ---
 
@@ -13527,28 +13477,6 @@ Work in the running invoicing app.
 
 *In the next chapter, Chapter 16 — Email and Notifications — we give the SaaS its voice: the Mailer component, templated messages, attachments, and how to test mail locally with Mailpit.*
 
-I'll research the current state of Symfony's Mailer component to ensure the chapter is accurate for Symfony 7.4/8.x, then write it.
-
-
-
-Let me fetch the official Symfony Mailer documentation to get the details right.
-
-
-
-Let me confirm the failure-handling and async-sending specifics.
-
-
-
-Let me verify the testing utilities (`InMemoryTransport`, `MailerAssertionsTrait`) so the test section is correct.
-
-
-
-Let me verify the CSS-inlining and TemplatedEmail specifics so I don't state anything inaccurate.
-
-
-
-I have everything I need. Here is Chapter 16.
-
 ---
 
 ### Chapter 16 — Email and Notifications
@@ -14363,40 +14291,6 @@ The controller or domain service triggers it at the right lifecycle moment (invo
 
 7. **Deliverability.** For your sending domain, generate SPF, DKIM, and DMARC records from your provider's dashboard and publish them as DNS. Send a test email and check the result on a deliverability checker; note the `List-Unsubscribe` header on any digest email and wire it to a working opt-out endpoint.
 
-I'll research the current Symfony Messenger component details to make sure the code examples match the 7.4/8.x target, then write the chapter.
-
-
-
-Let me fetch the full official Messenger docs for the exact 7.4 syntax on routing, rate limiting, stamps, middleware, and testing.
-
-
-
-Let me get the middleware, stamps, failed-transport/dead-letter, rate-limiting, and testing specifics.
-
-
-
-Let me verify the exact rate-limiter routing syntax and the custom middleware attribute for 7.4.
-
-
-
-Let me fetch the rate-limiter doc for the exact worker rate-limiting config, and the SymfonyCasts middleware page for the custom middleware signature.
-
-
-
-Let me pull the raw Messenger 7.4 docs to confirm rate-limiting, middleware, stamps, and worker options exactly.
-
-
-
-I have the core docs. Let me confirm the custom-middleware attribute and the messenger rate-limiting/worker specifics before writing.
-
-
-
-Let me confirm the `#[AsMiddleware]` attribute details and the failed-message console commands.
-
-
-
-I have everything I need. Here is Chapter 17.
-
 ---
 
 ### Chapter 17: Asynchronous Processing with Messenger
@@ -15206,12 +15100,6 @@ messenger:empty-failure
 ---
 
 *Next chapter (18): Scheduling and Webhooks.* The dunning flow we've been hinting at — "remind tenants about overdue invoices every morning" — is exactly the kind of *time‑driven* work Messenger doesn't schedule for you. We'll add the Scheduler component to run cron‑style jobs (locking them so two workers don't double‑send) and the Webhook component to receive external payment events from a provider, verifying their signatures before we dispatch messages onto the bus we just built.
-
-I have what I need. Let me verify the current webhook "sending" API details and the Scheduler attributes to make sure the chapter code is accurate.
-
-
-
-I have enough verified detail on both the Scheduler and Webhook/RemoteEvent components to write the chapter. Here is Chapter 18.
 
 ---
 
@@ -16429,49 +16317,9796 @@ Both are "do work when an external thing happens," and they overlap. Use this to
 *Next — Chapter 19 (REST APIs with the Serializer) turns the browser-facing app into a machine-facing one: serialization groups, denormalizers, format negotiation, and the error formats your API consumers will depend on.*
 
 ## Part V — APIs
-**Ch 19. REST APIs with the Serializer**
-- Serialization groups, normalizers, denormalizers
-- Format negotiation, error formats, rate limiting
 
-**Ch 20. API Platform**
-- Declaring resources; OpenAPI/Swagger generation
-- GraphQL, JSON:API, filtering and pagination
+### Chapter 19: REST APIs with the Serializer
 
-**Ch 21. API Authentication**
-- Stateless authenticators, JWT, API keys, OAuth2 patterns
-
-## Part VI — Quality and Production
-**Ch 22. Testing**
-- Unit vs. functional tests; `WebTestCase`, fixtures, mocking
-- Browser testing with Panther; test environments and CI integration
-
-**Ch 23. Debugging and Performance**
-- VarDumper, Web Profiler, Blackfire
-- Caching: cache pools, HTTP caching, invalidation strategies
-
-**Ch 24. Deployment and Operations**
-- Web server choices (PHP-FPM, FrankenPHP), Docker setup
-- CI/CD pipelines, zero-downtime deploys, logging, monitoring, error tracking
-
-## Part VII — Advanced Topics
-**Ch 25. Workflows: Modeling State Machines**
-- States, transitions, guards; visualizing workflows
-
-**Ch 26. Specialized Components**
-- UID (ULID/UUID), Lock, Semaphore, RateLimiter in practice
-
-**Ch 27. Internationalization and Localization**
-- Translation catalogs, ICU messages, locale negotiation
-
-**Ch 28. Contributing to Symfony**
-- Reading the codebase, writing tests for components, submitting PRs
-
-## Appendices
-- A: Cheat sheet (routing, DI, security, console commands)
-- B: Component reference table with use cases
-- C: Glossary
-- D: Further resources (official docs, blog, community)
+> *"The serializer is the translator between your object graph and the wire format. Get it right once, and every endpoint becomes a declarative exercise in selecting the right groups, the right normalizers, and the right context."*
 
 ---
 
-**Notes on currency:** The outline targets Symfony 7.4 LTS and the 8.x line (PHP 8.2+), using attribute-based configuration throughout and covering newer components (AssetMapper, Scheduler, Webhook) that have become standard in modern Symfony apps.
+#### 19.1 Why a Serializer?
+
+In Part V we shift our focus from server-rendered HTML to machine-to-machine APIs. You could hand-write `json_encode()` calls in every controller, but you would immediately face the problems that make that approach untenable:
+
+- **Duplicated field selection.** Every endpoint that returns an `Invoice` would repeat the same `['id', 'number', 'total', 'status']` projection.
+- **Inconsistent formatting.** One endpoint emits dates as `Y-m-d`, another as RFC 3339, another as a Unix timestamp.
+- **No central place for denormalization rules.** Each `POST` handler re-implements "convert this JSON into an `Invoice` entity, handling the nested `LineItems` and the `Amount` value object."
+- **Tight coupling between the domain model and the HTTP layer.** A rename in your entity silently breaks every `json_encode()`.
+
+Symfony's **Serializer component** (`symfony/serializer`) solves all of these. It decouples the *structure* of your PHP objects from their *representation* on the wire, and it gives you a single, testable pipeline that every endpoint reuses.
+
+By the end of this chapter you will have built a complete JSON API for the invoicing app's public endpoints, with:
+
+- Serialization groups that let the same `Invoice` entity serve a list view, a detail view, and an export view.
+- Custom normalizers for the `Amount` value object and for tenant-aware URL generation.
+- A `ProblemNormalizer`-based error renderer that speaks RFC 7807.
+- A rate limiter that protects the public API from abuse.
+
+> **Where this fits.** Chapter 20 introduces API Platform, which layers OpenAPI, GraphQL, and JSON:API on top of the same Serializer component. Everything you build here is the foundation; API Platform simply adds a declarative front end to it.
+
+---
+
+#### 19.2 Installing and Wiring the Serializer
+
+If you followed the setup in the front matter, the Serializer is already available through the `serializer` recipe. Confirm it is present:
+
+```bash
+$ composer show | grep serializer
+symfony/serializer  v8.1.0
+symfony/serializer-pack  v1.0
+```
+
+The pack registers a `serializer` service in the container that is pre-loaded with a curated set of **encoders** and **normalizers**. You can inspect them at any time:
+
+```bash
+$ php bin/console debug:serializer 'App\Entity\Invoice'
+```
+
+The output is a table of every property the Serializer would consider, the groups it belongs to, and the active `#[Context]` attributes:
+
+```
+App\Entity\Invoice
+------------------
+
++----------------+-------------------------------------------------------------+
+| Property       | Options                                                     |
++----------------+-------------------------------------------------------------+
+| id             | ["groups" => ["invoice:read", "invoice:write"]]             |
+| number         | ["groups" => ["invoice:read", "invoice:list"]]              |
+| total          | ["groups" => ["invoice:read", "invoice:list"], "type" => ...|
+| status         | ["groups" => ["invoice:read", "invoice:list", "invoice:write"|
+| lineItems      | ["groups" => ["invoice:read"], "maxDepth" => 2]             |
+| customer       | ["groups" => ["invoice:read"]]                              |
+| dueDate        | ["groups" => ["invoice:read"], "datetime_format" => "Y-m-d"]|
++----------------+-------------------------------------------------------------+
+```
+
+That command is your first debugging tool. When an endpoint returns (or fails to return) the fields you expect, run it and check the metadata before touching the controller.
+
+---
+
+#### 19.3 The Serialization Pipeline
+
+The Serializer does not do one big transformation. It splits the work into **two orthogonal concerns**, each handled by a dedicated class:
+
+```
+┌──────────────────────┐       ┌──────────────────────┐
+│   PHP object (or    │       │   array (the "flat"  │
+│   array on input)   │◄─────►│   intermediate form) │
+└──────────────────────┘       └──────────┬───────────┘
+              ▲                           │
+              │ Normalizer                │ Encoder
+              │ (object ⇄ array)          │ (array ⇄ format string)
+              │                           │
+┌─────────────┴─────────────┐  ┌──────────┴───────────┐
+│  "json", "xml", "csv",   │  │  normalizer chooses  │
+│  "yaml" …                │  │  which properties,   │
+│  (the wire format)       │  │  groups, depth …     │
+└───────────────────────────┘  └───────────────────────┘
+```
+
+**Normalizers** convert between PHP objects and arrays. A single `Serializer` call may pass through several normalizers: for example, `ObjectNormalizer` handles the `Invoice` entity, `MoneyNormalizer` (a custom one we will write) handles the nested `Amount`, and `DateTimeNormalizer` handles the `dueDate`.
+
+**Encoders** convert between arrays and a concrete format string (JSON, XML, CSV, YAML, …). The encoder is chosen by the `format` argument to `serialize()` / `deserialize()`.
+
+##### 19.3.1 The Built-in Normalizer Stack
+
+The default `serializer` service loads the following normalizers, in order of priority:
+
+| Normalizer | Handles |
+|---|---|
+| `BackedEnumNormalizer` | PHP 8.1 backed enums ↔ scalar values |
+| `DataUriNormalizer` | `data:` URIs |
+| `DateTimeNormalizer` | `DateTime` / `DateTimeImmutable` ↔ formatted strings |
+| `DateTimeZoneNormalizer` | `DateTimeZone` ↔ strings |
+| `DateIntervalNormalizer` | `DateInterval` ↔ strings |
+| `ConstraintViolationListNormalizer` | Validation violations → array |
+| `ProblemNormalizer` | `FlattenException` → RFC 7807 problem JSON |
+| `JsonSerializableNormalizer` | Objects implementing `JsonSerializable` |
+| `TranslatableNormalizer` | Objects implementing `TranslatableInterface` |
+| `FormErrorNormalizer` | Symfony Form errors → RFC 7807 |
+| `ObjectNormalizer` | **Catch-all**: any object with getters/setters |
+| `ArrayDenormalizer` | Nested arrays on denormalization |
+
+When the Serializer receives an object, it walks this list and asks each normalizer `supportsNormalization($object)`. The first `true` wins. Because `ObjectNormalizer` is last, it acts as the default for everything that no specialized normalizer claims.
+
+> **Tip.** You can always add your own normalizer and give it a higher priority than `ObjectNormalizer` so it is tried first. We do this for the `Amount` value object in § 19.6.
+
+##### 19.3.2 The Built-in Encoders
+
+| Encoder | Format |
+|---|---|
+| `JsonEncoder` | `application/json` |
+| `XmlEncoder` | `application/xml` |
+| `CsvEncoder` | `text/csv` |
+| `YamlEncoder` | `text/yaml` |
+
+We use the `JsonEncoder` throughout this chapter. The others are there when a client asks for `?format=xml` or an export endpoint needs CSV.
+
+---
+
+#### 19.4 Your First API Endpoint
+
+Let's create the simplest possible JSON endpoint for the running project: `GET /api/invoices/{id}`.
+
+##### 19.4.1 The Entity
+
+```php
+// src/Entity/Invoice.php
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Context;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
+
+#[ORM\Entity]
+#[ORM\Table(name: 'invoices')]
+class Invoice
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    #[Groups(['invoice:read', 'invoice:write'])]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 32)]
+    #[Groups(['invoice:read', 'invoice:list'])]
+    private string $number;
+
+    #[ORM\Column]
+    #[Groups(['invoice:read', 'invoice:write'])]
+    private string $status;   // 'draft', 'sent', 'paid', 'void'
+
+    #[ORM\ManyToOne(inversedBy: 'invoices')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['invoice:read', 'invoice:write'])]
+    private Customer $customer;
+
+    #[ORM\OneToMany(mappedBy: 'invoice', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[Groups(['invoice:read'])]
+    private \Doctrine\Common\Collections\Collection $lineItems;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+    #[Groups(['invoice:read', 'invoice:list', 'invoice:export'])]
+    private string $total;
+
+    #[ORM\Column(type: 'date_immutable')]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
+    #[Groups(['invoice:read', 'invoice:list'])]
+    private \DateTimeImmutable $dueDate;
+
+    #[ORM\Column(type: 'datetime_immutable')]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => \DateTimeInterface::RFC3339])]
+    #[Groups(['invoice:read'])]
+    private \DateTimeImmutable $createdAt;
+
+    // constructors, getters, setters …
+}
+```
+
+Notice three things:
+
+1. **`#[Groups]` on every property.** We tag properties with namespaced groups (`invoice:read`, `invoice:list`, `invoice:write`, `invoice:export`) so each endpoint can pick the right subset.
+2. **`#[Context]` for per-property context.** `dueDate` is always rendered as `Y-m-d`; `createdAt` uses RFC 3339. This is baked into the metadata, not passed ad hoc in every controller.
+3. **The `lineItems` collection** is in `invoice:read` but not `invoice:list`, so list views stay light.
+
+##### 19.4.2 The Controller
+
+```php
+// src/Controller/Api/InvoiceApiController.php
+namespace App\Controller\Api;
+
+use App\Entity\Invoice;
+use App\Repository\InvoiceRepository;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\SerializerInterface;
+
+class InvoiceApiController extends AbstractController
+{
+    public function show(
+        Invoice $invoice,
+        SerializerInterface $serializer,
+    ): Response {
+        $context = [
+            'groups' => ['invoice:read'],
+        ];
+
+        return $this->json($invoice, context: $context);
+    }
+}
+```
+
+`AbstractController::json()` is a convenience wrapper: it calls `$serializer->serialize()` with the given context, then wraps the result in a `JsonResponse`. If the Serializer is not installed it falls back to `json_encode()`, so the method is always safe.
+
+The corresponding route:
+
+```php
+// config/routes/api.yaml
+# In a dedicated route file or via #[Route] attributes
+```
+
+```php
+// src/Controller/Api/InvoiceApiController.php  (continues)
+
+use Symfony\Component\Routing\Attribute\Route;
+
+#[Route('/api/invoices', name: 'api_invoice_')]
+class InvoiceApiController extends AbstractController
+{
+    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    public function show(/* … */): Response { /* … */ }
+}
+```
+
+##### 19.4.3 What the Serializer Does Behind the Scenes
+
+When `$this->json($invoice, context: ['groups' => ['invoice:read']])` executes:
+
+1. The `Serializer` finds the `ObjectNormalizer` for `Invoice`.
+2. `ObjectNormalizer` iterates over the entity's properties. For each property it checks the metadata: is this property in the `invoice:read` group? If not, it is skipped.
+3. For `dueDate`, the `#[Context]` attribute tells the `DateTimeNormalizer` to use `Y-m-d`.
+4. For `customer`, the normalizer recurses: it serializes the `Customer` object with the same active groups.
+5. For `lineItems`, it recurses into each `LineItem` entity (bounded by `maxDepth` if set).
+6. The resulting flat array is handed to the `JsonEncoder`, which calls `json_encode()`.
+
+You can see the full property-by-property breakdown by running:
+
+```bash
+$ php bin/console debug:serializer 'App\Entity\Invoice'
+```
+
+---
+
+#### 19.5 Serialization Groups in Practice
+
+Groups are the Serializer's most important feature for APIs. They turn "what does this endpoint expose?" into a declarative, per-property decision rather than a runtime projection.
+
+##### 19.5.1 Designing a Group Taxonomy
+
+For the invoicing app we use a **resource:operation** convention:
+
+| Group | Meaning | Used by |
+|---|---|---|
+| `invoice:read` | Full detail view (all fields, nested line items) | `GET /api/invoices/{id}` |
+| `invoice:list` | Compact view (id, number, total, status, dueDate) | `GET /api/invoices` |
+| `invoice:write` | Fields a client is allowed to set on `POST`/`PATCH` | `POST /api/invoices`, `PATCH /api/invoices/{id}` |
+| `invoice:export` | Fields for the CSV/PDF export endpoint | `GET /api/invoices/{id}/export` |
+| `customer:read` | Customer fields visible to API consumers | nested in invoice views |
+| `lineitem:read` | Line item fields | nested in invoice detail |
+
+The colon namespace prevents collisions when multiple resources use generic names like `read` or `write`.
+
+##### 19.5.2 Class-Level vs. Property-Level Groups
+
+You can declare a default group on the class and then override per property:
+
+```php
+#[ORM\Entity]
+#[Groups(['invoice:read'])]          // every property gets "invoice:read"
+class Invoice
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    #[Groups(['invoice:write'])]     // overrides: only in "invoice:write"
+    private ?int $id = null;
+
+    #[ORM\Column(length: 32)]
+    // inherits "invoice:read" from class level
+    #[Groups(['invoice:list'])]      // adds "invoice:list"
+    private string $number;
+}
+```
+
+The class-level group acts as a **base set**; property-level groups are **added to** it, not replaced.
+
+##### 19.5.3 Using Groups in the Serializer Context
+
+You can pass groups in three ways, and they all work together (the most specific wins):
+
+```php
+// 1. Inline in a controller
+return $this->json($invoice, context: ['groups' => ['invoice:read']]);
+
+// 2. Via a context builder (preferred: type-safe, IDE autocompletion)
+use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
+
+$context = (new ObjectNormalizerContextBuilder())
+    ->withGroups(['invoice:read'])
+    ->toArray();
+return $this->json($invoice, context: $context);
+
+// 3. Globally in the framework config (applies to every serialize call
+//    that does not override it)
+// config/packages/serializer.yaml
+framework:
+    serializer:
+        default_context:
+            groups: ['invoice:read']   # rarely a good idea; prefer per-call
+```
+
+> **Rule of thumb.** Pass groups per call in the controller. The `default_context` is for cross-cutting concerns like `allow_extra_attributes: false` or `enable_max_depth: true`.
+
+##### 19.5.4 Combining Context Builders for Complex Pipelines
+
+When you need to set options on multiple normalizers/encoders, chain context builders:
+
+```php
+use Symfony\Component\Serializer\Context\Encoder\JsonEncoderContextBuilder;
+use Symfony\Component\Serializer\Context\Normalizer\DateTimeNormalizerContextBuilder;
+use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
+
+$context = (new ObjectNormalizerContextBuilder())
+    ->withGroups(['invoice:read'])
+    ->withMaxDepth(3);                    // limit nested serialization
+
+$context = (new DateTimeNormalizerContextBuilder())
+    ->withContext($context)
+    ->withFormat(\DateTimeInterface::ATOM);
+
+$context = (new JsonEncoderContextBuilder())
+    ->withContext($context)
+    ->withFlags(\JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES);
+
+$json = $serializer->serialize($invoice, 'json', $context);
+```
+
+Each `withContext()` call wraps the previous builder. The final `toArray()` merges all options into a single context array.
+
+##### 19.5.5 Controlling Recursion with `maxDepth`
+
+Without a depth limit, deeply nested object graphs can produce unexpectedly large payloads (or infinite loops if there is a circular reference). `maxDepth` caps how many levels the normalizer will recurse:
+
+```php
+#[ORM\OneToMany(mappedBy: 'invoice', cascade: ['persist', 'remove'])]
+#[Groups(['invoice:read'])]
+#[MaxDepth(2)]                          // stop after 2 levels
+private \Doctrine\Common\Collections\Collection $lineItems;
+```
+
+You can also set it globally:
+
+```yaml
+# config/packages/serializer.yaml
+framework:
+    serializer:
+        default_context:
+            enable_max_depth: true
+            max_depth: 3
+```
+
+---
+
+#### 19.6 Custom Normalizers and Denormalizers
+
+The built-in normalizers handle entities, scalars, dates, and enums. When your domain model has **value objects**, **computed fields**, or **non-obvious mappings**, you write your own.
+
+##### 19.6.1 The `Amount` Value Object
+
+The invoicing app uses a small value object for money:
+
+```php
+// src/Entity/Amount.php
+namespace App\Entity;
+
+class Amount
+{
+    public function __construct(
+        public readonly string $currency,   // 'EUR', 'USD', …
+        public readonly int    $cents,      // 1999 means €19.99
+    ) {}
+
+    public function display(): string
+    {
+        return sprintf('%.2f %s', $this->cents / 100, $this->currency);
+    }
+}
+```
+
+We want the JSON representation to be `{"currency": "EUR", "amount": 19.99}` — a flat object, not the nested `{"currency": "EUR", "cents": 1999}`. And on denormalization we want to accept both `19.99` (float) and `"19.99"` (string) for `amount`.
+
+###### The Normalizer
+
+```php
+// src/Serializer/AmountNormalizer.php
+namespace App\Serializer;
+
+use App\Entity\Amount;
+use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+
+class AmountNormalizer implements ContextAwareNormalizerInterface, DenormalizerInterface
+{
+    public function normalize(
+        mixed $object,
+        ?string $format = null,
+        array $context = [],
+    ): array {
+        /** @var Amount $object */
+        return [
+            'currency' => $object->currency,
+            'amount'   => $object->cents / 100,
+        ];
+    }
+
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
+    {
+        return $data instanceof Amount;
+    }
+
+    public function denormalize(
+        mixed $data,
+        string $type,
+        ?string $format = null,
+        array $context = [],
+    ): Amount {
+        if (!\is_array($data)) {
+            throw new \InvalidArgumentException('Amount must be an object with "currency" and "amount".');
+        }
+
+        $currency = (string) ($data['currency'] ?? '');
+        $amount   = $data['amount'] ?? null;
+
+        if ($amount === null || (!\is_numeric($amount))) {
+            throw new \InvalidArgumentException('Amount "amount" must be a number.');
+        }
+
+        return new Amount(
+            currency: $currency,
+            cents:    (int) round(((float) $amount) * 100),
+        );
+    }
+
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
+    {
+        return $type === Amount::class;
+    }
+}
+```
+
+Register it as a service. Symfony autoconfigures any class implementing `NormalizerInterface` or `DenormalizerInterface` and tags it with `serializer.normalizer`:
+
+```php
+// config/services.yaml (or rely on autoconfiguration in src/)
+# If src/ is autoconfigured (the default), no explicit registration is needed.
+# The class is picked up automatically because it implements the interfaces.
+```
+
+If you need to control the priority (so `AmountNormalizer` runs *before* `ObjectNormalizer`), set it explicitly:
+
+```php
+// src/Serializer/AmountNormalizer.php
+use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+
+#[\Symfony\Contracts\Service\Attribute\Required] // not needed here, shown for pattern
+class AmountNormalizer implements ContextAwareNormalizerInterface, DenormalizerInterface
+{
+    // …
+}
+```
+
+```yaml
+# config/services.yaml  (only if not in src/ or if you need explicit priority)
+services:
+    App\Serializer\AmountNormalizer:
+        tags:
+            - { name: serializer.normalizer, priority: 10 }
+```
+
+Now every `Invoice` with a property typed `Amount` is automatically handled by `AmountNormalizer` — no controller code required.
+
+##### 19.6.2 A Normalizer That Adds Computed Fields
+
+Sometimes the API contract includes fields that are not stored. The `Invoice` entity has a `status`, and the API also exposes `daysOverdue` (a computed value). Rather than adding a getter that the `ObjectNormalizer` would pick up unconditionally, we write a normalizer that decorates the output:
+
+```php
+// src/Serializer/InvoiceNormalizer.php
+namespace App\Serializer;
+
+use App\Entity\Invoice;
+use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+
+class InvoiceNormalizer implements ContextAwareNormalizerInterface
+{
+    public function __construct(
+        private readonly NormalizerInterface $decoratedNormalizer,  // ObjectNormalizer
+    ) {}
+
+    public function normalize(
+        mixed $object,
+        ?string $format = null,
+        array $context = [],
+    ): array {
+        /** @var Invoice $object */
+        $data = $this->decoratedNormalizer->normalize($object, $format, $context);
+
+        $dueDate = $object->getDueDate();
+        $today   = new \DateTimeImmutable('today');
+
+        if ($object->getStatus() === 'sent' && $dueDate < $today) {
+            $data['daysOverdue'] = $dueDate->diff($today)->days;
+        }
+
+        return $data;
+    }
+
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
+    {
+        return $data instanceof Invoice;
+    }
+}
+```
+
+To make Symfony use this normalizer *instead of* the default `ObjectNormalizer` for `Invoice`, you **decorate** it:
+
+```php
+// src/Serializer/InvoiceNormalizer.php
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+
+class InvoiceNormalizer implements ContextAwareNormalizerInterface
+{
+    public function __construct(
+        #[\Symfony\Component\DependencyInjection\Attribute\DecoratedService('serializer.normalizer.object')]
+        private readonly NormalizerInterface $decoratedNormalizer,
+    ) {}
+    // …
+}
+```
+
+> **Caution.** Decorating `ObjectNormalizer` affects *every* object serialization that would normally fall through to it. If you want the computed field only for `Invoice`, the safer pattern is to tag the normalizer with a higher priority than `ObjectNormalizer` and have it delegate to the serializer for the "base" normalization (shown in the code above). The decoration approach is correct when you want to intercept *all* object normalization.
+
+##### 19.6.3 Denormalizing an Existing Object (Partial Updates)
+
+For `PATCH` requests you often want to update only the fields the client sent, on an already-persisted entity. Use `populate()`:
+
+```php
+// src/Controller/Api/InvoiceApiController.php  (continued)
+
+#[Route('/{id}', name: 'update', methods: ['PATCH'])]
+public function update(
+    Invoice $invoice,
+    Request $request,
+    SerializerInterface $serializer,
+    EntityManagerInterface $em,
+): Response {
+    $data = json_decode($request->getContent(), associative: true);
+
+    // populate() merges $data onto the existing $invoice,
+    // only setting properties that are present in $data.
+    $serializer->deserialize(
+        $data,
+        Invoice::class,
+        'json',
+        [
+            'groups'                 => ['invoice:write'],
+            AbstractObjectNormalizer::DESERIALIZE_PARTIAL => true,
+        ],
+    );
+
+    $em->flush();
+
+    return $this->json($invoice, context: ['groups' => ['invoice:read']]);
+}
+```
+
+`DESERIALIZE_PARTIAL` (value `true`) tells the normalizer to only set the properties that exist in the input array. Without it, missing fields would be set to their defaults.
+
+##### 19.6.4 Rejecting Unknown Fields
+
+By default, fields in the JSON payload that do not map to a property are silently ignored. For an API you usually want the opposite: fail fast on typos.
+
+```yaml
+# config/packages/serializer.yaml
+framework:
+    serializer:
+        default_context:
+            allow_extra_attributes: false
+```
+
+Now a `POST /api/invoices` containing `{"number": "INV-001", "totl": "99.00"}` (typo: `totl`) will throw a `NotNormalizableValueException`, which the error handler turns into a `400` response.
+
+If you want to collect **all** extra fields at once (rather than stopping at the first), use:
+
+```php
+$serializer->deserialize(
+    $json,
+    Invoice::class,
+    'json',
+    [
+        'allow_extra_attributes' => false,
+        'extra_attributes'       => [],   // will be populated with found extras
+    ],
+);
+```
+
+##### 19.6.5 `#[SerializedName]` for Renaming Fields on the Wire
+
+When the internal property name differs from the API field name:
+
+```php
+// src/Entity/Invoice.php
+use Symfony\Component\Serializer\Attribute\SerializedName;
+
+#[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+#[Groups(['invoice:read', 'invoice:list', 'invoice:export'])]
+#[SerializedName('total_amount')]      // JSON key is "total_amount", not "total"
+private string $total;
+```
+
+This is also the place to handle the camelCase ↔ snake_case convention. Instead of annotating every property, enable a **name converter** globally:
+
+```yaml
+# config/packages/serializer.yaml
+framework:
+    serializer:
+        name_converter: 'serializer.name_converter.camel_case_to_snake_case'
+```
+
+With this, `lineItems` is automatically serialized as `line_items`, `dueDate` as `due_date`, etc.
+
+##### 19.6.6 `#[Ignore]` to Hide Properties
+
+To explicitly exclude a property from serialization regardless of groups:
+
+```php
+#[ORM\Column(length: 255, nullable: true)]
+#[Ignore]
+private ?string $internalNotes;   // never appears in API output
+```
+
+---
+
+#### 19.7 Format Negotiation
+
+A well-designed API supports multiple response formats. Symfony's `Request` object provides the building blocks.
+
+##### 19.7.1 Reading the `Accept` Header
+
+```php
+// src/Controller/Api/InvoiceApiController.php
+
+use Symfony\Component\HttpFoundation\Request;
+
+#[Route('/{id}', name: 'show', methods: ['GET'])]
+public function show(
+    Invoice $invoice,
+    Request $request,
+    SerializerInterface $serializer,
+): Response {
+    // $request->getRequestFormat() returns 'json' for Accept: application/json,
+    // 'xml' for Accept: application/xml, 'html' for Accept: text/html, etc.
+    $format = $request->getRequestFormat();
+
+    return new Response(
+        $serializer->serialize($invoice, $format, ['groups' => ['invoice:read']]),
+        200,
+        ['Content-Type' => $request->getMimeType($format)],
+    );
+}
+```
+
+Symfony maps MIME types to format names through the `Request::getFormat()` / `getMimeType()` pair. The built-in map includes:
+
+| MIME type | Format name |
+|---|---|
+| `application/json` | `json` |
+| `application/xml` | `xml` |
+| `text/html` | `html` |
+| `text/csv` | `csv` |
+| `text/yaml` | `yaml` |
+
+##### 19.7.2 Registering Custom Format Aliases
+
+If your API exposes a custom content type like `application/vnd.yourapp.invoice+json`:
+
+```php
+// In a service, or in a kernel boot listener
+use Symfony\Component\HttpFoundation\Request;
+
+// Map the custom MIME type to the 'json' encoder
+Request::setFormat('vnd.yourapp.invoice+json', 'json');
+```
+
+Now `Accept: application/vnd.yourapp.invoice+json` resolves to the `JsonEncoder`, and `getMimeType('json')` returns the custom type.
+
+##### 19.7.3 Rejecting Unsupported Formats
+
+In a dedicated API firewall or a kernel listener, reject formats the API does not support:
+
+```php
+// src/EventListener/ApiFormatNegotiationListener.php
+namespace App\EventListener;
+
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException;
+
+#[AsEventListener(event: 'kernel.request', priority: 256)]
+class ApiFormatNegotiationListener
+{
+    public function onKernelRequest(RequestEvent $event): void
+    {
+        $request = $event->getRequest();
+
+        // Only apply to /api/* routes
+        if (!$request->isMethodSafe() === false) {
+            // … adjust as needed
+        }
+
+        $format = $request->getRequestFormat();
+
+        if (!\in_array($format, ['json', 'csv', 'xml'], true)) {
+            throw new NotAcceptableHttpException(
+                sprintf('Supported formats: json, csv, xml. Received: %s', $format)
+            );
+        }
+    }
+}
+```
+
+> **Note.** `NotAcceptableHttpException` produces a `406 Not Acceptable` response. Combined with the `ProblemNormalizer` (§ 19.8), the client receives a structured JSON error body.
+
+##### 19.7.4 A Multi-Format Endpoint
+
+```php
+#[Route('/{id}/export', name: 'export', methods: ['GET'])]
+public function export(
+    Invoice $invoice,
+    Request $request,
+    SerializerInterface $serializer,
+): Response {
+    $format = $request->getRequestFormat();  // 'json', 'csv', or 'xml'
+    $context = ['groups' => ['invoice:export']];
+
+    $content = $serializer->serialize($invoice, $format, $context);
+
+    $response = new Response($content);
+    $response->headers->set('Content-Type', $request->getMimeType($format));
+    $response->headers->set('Content-Disposition', 'attachment; filename="invoice-'.urlencode($invoice->getNumber()).'."'.match($format) {
+        'csv'  => 'csv',
+        'xml'  => 'xml',
+        default => 'json',
+    });
+
+    return $response;
+}
+```
+
+The `CsvEncoder` requires the `enable_max_depth` and `csv_format` context keys for proper output. For the export use case, you may prefer a dedicated `CsvEncoderContextBuilder`:
+
+```php
+use Symfony\Component\Serializer\Context\Encoder\CsvEncoderContextBuilder;
+use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
+
+$context = (new ObjectNormalizerContextBuilder())
+    ->withGroups(['invoice:export']);
+
+$context = (new CsvEncoderContextBuilder())
+    ->withContext($context)
+    ->withDelimiter(';')
+    ->withEnclosure('"')
+    ->withEscape('\\');
+```
+
+---
+
+#### 19.8 Structured Error Responses: The ProblemNormalizer and RFC 7807
+
+When an API throws an exception (a 404, a validation failure, a 400 from a serializer error), Symfony's error handling pipeline catches it and dispatches a `kernel.exception` event. If the Serializer is installed and the request's `Accept` header asks for a non-HTML format, the **`SerializerErrorRenderer`** kicks in. It serializes the `FlattenException` using the **`ProblemNormalizer`**, which produces output conforming to [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) (*Problem Details for HTTP APIs*).
+
+##### 19.8.1 What the Default Output Looks Like
+
+A `GET /api/invoices/999` where no invoice exists produces:
+
+```http
+HTTP/1.1 404 Not Found
+Content-Type: application/problem+json
+
+{
+    "title": "Not Found",
+    "detail": "No invoice found.",
+    "status": 404,
+    "type": "https://symfony.com/errors/404"
+}
+```
+
+A `POST /api/invoices` with an invalid payload:
+
+```http
+HTTP/1.1 422 Unprocessable Entity
+Content-Type: application/problem+json
+
+{
+    "title": "Unprocessable Content",
+    "detail": "The request could not be processed.",
+    "status": 422,
+    "type": "https://symfony.com/errors/422",
+    "violations": [
+        {
+            "propertyPath": "number",
+            "message": "This value should not be blank."
+        },
+        {
+            "propertyPath": "total",
+            "message": "The amount must be a number."
+        }
+    ]
+}
+```
+
+The `violations` key appears when the error originates from a `ConstraintViolationList` (e.g., from the Validation component). The `ProblemNormalizer` knows to include it.
+
+##### 19.8.2 Enabling the Serializer Error Renderer
+
+The renderer is enabled by default when both the Serializer and the ErrorRenderer infrastructure are installed. To be explicit:
+
+```yaml
+# config/packages/framework.yaml
+framework:
+    exception_handling:
+        error_controller: null   # let the default (SerializerErrorRenderer) handle it
+```
+
+If you want the API routes to *always* return RFC 7807 JSON (even when the `Accept` header says `text/html`), you can restrict the renderer to the API prefix:
+
+```yaml
+# config/packages/framework.yaml
+framework:
+    exception_handling:
+        error_renderer: 'serializer'   # forces serializer-based rendering
+```
+
+##### 19.8.3 Customizing the Problem Output
+
+Create a normalizer that supports `FlattenException` and give it a **higher priority** than the built-in `ProblemNormalizer`:
+
+```php
+// src/Serializer/AppProblemNormalizer.php
+namespace App\Serializer;
+
+use Symfony\Component\ErrorHandler\Exception\FlattenException;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+
+class AppProblemNormalizer implements NormalizerInterface
+{
+    public function normalize(
+        mixed $exception,
+        ?string $format = null,
+        array $context = [],
+    ): array {
+        /** @var FlattenException $exception */
+        return [
+            'type'    => $this->problemType($exception->getStatusCode()),
+            'title'   => $this->titleFor($exception->getStatusCode()),
+            'status'  => $exception->getStatusCode(),
+            'detail'  => $exception->getMessage(),
+            // Custom field: include the request ID for support tickets
+            'request_id' => $context['request_id'] ?? null,
+            // Only in development
+            'trace'   => ($context['debug'] ?? false)
+                ? $exception->getTrace()
+                : null,
+        ];
+    }
+
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
+    {
+        return $data instanceof FlattenException;
+    }
+
+    private function problemType(int $status): string
+    {
+        return sprintf('https://api.yourapp.com/problems/%d', $status);
+    }
+
+    private function titleFor(int $status): string
+    {
+        return match ($status) {
+            400 => 'Bad Request',
+            401 => 'Unauthorized',
+            403 => 'Forbidden',
+            404 => 'Not Found',
+            409 => 'Conflict',
+            422 => 'Validation Error',
+            429 => 'Rate Limit Exceeded',
+            default => 'Server Error',
+        };
+    }
+}
+```
+
+Register it:
+
+```yaml
+# config/services.yaml
+services:
+    App\Serializer\AppProblemNormalizer:
+        tags:
+            - { name: serializer.normalizer, priority: 10 }
+```
+
+Now every API error response carries your branded `type` URI and the `request_id` field, making it trivial for clients (and your support team) to correlate errors.
+
+##### 19.8.4 Throwing HTTP Exceptions with Meaningful Messages
+
+In controllers, use Symfony's exception helpers:
+
+```php
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+
+// In a repository or service layer
+throw new NotFoundHttpException(sprintf('Invoice %s does not exist.', $number));
+
+// When a business rule is violated
+throw new ConflictHttpException('This invoice has already been paid.');
+
+// When the payload is malformed (before validation runs)
+throw new BadRequestHttpException('The "amount" field must be a positive number.');
+```
+
+These exceptions carry a status code and a message, which the `ProblemNormalizer` picks up as `status` and `detail`.
+
+##### 19.8.5 Previewing Error Responses in Development
+
+With the dev error routes enabled (see § front matter), you can preview the JSON error output without triggering a real error:
+
+```
+GET http://localhost:8000/_error/404.json
+GET http://localhost:8000/_error/422.json
+```
+
+The response is rendered by the same `SerializerErrorRenderer` pipeline, so you see exactly what an API client would receive.
+
+---
+
+#### 19.9 Rate Limiting
+
+Public APIs need protection from abuse. Symfony's **RateLimiter component** (`symfony/rate-limiter`) provides a unified, storage-agnostic interface for three common policies: **fixed window**, **sliding window**, and **token bucket**.
+
+> **Scope note.** The RateLimiter is a *cooperative* limiter: it runs inside your PHP process, so it cannot protect against a volumetric DoS attack that never reaches your application code. For that, use your reverse proxy (Nginx `limit_req`, Caddy/FrankenPHP rate-limit module, or a CDN like Cloudflare). The RateLimiter is the right tool for *per-client* and *per-endpoint* quotas that sit above the proxy.
+
+##### 19.9.1 Installation and Configuration
+
+```bash
+$ composer require symfony/rate-limiter
+```
+
+```yaml
+# config/packages/rate_limiter.yaml
+framework:
+    rate_limiter:
+        # Broad per-IP limit: 100 requests per 60 minutes
+        api_public:
+            policy: 'sliding_window'
+            limit: 100
+            interval: '60 minutes'
+
+        # Per-API-key limit: token bucket, 5000 tokens, refill 500 per 15 min
+        api_keyed:
+            policy: 'token_bucket'
+            limit: 5000
+            rate: { interval: '15 minutes', amount: 500 }
+
+        # Strict limit for expensive endpoints (e.g., CSV export): 10 per hour
+        api_export:
+            policy: 'fixed_window'
+            limit: 10
+            interval: '1 hour'
+```
+
+The `interval` value is a PHP relative date string (`3 seconds`, `10 hours`, `1 day`, …).
+
+##### 19.9.2 Applying Rate Limits with the `#[RateLimit]` Attribute (Symfony 8.1+)
+
+The simplest approach is the `#[RateLimit]` attribute, available since Symfony 8.1:
+
+```php
+// src/Controller/Api/InvoiceApiController.php
+use Symfony\Component\HttpKernel\Attribute\RateLimit;
+
+#[Route('/api/invoices', name: 'api_invoice_')]
+class InvoiceApiController extends AbstractController
+{
+    #[Route('', name: 'list', methods: ['GET'])]
+    #[RateLimit('api_public')]
+    public function list(SerializerInterface $serializer, InvoiceRepository $repo): Response
+    {
+        $invoices = $repo->findAllPaginated();
+        return $this->json($invoices, context: ['groups' => ['invoice:list']]);
+    }
+
+    #[Route('/{id}/export', name: 'export', methods: ['GET'])]
+    #[RateLimit('api_export')]
+    public function export(/* … */): Response
+    {
+        // …
+    }
+
+    // Only rate-limit write operations
+    #[Route('', name: 'create', methods: ['POST'])]
+    #[RateLimit('api_keyed', methods: ['POST'])]
+    public function create(/* … */): Response
+    {
+        // …
+    }
+}
+```
+
+When the limit is exceeded, Symfony throws a `TooManyRequestsHttpException`, which the error renderer turns into:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Content-Type: application/problem+json
+Retry-After: 327
+
+{
+    "type": "https://api.yourapp.com/problems/429",
+    "title": "Rate Limit Exceeded",
+    "status": 429,
+    "detail": "Too many requests. Try again in 327 seconds."
+}
+```
+
+The `Retry-After` header tells the client exactly how many seconds to wait.
+
+You can stack multiple limits; **all** must pass:
+
+```php
+#[RateLimit('api_public')]                    // per-IP, 100/hr
+#[RateLimit('api_export', tokens: 5)]         // per-IP, 10/hr, each export costs 5 tokens
+public function export(/* … */): Response
+```
+
+##### 19.9.3 Injecting the Rate Limiter Manually
+
+For more control (custom bucket keys, dynamic token counts, or exposing limit headers), inject the limiter service:
+
+```php
+// src/Controller/Api/InvoiceApiController.php
+use Symfony\Component\DependencyInjection\Attribute\Target;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
+use Symfony\Component\HttpFoundation\Request;
+
+#[Route('/api/invoices', name: 'api_invoice_')]
+class InvoiceApiController extends AbstractController
+{
+    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    public function show(
+        Request $request,
+        Invoice $invoice,
+        SerializerInterface $serializer,
+        #[Target('api_public')] RateLimiterFactoryInterface $limiterFactory,
+    ): Response {
+        // Create a limiter bucket keyed by the client's IP
+        $limiter = $limiterFactory->create($request->getClientIp());
+
+        $limit = $limiter->consume(1);
+
+        if (!$limit->isAccepted()) {
+            $response = new Response(
+                $serializer->serialize($this->createProblem(429, 'Rate limit exceeded'), 'json'),
+                429
+            );
+            $response->headers->set(
+                'Retry-After',
+                (string) $limit->getRetryAfter()->toSeconds()
+            );
+            return $response;
+        }
+
+        // Expose the remaining budget in standard headers
+        $response = $this->json($invoice, context: ['groups' => ['invoice:read']]);
+        $response->headers->set('X-RateLimit-Limit', (string) $limiter->getLimit());
+        $response->headers->set('X-RateLimit-Remaining', (string) $limit->getRemainingTokens());
+        $response->headers->set('X-RateLimit-Reset', (string) $limit->getResetTime()->getTimestamp());
+
+        return $response;
+    }
+}
+```
+
+##### 19.9.4 Per-API-Key Rate Limiting
+
+For authenticated API consumers, key the limiter by the API key rather than the IP:
+
+```php
+#[Route('', name: 'create', methods: ['POST'])]
+public function create(
+    Request $request,
+    SerializerInterface $serializer,
+    EntityManagerInterface $em,
+    #[Target('api_keyed')] RateLimiterFactoryInterface $limiterFactory,
+): Response {
+    $apiKey = $request->headers->get('X-Api-Key');
+
+    if ($apiKey === null) {
+        throw $this->createAccessDeniedException('Missing API key.');
+    }
+
+    $limiter = $limiterFactory->create($apiKey);
+    $limit = $limiter->consume(1);
+
+    if (!$limit->isAccepted()) {
+        throw new TooManyRequestsHttpException(
+            sprintf('API key quota exhausted. Retry after %d seconds.', (int) $limit->getRetryAfter()->toSeconds())
+        );
+    }
+
+    // … deserialize, validate, persist, return 201 …
+}
+```
+
+##### 19.9.5 Choosing the Right Policy
+
+| Policy | Best for | Trade-off |
+|---|---|---|
+| **Fixed window** | Simple per-period quotas (e.g., "10 exports per hour") | Burst at window boundaries: a client can make `2 × limit` requests straddling two windows |
+| **Sliding window** | Smoother per-period quotas; reduces the boundary burst | Slightly more memory (tracks two windows); approximation |
+| **Token bucket** | Sustained-rate control with burst allowance (e.g., "5000 req total, refill 500/15 min") | Most flexible; best for API-key-based quotas; slightly more complex to reason about |
+
+For the invoicing API: `api_public` uses **sliding window** (smooth per-IP limit), `api_keyed` uses **token bucket** (allows burst for active users, then throttles), and `api_export` uses **fixed window** (strict, simple cap on expensive operations).
+
+##### 19.9.6 Storing Rate Limiter State
+
+By default, the RateLimiter stores state in the `cache` service (in-memory in development, Redis/Memcached in production if configured). This is important:
+
+- **Single server:** the default cache works.
+- **Multiple servers:** configure a shared cache pool (Redis) so all nodes see the same counter:
+
+```yaml
+# config/packages/rate_limiter.yaml
+framework:
+    rate_limiter:
+        api_public:
+            policy: 'sliding_window'
+            limit: 100
+            interval: '60 minutes'
+        # The cache pool is configured in config/packages/cache.yaml
+        # Ensure it uses a shared backend (e.g., Redis) in production.
+```
+
+```yaml
+# config/packages/prod/cache.yaml
+framework:
+    cache:
+        pools:
+            rate_limiter.cache:
+                adapter: redis        # shared across all app nodes
+```
+
+---
+
+#### 19.10 Putting It All Together: The Invoicing API
+
+Let's assemble the complete `InvoiceApiController` with all the pieces we have built.
+
+```php
+// src/Controller/Api/InvoiceApiController.php
+namespace App\Controller\Api;
+
+use App\Entity\Invoice;
+use App\Repository\InvoiceRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\RateLimit;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
+use Symfony\Component\Serializer\SerializerInterface;
+
+#[Route('/api/invoices', name: 'api_invoice_')]
+class InvoiceApiController extends AbstractController
+{
+    // ─── LIST ───────────────────────────────────────────────────────────
+
+    #[Route('', name: 'list', methods: ['GET'])]
+    #[RateLimit('api_public')]
+    public function list(
+        Request $request,
+        InvoiceRepository $repository,
+        SerializerInterface $serializer,
+    ): Response {
+        $page    = max(1, $request->query->getInt('page', 1));
+        $perPage = min(100, max(1, $request->query->getInt('per_page', 25)));
+
+        [$invoices, $total] = $repository->paginate($page, $perPage);
+
+        $response = $this->json($invoices, context: ['groups' => ['invoice:list']]);
+
+        // Pagination headers (RFC draft-ietf-httpapi-pagination-style)
+        $response->headers->set('X-Total-Count', (string) $total);
+        $response->headers->set('Link', $this->buildPaginationLinks(
+            $request, $page, $perPage, $total
+        ));
+
+        return $response;
+    }
+
+    // ─── SHOW ───────────────────────────────────────────────────────────
+
+    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    #[RateLimit('api_public')]
+    public function show(
+        Invoice $invoice,
+        SerializerInterface $serializer,
+    ): Response {
+        return $this->json($invoice, context: ['groups' => ['invoice:read']]);
+    }
+
+    // ─── CREATE ─────────────────────────────────────────────────────────
+
+    #[Route('', name: 'create', methods: ['POST'])]
+    #[RateLimit('api_public')]
+    public function create(
+        Request $request,
+        SerializerInterface $serializer,
+        EntityManagerInterface $em,
+    ): Response {
+        $data = json_decode($request->getContent(), true, flags: \JSON_THROW_ON_ERROR);
+
+        $invoice = $serializer->denormalize($data, Invoice::class, 'json', [
+            'groups' => ['invoice:write'],
+        ]);
+
+        $em->persist($invoice);
+        $em->flush();
+
+        $response = $this->json($invoice, context: ['groups' => ['invoice:read']], status: 201);
+        $response->headers->set('Location', $this->generateUrl('api_invoice_show', ['id' => $invoice->getId()]));
+
+        return $response;
+    }
+
+    // ─── UPDATE (PATCH) ─────────────────────────────────────────────────
+
+    #[Route('/{id}', name: 'update', methods: ['PATCH'])]
+    #[RateLimit('api_public')]
+    public function update(
+        Request $request,
+        Invoice $invoice,
+        SerializerInterface $serializer,
+        EntityManagerInterface $em,
+    ): Response {
+        $data = json_decode($request->getContent(), true, flags: \JSON_THROW_ON_ERROR);
+
+        $serializer->denormalize($data, Invoice::class, 'json', [
+            'groups'                  => ['invoice:write'],
+            AbstractObjectNormalizer::DESERIALIZE_PARTIAL => true,
+        ]);
+
+        $em->flush();
+
+        return $this->json($invoice, context: ['groups' => ['invoice:read']]);
+    }
+
+    // ─── DELETE ─────────────────────────────────────────────────────────
+
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    #[RateLimit('api_public')]
+    public function delete(
+        Invoice $invoice,
+        EntityManagerInterface $em,
+    ): Response {
+        $em->remove($invoice);
+        $em->flush();
+
+        return new Response(status: 204);
+    }
+
+    // ─── EXPORT ─────────────────────────────────────────────────────────
+
+    #[Route('/{id}/export', name: 'export', methods: ['GET'])]
+    #[RateLimit('api_export')]
+    public function export(
+        Invoice $invoice,
+        Request $request,
+        SerializerInterface $serializer,
+    ): Response {
+        $format = $request->getRequestFormat(); // 'json', 'csv', or 'xml'
+        $content = $serializer->serialize($invoice, $format, [
+            'groups' => ['invoice:export'],
+        ]);
+
+        $ext = match ($format) { 'csv' => 'csv', 'xml' => 'xml', default => 'json' };
+
+        $response = new Response($content);
+        $response->headers->set('Content-Type', $request->getMimeType($format));
+        $response->headers->set(
+            'Content-Disposition',
+            sprintf('attachment; filename="%s.%s"', $invoice->getNumber(), $ext)
+        );
+
+        return $response;
+    }
+
+    // ─── HELPER ─────────────────────────────────────────────────────────
+
+    private function buildPaginationLinks(
+        Request $request, int $page, int $perPage, int $total,
+    ): string {
+        $totalPages = max(1, (int) ceil($total / $perPage));
+        $base = $request->getUriForPath($request->getPathInfo());
+        $qs   = $request->query->all();
+
+        $make = fn (int $p) => $base . '?' . http_build_query(array_merge($qs, ['page' => $p]));
+
+        $links = [];
+        if ($page > 1)    $links[] = ['rel' => 'prev',    'href' => $make($page - 1)];
+        if ($page < $totalPages) $links[] = ['rel' => 'next', 'href' => $make($page + 1)];
+        $links[] = ['rel' => 'first', 'href' => $make(1)];
+        $links[] = ['rel' => 'last',  'href' => $make($totalPages)];
+
+        return '<' . implode('>, <', array_map(fn ($l) => $l['href'], $links)) . '>; rel="'
+            . implode('", rel="', array_map(fn ($l) => $l['rel'], $links)) . '"';
+    }
+}
+```
+
+##### 19.10.1 The Complete Serializer Configuration
+
+```yaml
+# config/packages/serializer.yaml
+framework:
+    serializer:
+        name_converter: 'serializer.name_converter.camel_case_to_snake_case'
+        default_context:
+            allow_extra_attributes: false
+            enable_max_depth: true
+            max_depth: 4
+            skip_null_values: true
+        # Cache pool for metadata (defaults to cache.system)
+        # cache: 'app'   # optional: use a specific pool
+```
+
+##### 19.10.2 The Rate Limiter Configuration
+
+```yaml
+# config/packages/rate_limiter.yaml
+framework:
+    rate_limiter:
+        api_public:
+            policy: 'sliding_window'
+            limit: 100
+            interval: '60 minutes'
+        api_keyed:
+            policy: 'token_bucket'
+            limit: 5000
+            rate: { interval: '15 minutes', amount: 500 }
+        api_export:
+            policy: 'fixed_window'
+            limit: 10
+            interval: '1 hour'
+```
+
+##### 19.10.3 The Error Renderer
+
+With the `AppProblemNormalizer` from § 19.8.3 in place, every error in the `/api/*` namespace is rendered as RFC 7807 JSON. The `ConstraintViolationListNormalizer` adds a `violations` array when Validation rejects the payload.
+
+---
+
+#### 19.11 Testing the Serializer
+
+The Serializer is pure PHP with no I/O, making it trivial to unit test.
+
+```php
+// tests/Unit/Serializer/AmountNormalizerTest.php
+namespace App\Tests\Unit\Serializer;
+
+use App\Entity\Amount;
+use App\Serializer\AmountNormalizer;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
+
+class AmountNormalizerTest extends TestCase
+{
+    private AmountNormalizer $normalizer;
+
+    protected function setUp(): void
+    {
+        $this->normalizer = new AmountNormalizer();
+    }
+
+    #[Test]
+    public function itNormalizesAmountToFlatArray(): void
+    {
+        $amount = new Amount('EUR', 1999);
+        $result = $this->normalizer->normalize($amount);
+
+        $this->assertSame(['currency' => 'EUR', 'amount' => 19.99], $result);
+    }
+
+    #[Test]
+    public function itDenormalizesFloatAmount(): void
+    {
+        $result = $this->normalizer->denormalize(
+            ['currency' => 'USD', 'amount' => 42.50],
+            Amount::class,
+        );
+
+        $this->assertSame('USD', $result->currency);
+        $this->assertSame(4250, $result->cents);
+    }
+
+    #[Test]
+    public function itDenormalizesStringAmount(): void
+    {
+        $result = $this->normalizer->denormalize(
+            ['currency' => 'EUR', 'amount' => '19.99'],
+            Amount::class,
+        );
+
+        $this->assertSame(1999, $result->cents);
+    }
+}
+```
+
+For functional tests that exercise the full pipeline (controller → serializer → encoder → HTTP response), use `WebTestCase` (Chapter 22):
+
+```php
+// tests/Functional/Api/InvoiceApiTest.php
+namespace App\Tests\Functional\Api;
+
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Repository\InvoiceRepository;
+
+class InvoiceApiTest extends WebTestCase
+{
+    private InvoiceRepository $repo;
+
+    protected function setUp(): void
+    {
+        self::bootClient();
+        $this->repo = static::getContainer()->get(InvoiceRepository::class);
+    }
+
+    public function testListReturnsJsonWithListGroup(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/api/invoices', server: [
+            'HTTP_Accept' => 'application/json',
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('number', $data[0]);
+        $this->assertArrayHasKey('total', $data[0]);
+        // "lineItems" should NOT be present in list view
+        $this->assertArrayNotHasKey('line_items', $data[0]);
+    }
+
+    public function test404ReturnsProblemJson(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/api/invoices/999999', server: [
+            'HTTP_Accept' => 'application/json',
+        ]);
+
+        $this->assertResponseStatusCodeSame(404);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame(404, $data['status']);
+        $this->assertArrayHasKey('type', $data);
+        $this->assertArrayHasKey('title', $data);
+    }
+}
+```
+
+---
+
+#### 19.12 Debugging the Serializer
+
+| Task | Command / Tool |
+|---|---|
+| See which properties the Serializer will process for a class | `php bin/console debug:serializer 'App\Entity\Invoice'` |
+| See all registered normalizers and encoders | `php bin/console debug:container --tag=serializer.normalizer` and `--tag=serializer.encoder` |
+| Dump the context in a controller (development only) | `dump($context);` with VarDumper (Ch. 23) |
+| Preview error JSON in development | `GET /_error/404.json` |
+| Inspect the serialized output before it leaves the app | Set a breakpoint in `JsonEncoder::encode()` or log in a `kernel.response` listener |
+| Check which normalizer "won" for a given object | Temporarily add `dump()` to each `supportsNormalization()` and run the request |
+
+A particularly useful trick: temporarily set `JSON_PRETTY_PRINT` in the encoder context to see the full JSON structure in the response:
+
+```php
+return $this->json($invoice, context: [
+    'groups' => ['invoice:read'],
+    'json_encode_flags' => \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES,
+]);
+```
+
+Remove it before deploying.
+
+---
+
+#### 19.13 Chapter Summary
+
+| Topic | Key takeaway |
+|---|---|
+| **Pipeline** | Objects → (Normalizers) → Arrays → (Encoders) → format strings. Normalizers handle *what* to include; encoders handle *how* to encode. |
+| **Groups** | Declare `#[Groups]` on properties; pass the active groups in the serializer context per call. Use a `resource:operation` naming convention. |
+| **Context** | Three layers: global `default_context` (YAML), per-call context (controller), per-property `#[Context]` (attribute). Most specific wins. |
+| **Custom normalizers** | Implement `NormalizerInterface` / `DenormalizerInterface` for value objects, computed fields, or non-trivial mappings. Tag with `serializer.normalizer`. |
+| **Denormalization** | `deserialize()` for new objects; `DESERIALIZE_PARTIAL` for `PATCH`. Set `allow_extra_attributes: false` to reject typos. |
+| **Format negotiation** | `Request::getRequestFormat()` maps `Accept` to an encoder name. Register custom MIME types with `Request::setFormat()`. |
+| **Error responses** | `ProblemNormalizer` produces RFC 7807 JSON for any non-HTML error. Customize by writing a normalizer for `FlattenException`. |
+| **Rate limiting** | Configure limiters in `framework.rate_limiter`. Apply with `#[RateLimit]` (8.1+) or inject `RateLimiterFactoryInterface`. Use sliding window for per-IP, token bucket for per-API-key. |
+
+---
+
+#### Exercises
+
+**19.1 — Groups audit.**
+Open `App\Entity\Invoice` and `App\Entity\LineItem`. Add `#[Groups]` attributes so that:
+- `invoice:list` includes only `id`, `number`, `total`, `status`, `due_date`.
+- `invoice:read` includes everything, including nested `line_items` and `customer` (with `customer:read` group on the `Customer` entity: `id`, `name`, `email`).
+- `invoice:write` includes only fields a client may set: `status`, `customer`, `line_items`, `due_date`.
+- `invoice:export` includes `number`, `customer.name`, `line_items` (with description and amount), `total`, `due_date`.
+
+Run `php bin/console debug:serializer` on both entities and verify the groups are correct. Write a functional test that asserts the `GET /api/invoices` response does **not** contain a `line_items` key.
+
+**19.2 — Custom denormalizer for status.**
+The API accepts status values `"draft"`, `"sent"`, `"paid"`, `"void"`. Create an enum `InvoiceStatus: string` and a custom `DenormalizerInterface` that:
+- Accepts the lowercase string and returns the enum case.
+- Throws a descriptive `NotNormalizableValueException` for unknown values.
+- Normalizes the enum back to its string value.
+
+Update the `Invoice` entity to use the enum type. Write unit tests for the denormalizer (valid input, invalid input, normalization).
+
+**19.3 — Computed field via normalizer.**
+Add a `paymentUrl` field to the `invoice:read` group that returns a relative URL like `/api/invoices/{id}/pay` when the status is `sent`, and `null` otherwise. Implement this in a custom normalizer that decorates the base output. Write a functional test: `GET /api/invoices/{id}` for a `sent` invoice includes `payment_url`; for a `paid` invoice it does not.
+
+**19.4 — RFC 7807 with a custom `type` URI.**
+Extend the `AppProblemNormalizer` from § 19.8.3 so that:
+- The `type` field uses `https://api.yourapp.com/errors/{slug}` where `{slug}` is a kebab-case version of the exception class short name (e.g., `NotFoundHttpException` → `not-found-http-exception`).
+- A `correlation_id` field is included, generated from the request's `X-Request-Id` header (or a generated ULID if absent).
+
+Write a functional test that hits a non-existent invoice and asserts the `type` and `correlation_id` fields are present.
+
+**19.5 — Rate limiter integration test.**
+Using the `api_export` limiter (10 per hour, fixed window):
+- Write a functional test that makes 11 `GET /api/invoices/{id}/export` requests and asserts the 11th returns `429` with a `Retry-After` header.
+- In the test, configure the rate limiter cache to use an in-memory adapter so each test run starts fresh.
+
+**19.6 — Multi-format export.**
+Extend the `export` action to support `Accept: text/csv` in addition to JSON. Configure the `CsvEncoder` context (delimiter `;`, enclosure `"`). Write a functional test that requests the export with `Accept: text/csv` and asserts the `Content-Type` header and that the body contains a header row with `number`, `total`, `due_date`.
+
+**19.7 — `#[SerializedName]` and name converter.**
+Enable the `camel_case_to_snake_case` name converter in `serializer.yaml`. Update your functional tests to expect `line_items`, `due_date`, `customer_email` (snake_case) in the JSON. Then, for a single property (`total` → `total_amount`), add a `#[SerializedName]` attribute and verify it overrides the converter.
+
+**19.8 — Partial update edge case.**
+Send a `PATCH /api/invoices/{id}` with `{"status": "paid"}`. Assert:
+- The response `200` body includes the updated `status`.
+- The `due_date` in the response is **unchanged** (not reset to `null` or the current date).
+- A subsequent `PATCH` with `{"unknown_field": "oops"}` returns `400` with a `ProblemNormalizer`-style body mentioning the extra attribute.
+
+**19.9 — Security: never serialize internal fields.**
+Add a `#[ORM\Column]` property `internalCost` (a decimal) to `Invoice` that represents the tenant's internal cost margin. Mark it `#[Ignore]`. Write a functional test that confirms `GET /api/invoices/{id}` does **not** include `internal_cost` in the JSON body, even when requesting with all available groups.
+
+**19.10 — Performance: `maxDepth` and `skip_null_values`.**
+With `max_depth: 4` and `skip_null_values: true` in the default context, create a `Customer` entity with a nullable `company` relation that has its own nullable `parent` relation. Serialize an `Invoice` with `customer.company.parent = null` and verify:
+- The JSON does not contain `"parent": null` (skipped).
+- Serialization completes (no infinite recursion) if you temporarily add a circular reference in a unit test.
+
+---
+
+> **Next: Chapter 20 — API Platform.**
+> We will take everything you built in this chapter—the Serializer, groups, error handling, rate limiting—and layer API Platform on top. You will declare resources with attributes, get OpenAPI documentation for free, and add filtering, pagination, and GraphQL without writing another controller.
+
+### Chapter 20 — API Platform
+
+In Chapter 19 you built REST endpoints by hand: controllers, serializers, format negotiation, and rate limiting. That approach gives you total control, but it also means writing the same boilerplate for every resource. **API Platform** is a framework layered on top of Symfony that eliminates that boilerplate. You declare a resource once—typically with a single attribute—and receive a fully documented, hypermedia-aware, versionable API with filtering, pagination, validation, and security out of the box.
+
+This chapter covers the four capabilities that make API Platform the de-facto choice for PHP API projects: declaring resources, automatic OpenAPI/Swagger generation, GraphQL and JSON:API support, and the filtering and pagination subsystems. We will integrate each feature into the running invoicing project.
+
+---
+
+#### 20.1 Why API Platform?
+
+Before diving in, it is worth understanding where API Platform sits relative to the raw Symfony components you already know.
+
+| Layer | What you build yourself | What API Platform adds |
+|---|---|---|
+| HTTP routing | Route attributes, controllers | Automatic route registration per resource + operation |
+| Serialization | `Serializer` groups, custom normalizers | Hydra / JSON-LD / JSON:API / HAL / JSON formats, `ApiProperty` context |
+| Validation | `Validator` constraints, custom error format | Built-in violation → Hydra/RFC 7807 error mapping |
+| Persistence | Doctrine repositories, QueryBuilder | Doctrine-based State Providers with native filter + pagination support |
+| Documentation | Nothing (or a separate tool) | OpenAPI 3 spec, Swagger UI, ReDoc, Hydra docs—generated at boot |
+| Query interface | Manual `request->query` parsing | Declarative `QueryParameter` / `HeaderParameter` attributes |
+| Real-time / GraphQL | Custom endpoints | Built-in GraphQL schema generation, Mercure async push |
+
+The key architectural shift in API Platform 4 is the **State Provider / State Processor** model. Where API Platform 2 used the Symfony Event Dispatcher (the `KernelEvents`-style listeners you saw in Chapter 7), API Platform 3 and 4 introduced first-class `ProviderInterface` and `ProcessorInterface` services. Each request flows through a *chain* of providers (data retrieval) and processors (data transformation / persistence), and you can insert custom steps without subclassing framework internals.
+
+```
+Request
+  │
+  ▼
+┌─────────────────────────────────────────────┐
+│  State Provider chain (read path)           │
+│  1. ApiResourceProvider                     │
+│  2. UriVariableProvider                     │
+│  3. DoctrineOrm Item/Collection Provider    │
+│  4. (your custom provider, if any)          │
+└─────────────────────────────────────────────┘
+  │  state (entity | collection | null)
+  ▼
+┌─────────────────────────────────────────────┐
+│  State Processor chain (write path)         │
+│  1. ValidationProcessor                     │
+│  2. DoctrineOrm Processor (persist + flush) │
+│  3. (your custom processor, if any)         │
+└─────────────────────────────────────────────┘
+  │  response
+  ▼
+Response (serialized via Symfony Serializer)
+```
+
+Because providers and processors are just services, you can inject any Symfony service (Doctrine, Messenger from Chapter 17, the EventDispatcher from Chapter 7) into them.
+
+---
+
+#### 20.2 Installing API Platform
+
+If your project was created with the `symfony/recipes` ecosystem (the default `symfony new` flow), installing API Platform is a one-liner. The Flex recipe registers all services, routes, and configuration automatically.
+
+```bash
+composer require api-platform/symfony
+```
+
+This command:
+
+1. Installs `api-platform/core` (the framework-agnostic core library) plus the Symfony integration glue.
+2. Creates the `config/packages/api_platform.yaml` file with sensible defaults.
+3. Registers the entry-point routes in `config/routes/api_platform.yaml`.
+4. Enables the Doctrine ORM State Provider (since your invoicing app already uses Doctrine from Chapter 13).
+
+After the install, run:
+
+```bash
+php bin/console cache:clear
+```
+
+Visit `http://localhost:8000/docs` in a browser. You should see an empty Swagger UI page (or a "No resources found" message)—we will populate it in the next section.
+
+##### The generated configuration
+
+Open `config/packages/api_platform.yaml`. The defaults that matter most:
+
+```yaml
+# config/packages/api_platform.yaml
+api_platform:
+    title: 'Acme Invoicing API'
+    description: 'Multi-tenant SaaS invoicing API'
+    version: '1.0.0'
+
+    # Base path for all API routes
+    path: /api
+
+    # Formats the API will respond in
+    formats:
+        jsonld: ['application/ld+json']
+        json:   ['application/json']
+        jsonhal: ['application/hal+json']
+        jsonapi: ['application/vnd.api+json']
+        csv:    ['text/csv']
+        html:   ['text/html; charset=utf-8']
+
+    # Enable the entry-point (GET /api returns a list of all resources)
+    entrypoint: /api
+
+    # CORS: allow the frontend (Vite dev server) to call the API
+    cors:
+        allow_origin: ['http://localhost:5173']
+        allow_methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+        allow_headers: ['Content-Type', 'Authorization']
+        max_age: 3600
+
+    # Global pagination defaults (see §20.6.2)
+    defaults:
+        pagination_enabled: true
+        pagination_items_per_page: 30
+        pagination_client_items_per_page: true
+```
+
+> **Convention reminder.** This book uses attribute-based configuration throughout. API Platform 4 fully supports attributes; YAML and XML configuration files are still valid but are no longer the recommended default.
+
+---
+
+#### 20.3 Declaring Resources
+
+##### 20.3.1 The `#[ApiResource]` attribute
+
+An *API resource* is any PHP class you want to expose over HTTP. In API Platform 4 the canonical way to mark a class is the `#[ApiResource]` attribute from the `ApiPlatform\Metadata` namespace.
+
+Take the `Invoice` entity you built in Chapter 13. To expose it through the API, you add a single attribute:
+
+```php
+// src/Entity/Invoice.php
+namespace App\Entity;
+
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Link;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
+
+#[ORM\Entity]
+#[ORM\Table(name: 'invoices')]
+#[ApiResource(
+    shortName: 'Invoice',
+    description: 'An invoice issued to a client by a tenant.',
+)]
+class Invoice
+{
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid')]
+    #[ApiProperty(identifier: true, readable: false, writable: false)]
+    public Uuid $id;
+
+    #[ORM\ManyToOne(inversedBy: 'invoices')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[ApiProperty]
+    public Tenant $tenant;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    #[ApiProperty]
+    public Client $client;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+    #[ApiProperty(
+        description: 'Total amount due, in the tenant base currency.',
+        examples: [
+            'default' => '149.99',
+        ],
+    )]
+    public string $amount;
+
+    #[ORM\Column(type: 'string', length: 10)]
+    #[ApiProperty(
+        description: 'ISO 4217 currency code.',
+        examples: ['default' => 'EUR'],
+    )]
+    public string $currency;
+
+    #[ORM\Column(enumType: InvoiceStatus::class)]
+    #[ApiProperty]
+    public InvoiceStatus $status;
+
+    #[ORM\Column(type: 'datetime_immutable')]
+    #[ApiProperty]
+    public \DateTimeImmutable $issuedAt;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    #[ApiProperty]
+    public ?\DateTimeImmutable $paidAt = null;
+
+    #[ORM\Column(type: 'datetime_immutable')]
+    #[ApiProperty(readable: false)]
+    public \DateTimeImmutable $createdAt;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
+}
+```
+
+What just happened:
+
+* `#[ApiResource]` registers the class with API Platform's resource registry.
+* Because you did **not** specify explicit `operations:`, API Platform uses the **default CRUD set**: `Get`, `GetCollection`, `Post`, `Put`, `Patch`, `Delete`.
+* Each property gets an `#[ApiProperty]` attribute. This is where you control serialization visibility (`readable`, `writable`), documentation (`description`, `examples`), and format-specific context.
+* The `identifier: true` on `$id` tells API Platform which property to use in URI templates.
+
+If you want to restrict the operations (for example, make the API read-only), you pass an explicit `operations` array:
+
+```php
+#[ApiResource(
+    operations: [
+        new Get(uriTemplate: '/invoices/{id}',
+                normalizationContext: ['groups' => ['invoice:read']]),
+        new GetCollection(uriTemplate: '/invoices',
+                          normalizationContext: ['groups' => ['invoice:read']]),
+    ],
+)]
+class Invoice { /* ... */ }
+```
+
+> **Note on `uriTemplate`.** In API Platform 4 the parameter is `uriTemplate` (not `uri_template` from the v2 era). The template follows the same placeholder syntax as Symfony routing (`{id}`, `{slug}`), but you do not need to register these in `routes.yaml`—API Platform generates the routes automatically at cache-clear time.
+
+##### 20.3.2 The `Tenant` and `Client` resources
+
+You also need to expose the `Tenant` and `Client` entities so that clients can reference them by IRI when creating invoices:
+
+```php
+// src/Entity/Tenant.php
+#[ORM\Entity]
+#[ApiResource(
+    shortName: 'Tenant',
+    operations: [
+        new Get(uriTemplate: '/tenants/{id}'),
+        new GetCollection(uriTemplate: '/tenants'),
+        new Post(uriTemplate: '/tenants'),
+        new Put(uriTemplate: '/tenants/{id}'),
+    ],
+)]
+class Tenant
+{
+    #[ORM\Id]
+    #[ORM\Uuid]
+    #[ApiProperty(identifier: true, readable: false, writable: false)]
+    public Uuid $id;
+
+    #[ORM\Column(unique: true)]
+    #[ApiProperty]
+    public string $slug;
+
+    #[ORM\Column]
+    #[ApiProperty]
+    public string $name;
+
+    #[ORM\Column]
+    #[ApiProperty]
+    public string $baseCurrency;
+}
+```
+
+```php
+// src/Entity/Client.php
+#[ORM\Entity]
+#[ApiResource(
+    shortName: 'Client',
+    operations: [
+        new Get(uriTemplate: '/clients/{id}'),
+        new GetCollection(uriTemplate: '/clients',
+                          parameters: [
+                              'tenant' => new \ApiPlatform\Metadata\QueryParameter(
+                                  filter: \ApiPlatform\Doctrine\Orm\Filter\ExactFilter::class,
+                                  property: 'tenant',
+                                  required: true,
+                              ),
+                          ]),
+        new Post(uriTemplate: '/clients'),
+        new Put(uriTemplate: '/clients/{id}'),
+        new Delete(uriTemplate: '/clients/{id}'),
+    ],
+)]
+class Client
+{
+    #[ORM\Id]
+    #[ORM\Uuid]
+    #[ApiProperty(identifier: true, readable: false, writable: false)]
+    public Uuid $id;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    #[ApiProperty]
+    public Tenant $tenant;
+
+    #[ORM\Column]
+    #[ApiProperty]
+    public string $name;
+
+    #[ORM\Column(nullable: true)]
+    #[ApiProperty]
+    public ?string $email = null;
+}
+```
+
+Notice how `Client`'s `GetCollection` operation requires a `?tenant={iri}` query parameter. This is the **multi-tenant guardrail** built into the resource declaration: a client can never list *all* clients across tenants, only those belonging to the tenant they specify. We will see the filter machinery in §20.6.
+
+##### 20.3.3 DTOs and the `output` / `input` types
+
+Sometimes you do not want to expose the Doctrine entity directly. You might want a read-only DTO for listing, or a write-only DTO for creation. API Platform supports this through the `output` and `input` parameters on an operation:
+
+```php
+#[Get(
+    uriTemplate: '/invoices/{id}',
+    output: InvoiceReadDto::class,
+    provider: InvoiceItemProvider::class,
+)]
+#[Post(
+    uriTemplate: '/invoices',
+    input: InvoiceWriteDto::class,
+    processor: InvoiceCreateProcessor::class,
+)]
+class Invoice { /* ... */ }
+```
+
+The DTO classes are plain PHP value objects with `#[ApiProperty]` attributes. You will learn how to wire the provider and processor in §20.5.
+
+---
+
+#### 20.4 OpenAPI and Swagger Generation
+
+##### 20.4.1 The `/docs` endpoint
+
+As soon as you have at least one resource, API Platform generates a machine-readable OpenAPI 3 specification and two human-readable UIs:
+
+| URL | What it is |
+|---|---|
+| `/docs` | Swagger UI with an interactive sandbox |
+| `/docs.jsonopenapi` | The raw OpenAPI 3 JSON document |
+| `/docs.jsonld` | The Hydra / JSON-LD API description (linked-data) |
+| `/docs/redoc` | ReDoc (a read-only, scroll-friendly alternative to Swagger UI) |
+
+Navigate to `http://localhost:8000/docs`. You should see tabs for `Invoice`, `Tenant`, and `Client`, each listing the HTTP operations, request/response schemas, and query parameters.
+
+The specification is **not** a static file. It is assembled at runtime by a chain of `OpenApiFactory` decorators (you will meet the decoration pattern in Chapter 5). Every `#[ApiProperty]` description, every `#[Assert]` validation constraint from Chapter 11, and every `QueryParameter` filter is automatically reflected in the generated spec.
+
+##### 20.4.2 The export command
+
+For CI pipelines, client SDK generation, or version-controlled API contracts, you can dump the specification as a file:
+
+```bash
+# JSON
+php bin/console api:openapi:export
+
+# YAML (requires symfony/yaml)
+php bin/console api:openapi:export --yaml
+
+# Write to a file
+php bin/console api:openapi:export --output=docs/openapi.json
+
+# OpenAPI v3.0.0 (for older tooling that does not support v3.1)
+php bin/console api:openapi:export --spec-version=3.0.0
+```
+
+You can also filter the spec by tag. Tag operations using the `extensionProperties` mechanism:
+
+```php
+use ApiPlatform\OpenApi\Factory\OpenApiFactory;
+use ApiPlatform\Metadata\GetCollection;
+
+#[GetCollection(
+    uriTemplate: '/invoices',
+    openapi: new \ApiPlatform\OpenApi\Model\Operation(
+        extensionProperties: [
+            OpenApiFactory::API_PLATFORM_TAG => ['admin', 'internal'],
+        ],
+    ),
+)]
+```
+
+Then export only the `admin` tag:
+
+```bash
+php bin/console api:openapi:export --filter-tags=admin --output=docs/openapi-admin.json
+```
+
+##### 20.4.3 Customizing the specification
+
+Two mechanisms let you go beyond what the attributes express:
+
+**1. `openapiContext` on `ApiProperty`.** Any key you put in this array is merged into the corresponding OpenAPI schema property:
+
+```php
+#[ApiProperty(
+    description: 'Total amount due.',
+    openapiContext: [
+        'type' => 'number',
+        'format' => 'decimal',
+        'minimum' => 0,
+        'example' => '149.99',
+    ],
+)]
+public string $amount;
+```
+
+**2. Decorating the `OpenApiFactory`.** This is the full-power escape hatch, and it uses the same `#[AsDecorator]` pattern from Chapter 5:
+
+```php
+// src/OpenApi/CustomOpenApiFactory.php
+namespace App\OpenApi;
+
+use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
+use ApiPlatform\OpenApi\OpenApi;
+use ApiPlatform\OpenApi\Model;
+use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
+
+#[AsDecorator(decorates: 'api_platform.openapi.factory')]
+final class CustomOpenApiFactory implements OpenApiFactoryInterface
+{
+    public function __construct(
+        private OpenApiFactoryInterface $decorated,
+    ) {}
+
+    public function __invoke(array $context = []): OpenApi
+    {
+        $openApi = $this->decorated->__invoke($context);
+
+        // Override the info block
+        $openApi = $openApi->withInfo(
+            new Model\Info(
+                'Acme Invoicing API',
+                '1.0.0',
+                'REST and GraphQL API for the Acme multi-tenant invoicing platform.'
+            )
+        );
+
+        // Add a server for production
+        $openApi = $openApi->withServers([
+            new Model\Server('https://api.acme-saas.com/api'),
+        ]);
+
+        return $openApi;
+    }
+}
+```
+
+Because the class is in `src/`, autowiring + autoconfiguration pick it up automatically. No `services.yaml` entry needed.
+
+---
+
+#### 20.5 State Providers and Processors
+
+##### 20.5.1 The built-in Doctrine provider
+
+If your resource class is a Doctrine entity, API Platform's `DoctrineOrmItemProvider` / `DoctrineOrmCollectionProvider` handle data retrieval for you. You do not need to write a repository or a controller. A `GET /api/invoices/7c4a...` request flows like this:
+
+1. The `UriVariableProvider` extracts `id` from the URI.
+2. The Doctrine Item Provider calls `$em->find(Invoice::class, $id)`.
+3. The result is passed to the Symfony `Serializer` with the groups specified in the operation's `normalizationContext`.
+4. The serialized array is wrapped in the requested format (JSON-LD by default) and returned.
+
+For collections, the same provider builds a `QueryBuilder`, applies any active filters (§20.6), sets pagination (§20.6.2), and executes the query.
+
+##### 20.5.2 A custom State Provider
+
+Suppose you want the `GET /api/invoices/summary` endpoint to return an aggregate DTO computed across the entire tenant, not a single invoice. You write a provider:
+
+```php
+// src/State/InvoiceSummaryProvider.php
+namespace App\State;
+
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProviderInterface;
+use App\Dto\InvoiceSummaryDto;
+use App\Entity\Invoice;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query\Expr;
+
+final class InvoiceSummaryProvider implements ProviderInterface
+{
+    public function __construct(
+        private EntityManagerInterface $em,
+    ) {}
+
+    /**
+     * @return InvoiceSummaryDto|null
+     */
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): InvoiceSummaryDto|null
+    {
+        $tenantId = $uriVariables['tenantId'];
+
+        $qb = $this->em->createQueryBuilder()
+            ->select(
+                'COUNT(i.id) as total_count',
+                'SUM(i.amount) as total_amount',
+                'MAX(i.issuedAt) as last_issued'
+            )
+            ->from(Invoice::class, 'i')
+            ->andWhere('i.tenant = :tenant')
+            ->setParameter('tenant', $tenantId);
+
+        $row = $qb->getQuery()->getSingleResult();
+
+        return new InvoiceSummaryDto(
+            totalCount: (int) $row['total_count'],
+            totalAmount: (string) $row['total_amount'],
+            lastIssuedAt: $row['last_issued'] ? new \DateTimeImmutable($row['last_issued']) : null,
+        );
+    }
+}
+```
+
+Wire it to a dedicated operation:
+
+```php
+use ApiPlatform\Metadata\Get;
+use App\State\InvoiceSummaryProvider;
+
+#[Get(
+    uriTemplate: '/tenants/{tenantId}/invoices/summary',
+    provider: InvoiceSummaryProvider::class,
+    output: \App\Dto\InvoiceSummaryDto::class,
+)]
+class Invoice { /* ... */ }
+```
+
+> **How the `tenantId` URI variable is resolved.** API Platform's `UriVariableProvider` matches `{tenantId}` against the `Tenant` entity's identifier. You can inject the resolved `Tenant` object by using `$uriVariables['tenantId']`, which will be the `Tenant` instance (not the raw string) when the variable is linked to a resource.
+
+##### 20.5.3 A custom State Processor
+
+Processors handle the *write* path (POST, PUT, PATCH, DELETE). The built-in Doctrine processor calls `$em->persist()` and `$em->flush()`. You can decorate or replace it.
+
+Example: after creating an invoice, send a confirmation email (using the Mailer from Chapter 16) and publish a Messenger event (Chapter 17):
+
+```php
+// src/State/InvoiceCreateProcessor.php
+namespace App\State;
+
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProcessorInterface;
+use App\Entity\Invoice;
+use App\Messenger\Message\InvoiceCreated;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+
+final class InvoiceCreateProcessor implements ProcessorInterface
+{
+    public function __construct(
+        private ProcessorInterface $decorated,   // the Doctrine processor
+        private MessageBusInterface $bus,
+        private MailerInterface $mailer,
+    ) {}
+
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Invoice
+    {
+        /** @var Invoice $invoice */
+        $invoice = $this->decorated->process($data, $operation, $uriVariables, $context);
+
+        // Fire-and-forget: publish to the async transport
+        $this->bus->dispatch(new InvoiceCreated($invoice->id));
+
+        // Send the confirmation email
+        $email = (new TemplatedEmail())
+            ->from('billing@acme-saas.com')
+            ->to($invoice->client->email)
+            ->subject('Your invoice ' . $invoice->id . ' is ready')
+            ->html('emails/invoice_created.html.twig', [
+                'invoice' => $invoice,
+            ]);
+
+        $this->mailer->send($email);
+
+        return $invoice;
+    }
+}
+```
+
+Register the processor on the `Post` operation:
+
+```php
+#[Post(
+    uriTemplate: '/invoices',
+    processor: InvoiceCreateProcessor::class,
+    validationContext: ['groups' => ['Default', 'invoice:create']],
+)]
+```
+
+Because the processor is in `src/`, autowiring resolves `ProcessorInterface $decorated` to the `api_platform.doctrine.orm.state.processor` service automatically. If you need to be explicit, use `#[Autowire(service: 'api_platform.doctrine.orm.state.processor')]` on the constructor parameter.
+
+---
+
+#### 20.6 Filtering and Pagination
+
+##### 20.6.1 Parameters and Filters
+
+API Platform 4 introduces a **parameter-based** filtering architecture. You declare *what* the client can filter on via `QueryParameter` or `HeaderParameter` attributes, and you specify *how* the filter works by referencing a filter class.
+
+###### Available filter classes
+
+The following table lists the Doctrine ORM filters you are most likely to use. All live in the `ApiPlatform\Doctrine\Orm\Filter` namespace.
+
+| Filter class | Purpose | Example query |
+|---|---|---|
+| `ExactFilter` | Equality match | `?status=draft` |
+| `PartialSearchFilter` | `LIKE %…%` search | `?search[name]=Acme` |
+| `DateFilter` | Date interval (`after`, `before`, `same`) | `?issuedAt[after]=2025-01-01` |
+| `ComparisonFilter` | `gt`, `gte`, `lt`, `lte`, `ne` (wraps `ExactFilter`) | `?amount[gte]=100` |
+| `IriFilter` | Filter by relation IRI | `?tenant=/tenants/abc` |
+| `SortFilter` | Sort by a single property | `?sort=-issuedAt` |
+| `FreeTextQueryFilter` | Search across multiple properties with one key | `?q=acme` |
+| `OrFilter` | Combine criteria with OR instead of AND | `?name[or]=Acme&name[or]=Beta` |
+| `ExistsFilter` | Check null / not-null | `?paidAt[exists]=false` |
+
+> **Deprecation note.** The old `#[ApiFilter]` attribute from API Platform 2/3 is still functional but deprecated. The `QueryParameter` approach shown here is the recommended path and produces automatically documented parameters in OpenAPI, Hydra, and GraphQL.
+
+###### Declaring filters on a resource
+
+```php
+use ApiPlatform\Doctrine\Orm\Filter\ComparisonFilter;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
+use ApiPlatform\Doctrine\Orm\Filter\PartialSearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\QueryParameter;
+
+#[GetCollection(
+    uriTemplate: '/invoices',
+    parameters: [
+        'status' => new QueryParameter(
+            filter: ExactFilter::class,
+            property: 'status',
+            description: 'Filter by invoice status (draft, sent, paid, overdue).',
+        ),
+        'amount' => new QueryParameter(
+            filter: new ComparisonFilter(new ExactFilter()),
+            property: 'amount',
+            description: 'Filter by amount (supports gt, gte, lt, lte).',
+        ),
+        'issuedAt' => new QueryParameter(
+            filter: DateFilter::class,
+            property: 'issuedAt',
+            description: 'Filter by issue date (after, before, same).',
+        ),
+        'search' => new QueryParameter(
+            filter: new PartialSearchFilter(),
+            property: ':property',          // dynamic: search[client], search[tenant], …
+            description: 'Partial text search on any property.',
+        ),
+        'sort' => new QueryParameter(
+            filter: new SortFilter(),
+            description: 'Sort results. Prefix with "-" for descending.',
+        ),
+    ],
+)]
+class Invoice { /* ... */ }
+```
+
+The `:property` placeholder in the `search` parameter is expanded at *metadata time* (boot) into one parameter per mappable property. The client then writes `?search[client]=Acme` or `?search[tenant]=Beta`.
+
+Now the API supports:
+
+```
+GET /api/invoices?status=sent&amount[gte]=500&issuedAt[after]=2025-06-01&sort=-issuedAt
+GET /api/invoices?search[client]=Acme
+```
+
+All of these parameters appear in the Swagger UI with their descriptions, types, and operators—no manual documentation required.
+
+###### Global default parameters
+
+If every resource in your API requires an API-version header, declare it once:
+
+```yaml
+# config/packages/api_platform.yaml
+api_platform:
+    defaults:
+        parameters:
+            ApiPlatform\Metadata\HeaderParameter:
+                key: 'X-Api-Version'
+                required: true
+                description: 'API version (e.g., 1).'
+```
+
+Every operation will now require (and document) the `X-Api-Version` header.
+
+##### 20.6.2 Pagination
+
+Pagination is **on by default** for all collection operations, with 30 items per page. The response includes Hydra pagination links (`first`, `last`, `next`, `previous`) and a `totalItems` count.
+
+###### Key configuration options
+
+| Option | Scope | Default | Description |
+|---|---|---|---|
+| `pagination_enabled` | global / resource / operation | `true` | Master switch |
+| `pagination_items_per_page` | global / resource / operation | `30` | Page size |
+| `pagination_client_items_per_page` | global / resource | `false` | Allow `?itemsPerPage=N` |
+| `pagination_maximum_items_per_page` | global / resource | `null` (unlimited) | Hard cap on page size |
+| `pagination_partial` | global / resource | `false` | Skip `COUNT(*)` (no `last` link) |
+| `pagination_client_enabled` | global / resource | `false` | Allow `?pagination=false` |
+| `page_parameter_name` | global | `page` | Query param name |
+
+###### Per-resource override
+
+```php
+#[ApiResource(
+    paginationItemsPerPage: 50,
+    paginationMaximumItemsPerPage: 100,
+    paginationClientItemsPerPage: true,
+)]
+class Invoice { /* ... */ }
+```
+
+With this configuration, a client can write:
+
+```
+GET /api/invoices?page=2&itemsPerPage=50
+```
+
+###### Partial pagination
+
+On very large tables, the `COUNT(*)` query that computes `totalItems` can be expensive. Enabling `paginationPartial: true` skips the count query. The downside is that the `last` page link disappears (API Platform no longer knows the total page count), but the `next` link is still generated by checking whether a next page of results exists.
+
+```php
+#[ApiResource(paginationPartial: true)]
+class Invoice { /* ... */ }
+```
+
+You can also let the client toggle this per-request with `paginationClientPartial: true` and a `?partial=true` query parameter.
+
+---
+
+#### 20.7 GraphQL Support
+
+REST is not the only query interface API Platform can serve. By adding one Composer package, every resource you declared in §20.3 becomes queryable (and mutable) through GraphQL.
+
+##### 20.7.1 Enabling GraphQL
+
+```bash
+composer require api-platform/graphql
+```
+
+This registers the `ApiPlatform\GraphQL` sub-system. By default:
+
+* The GraphQL endpoint is `POST /graphql`.
+* A GraphiQL IDE is served at `GET /graphql` (browser) and `GET /graphql/graphiql`.
+* A GraphQL Playground is served at `GET /graphql/graphql_playground`.
+
+##### 20.7.2 Defining GraphQL operations
+
+By default, each resource gets these GraphQL operations:
+
+| Operation type | Default name | HTTP equivalent |
+|---|---|---|
+| `Query` | (item) | `GET /invoices/{id}` |
+| `QueryCollection` | (collection) | `GET /invoices` |
+| `Mutation` | `create` | `POST /invoices` |
+| `Mutation` | `update` | `PUT /invoices/{id}` |
+| `DeleteMutation` | `delete` | `DELETE /invoices/{id}` |
+
+To restrict or rename them, set `graphQlOperations` on the resource:
+
+```php
+use ApiPlatform\Metadata\GraphQl\DeleteMutation;
+use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\GraphQl\Query;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
+
+#[ApiResource(
+    graphQlOperations: [
+        new Query(uriVarFactory: null),
+        new QueryCollection(),
+        new Mutation(name: 'createInvoice'),
+        new Mutation(name: 'updateInvoice'),
+        new DeleteMutation(name: 'deleteInvoice'),
+    ],
+)]
+class Invoice { /* ... */ }
+```
+
+##### 20.7.3 A sample query
+
+With the default configuration, you can open GraphiQL and run:
+
+```graphql
+query GetInvoice {
+  invoice(id: "/invoices/7c4a1b2e-...") {
+    amount
+    currency
+    status
+    issuedAt
+    client {
+      name
+      email
+    }
+  }
+}
+```
+
+Or fetch a filtered, paginated collection:
+
+```graphql
+query Invoices {
+  invoices(
+    filter: {
+      status: "sent",
+      amount: { gte: "500" }
+    },
+    pagination: { page: 1, itemsPerPage: 20 }
+  ) {
+    totalItems
+    results {
+      id
+      amount
+      status
+      client { name }
+    }
+  }
+}
+```
+
+The `filter` and `pagination` arguments are generated from the same `QueryParameter` declarations you wrote for REST in §20.6.1. Define the filter once; it is exposed in both interfaces.
+
+##### 20.7.4 Custom resolvers
+
+When the default Doctrine provider is not enough, you can attach a custom resolver to a GraphQL operation:
+
+```php
+// src/Resolver/TenantInvoiceStatsResolver.php
+namespace App\Resolver;
+
+use ApiPlatform\GraphQl\Resolver\QueryCollectionResolverInterface;
+use App\Entity\Invoice;
+
+final class TenantInvoiceStatsResolver implements QueryCollectionResolverInterface
+{
+    /**
+     * @param iterable<Invoice> $collection
+     */
+    public function __invoke(iterable $collection, array $context): iterable
+    {
+        // $context['args'] contains the GraphQL arguments (filter, pagination, etc.)
+        // Perform custom aggregation, apply business rules, or call an external service.
+
+        foreach ($collection as $invoice) {
+            // e.g., enrich with computed fields
+        }
+
+        return $collection;
+    }
+}
+```
+
+```php
+new QueryCollection(
+    name: 'tenantInvoiceStats',
+    resolver: TenantInvoiceStatsResolver::class,
+)
+```
+
+##### 20.7.5 Disabling introspection in production
+
+Introspection queries let a client enumerate the entire schema. For a public API, disable them:
+
+```yaml
+# config/packages/prod/api_platform.yaml
+api_platform:
+    graphql:
+        introspection: false
+```
+
+---
+
+#### 20.8 JSON:API and Format Negotiation
+
+API Platform ships with several output formats, all selected via standard HTTP content negotiation (`Accept` header):
+
+| `Accept` value | Format | Notes |
+|---|---|---|
+| `application/ld+json` | JSON-LD + Hydra | **Default**. Hypermedia links, embedded context. |
+| `application/vnd.api+json` | JSON:API | Follows the [JSON:API spec](https://jsonapi.org/). Resources have `id`, `type`, `attributes`, `relationships`. |
+| `application/hal+json` | HAL | `_links` for navigation. |
+| `application/json` | Plain JSON | No hypermedia. Lightest payload. |
+| `text/csv` | CSV | For bulk export endpoints. |
+
+To enable JSON:API, make sure the format is listed in your configuration:
+
+```yaml
+# config/packages/api_platform.yaml
+api_platform:
+    formats:
+        jsonld:  ['application/ld+json']
+        jsonapi: ['application/vnd.api+json']
+        json:    ['application/json']
+```
+
+A JSON:API response for `GET /api/invoices/7c4a...` looks like:
+
+```json
+{
+  "data": {
+    "type": "invoices",
+    "id": "7c4a1b2e-...",
+    "attributes": {
+      "amount": "149.99",
+      "currency": "EUR",
+      "status": "sent",
+      "issuedAt": "2025-08-15T10:30:00+00:00"
+    },
+    "relationships": {
+      "client": {
+        "data": { "type": "clients", "id": "f0a2..." }
+      },
+      "tenant": {
+        "data": { "type": "tenants", "id": "3b1c..." }
+      }
+    }
+  },
+  "links": {
+    "self": "/api/invoices/7c4a1b2e-..."
+  }
+}
+```
+
+If a client sends `Accept: application/vnd.api+json`, API Platform automatically uses the JSON:API normalizer. No controller or route changes needed.
+
+You can also **force** a format per operation:
+
+```php
+#[Get(
+    uriTemplate: '/invoices/{id}',
+    formats: ['jsonapi'],
+)]
+```
+
+This is useful for a dedicated JSON:API export endpoint that must always return the same format regardless of the client's `Accept` header.
+
+---
+
+#### 20.9 Putting It All Together: The Invoicing API
+
+Let us step back and look at the full set of endpoints the invoicing app now exposes, combining everything from this chapter:
+
+```
+# ── REST (JSON-LD by default) ──────────────────────────────────
+GET    /api                          → entry-point (list of resources)
+GET    /api/docs                     → Swagger UI
+GET    /api/docs.jsonopenapi         → OpenAPI 3 JSON
+GET    /api/tenants                  → list tenants
+GET    /api/tenants/{id}             → single tenant
+POST   /api/tenants                  → create tenant
+GET    /api/clients?tenant={iri}     → list clients (tenant-scoped)
+POST   /api/clients                  → create client
+GET    /api/invoices?status=&amount[gte]=&issuedAt[after]=&sort=
+                               → filtered, paginated list
+GET    /api/invoices/{id}            → single invoice
+POST   /api/invoices                 → create invoice (triggers email + messenger)
+PATCH  /api/invoices/{id}            → update status (e.g., mark as paid)
+DELETE /api/invoices/{id}            → void invoice
+GET    /api/tenants/{tenantId}/invoices/summary
+                               → custom aggregate DTO
+
+# ── GraphQL ────────────────────────────────────────────────────
+POST   /graphql                      → all queries and mutations
+GET    /graphql/graphiql             → GraphiQL IDE
+
+# ── JSON:API ───────────────────────────────────────────────────
+GET    /api/invoices  (Accept: application/vnd.api+json)
+```
+
+The multi-tenant security model is enforced at three layers:
+
+1. **Route level.** `Client`'s `GetCollection` *requires* a `tenant` query parameter (Chapter 13-style scoping, now declarative).
+2. **Filter level.** The `ExactFilter` on `tenant` is marked `required: true`; a missing parameter produces a 400.
+3. **Authorization level.** You can additionally add `security: "is_granted('VIEW_INVOICE', object)"` on the `Get` operation, tying into the Symfony Security voters you built in Chapter 12.
+
+---
+
+#### 20.10 Testing Your API Platform Endpoints
+
+API Platform works with the standard Symfony `WebTestCase` from Chapter 22. Because routes are auto-generated, you reference them by URL:
+
+```php
+// tests/Api/InvoiceApiTest.php
+namespace App\Tests\Api;
+
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+
+final class InvoiceApiTest extends KernelTestCase
+{
+    private \Symfony\Component\BrowserKit\Browser $client;
+
+    protected function setUp(): void
+    {
+        self::bootKernel(['environment' => 'test']);
+        $this->client = static::createClient();
+    }
+
+    public function testCreateInvoiceReturns201(): void
+    {
+        $this->client->request('POST', '/api/invoices', server: [
+            'HTTP_ACCEPT' => 'application/json',
+            'HTTP_AUTHORIZATION' => 'Bearer <jwt>',
+        ], files: null, content: json_encode([
+            'client' => '/api/clients/f0a2...',
+            'tenant' => '/api/tenants/3b1c...',
+            'amount' => '149.99',
+            'currency' => 'EUR',
+            'status' => 'draft',
+        ]));
+
+        $this->assertResponseStatusCodeSame(201);
+        $this->assertJsonContains([
+            'status' => 'draft',
+            'amount' => '149.99',
+        ]);
+    }
+
+    public function testListInvoicesRequiresTenantForClients(): void
+    {
+        $this->client->request('GET', '/api/clients', server: [
+            'HTTP_ACCEPT' => 'application/json',
+        ]);
+
+        // Missing required "tenant" filter → 400
+        $this->assertResponseStatusCodeSame(400);
+    }
+}
+```
+
+For GraphQL tests, you POST to `/graphql` with a JSON body:
+
+```php
+$this->client->request('POST', '/graphql', server: [
+    'HTTP_CONTENT_TYPE' => 'application/json',
+], files: null, content: json_encode([
+    'query' => '{ invoices(pagination: {page: 1}) { totalItems } }',
+]));
+
+$response = json_decode($this->client->getResponse()->getContent(), true);
+$this->assertArrayHasKey('data', $response);
+```
+
+---
+
+#### 20.11 Common Pitfalls and Tips
+
+1. **Forgetting `cache:clear` after adding a resource.** API Platform compiles routes and metadata into the container. If a new endpoint does not appear, clear the cache first.
+
+2. **Using the wrong `uriTemplate` format.** In API Platform 4, the parameter is `uriTemplate` (camelCase). The old `uri_template` (snake_case) is deprecated. If you are upgrading from a v3 codebase, search-and-replace carefully.
+
+3. **Confusing `parameters` (the new QueryParameter map) with `filterClass` (the old approach).** The `filterClass` option on `ApiResource` still works but is deprecated. Migrate to the `parameters` array on the operation.
+
+4. **Not setting `normalizationContext` / `denormalizationContext`.** Without explicit serializer groups, API Platform serializes *every* public property, including sensitive fields like `password` or `internalNotes`. Always scope with groups, as you did in Chapter 19.
+
+5. **GraphQL introspection left enabled in production.** Set `introspection: false` in your production configuration (§20.7.5).
+
+6. **Assuming the Doctrine provider handles *all* persistence.** If you use a custom `Processor`, make sure you call `$this->decorated->process(...)` (the Doctrine processor) unless you intend to replace it entirely. Otherwise the entity is never persisted.
+
+7. **Multi-tenant leakage via the entry-point.** The `GET /api` entry-point lists *all* resources. In a multi-tenant SaaS, you may want to disable it (`entrypoint: null`) or protect it behind authentication so a tenant cannot enumerate other tenants' resource types.
+
+---
+
+#### 20.12 Exercises
+
+**Exercise 1 — Expose `InvoiceLine` items.**
+The `Invoice` entity has a `OneToMany` relationship to `InvoiceLine` (from Chapter 13). Declare `InvoiceLine` as an `ApiResource` with `Get`, `GetCollection`, `Post`, and `Delete` operations. The `GetCollection` must require a `?invoice={iri}` filter so that a client can only list line items belonging to a specific invoice. Verify the OpenAPI spec at `/docs.jsonopenapi` shows the `invoice` parameter as required.
+
+**Exercise 2 — Custom aggregate endpoint.**
+Write a State Provider (`RevenueByMonthProvider`) that returns a DTO containing total revenue per month for the current tenant. Expose it at `GET /api/tenants/{tenantId}/revenue/monthly`. Use `output` to specify the DTO class. Test it with a functional test that seeds 12 months of invoices via Doctrine fixtures.
+
+**Exercise 3 — GraphQL mutation with a custom resolver.**
+Add a `Mutation(name: 'markInvoicePaid')` operation to `Invoice`. Write a custom `MutationResolver` that (a) loads the invoice, (b) checks that `status` is currently `sent` or `overdue` (throw a `Symfony\Component\Serializer\Exception\NotNormalizableValueException` otherwise), (c) sets `status = paid` and `paidAt = now`, and (d) returns the updated entity. Test the mutation via a POST to `/graphql`.
+
+**Exercise 4 — JSON:API export.**
+Add a `GetCollection` operation at `/api/exports/invoices` that forces `formats: ['jsonapi']` and disables pagination (`paginationEnabled: false`). The endpoint is intended for bulk data migration. Verify that the response conforms to the [JSON:API specification](https://jsonapi.org/format/#document-structure) (check for `data`, `type`, `attributes`, `id` fields).
+
+**Exercise 5 — Rate-limit the public API.**
+Apply the `RateLimiter` component (Chapter 26) to the `GetCollection` operation on `Invoice` by writing a custom State Processor that decorates the Doctrine collection processor. If the rate limit is exceeded, throw a `TooManyRequestsHttpException` (HTTP 429). Configure the limiter to allow 100 requests per minute per IP.
+
+**Exercise 6 — Multi-tenant security voter integration.**
+Add `security: "is_granted('VIEW_INVOICE', object)"` to the `Get` operation on `Invoice`. Create a `InvoiceVoter` (extending `Voter` from Chapter 12) that returns `true` only when the authenticated user's tenant matches the invoice's tenant. Write a functional test that authenticates as a user in Tenant A and verifies they receive a 403 when fetching an invoice belonging to Tenant B.
+
+---
+
+*In the next chapter, Chapter 21, we turn to the question of **API authentication**: stateless JWT tokens, API keys, and OAuth2 flows that sit in front of the endpoints you just built. The API Platform `security` option and Symfony Security firewalls (Chapter 12) combine to produce production-grade authentication with minimal glue code.*
+
+### Chapter 21. API Authentication
+
+By the end of Chapters 19 and 20, our invoicing SaaS has a working REST API: invoice and line-item resources, serialization groups, pagination, filtering, and — if we adopted API Platform — an OpenAPI description and a Swagger UI. Every endpoint, though, is still wide open. Any client that can reach the network can list, create, and delete invoices for *any* tenant.
+
+This chapter is about closing that gap. We'll cover the three authentication strategies you'll actually reach for in production — **API keys**, **JWTs**, and **OAuth 2.0 / OpenID Connect** — and, more importantly, *how they map onto Symfony's stateless security model*. We'll build a dedicated stateless firewall, write a custom authenticator from scratch, wire up JWT signing and verification, and configure our API as a resource server that trusts tokens minted by an external identity provider. Throughout, we'll keep the multi-tenant shape of the running project in mind, because "who is calling" is only half the question in a SaaS — "which tenant are they acting on behalf of" is the other half.
+
+#### What you'll learn
+
+- Why API authentication is *stateless* and how that changes the firewall configuration
+- How to write a custom authenticator using the modern `AuthenticatorInterface` / `AbstractAuthenticator` API
+- How to build a hashed, tenant-scoped API-key authenticator with a JSON 401 entry point
+- How to issue and verify JWTs with `lexik/jwt-authentication-bundle`
+- How to consume tokens from an external OpenID Connect provider using Symfony's built-in access-token authenticator
+- Which strategy to pick for a given integration, and how to harden whichever you choose
+
+The code assumes the running project from Parts III–V: a `User` entity (with `email`, `roles`, and a `tenant`), a `Tenant` entity, and an API under the `/api` prefix. If you skipped ahead, the entities matter more than the endpoints — swap in your own.
+
+---
+
+#### 21.1 Statelessness: the difference between a browser session and an API token
+
+Chapter 12 taught us session-based authentication: a user POSTs credentials, Symfony validates them, and the user is stored *in the session* for subsequent requests. The session is the "state" — it lives on the server (or in a cookie the server can read) and is what makes `isGranted()`, CSRF protection, and "remember me" work.
+
+An API client is a different animal. A mobile app, a CLI script, a partner's backend, or another of our own microservices is not going to happily carry a session cookie and honor a CSRF token. Instead, we use **bearer tokens**: a self-contained string the client presents on every request, typically in an `Authorization` header.
+
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+```
+
+Two consequences fall out of this:
+
+1. **The server stores nothing between requests.** Each request must be authenticated on its own, purely from the token. There is no "is this the same person as last time?" — the token *is* the person.
+2. **There is no session, so there is no CSRF.** Cross-site request forgery is a session-attack; with a pure bearer-token firewall there is no session to hijack via a forged `<img>` tag or auto-submitting form.
+
+Symfony models this with a per-firewall flag: `stateless: true`. When set, Symfony will **not start a session** for that firewall, so no `PHPSESSID` cookie is issued and nothing touches the session storage. That's exactly what we want for a machine-to-machine or app-facing API.
+
+```yaml
+# config/packages/security.yaml
+security:
+    # ... (providers, access_control)
+
+    firewalls:
+        # 1) Public, unauthenticated endpoints (e.g. the token/login endpoint)
+        api_login:
+            pattern: ^/api/login$
+            security: false            # no authentication at all
+
+        # 2) Everything else under /api: stateless, token-based
+        api:
+            pattern: ^/api
+            stateless: true            # never start a session
+            # ... authenticator goes here (21.3, 21.4, or 21.5)
+```
+
+A few things worth internalizing about the `stateless: true` firewall:
+
+- **Don't combine it with session features.** `form_login`, `session`, and `remember_me` are all session-based and don't belong on a stateless firewall.
+- **The entry point matters more than ever.** In a stateless firewall there's no login page to redirect to. When a request arrives with no (or an invalid) token, Symfony needs an *entry point* to produce a **401 JSON response** instead of the default HTML redirect. We'll make sure every authenticator in this chapter provides one.
+- **Firewalls are evaluated in order.** The `pattern` values matter: `^/api/login$` must match before the broader `^/api`, or the login route will itself require a token. Symfony matches the first firewall whose pattern matches, top to bottom.
+
+> **Note.** You may have old tutorials using the deprecated "Guard" system (`AbstractGuardAuthenticator`, `GuardAuthenticatorInterface`). That API was removed long ago and is replaced by the **authenticator** system (introduced in 5.2, made the default in 6.2+). This chapter uses the current API exclusively. If you're upgrading a legacy app, the `upgrade:security` tooling and the `security:debug` command will tell you where you stand.
+
+---
+
+#### 21.2 Anatomy of a stateless firewall request
+
+Before writing code, let's trace what happens when a token-bearing request hits the `api` firewall, because the same shape applies to all three strategies:
+
+1. Symfony's `AuthenticationManager` runs each configured authenticator's `supports()` in turn. The first one that returns `true` "claims" the request.
+2. That authenticator's `authenticate()` runs. It extracts the credential from the request and returns a **Passport** — a value object bundling *who* (`UserBadge`) plus any *badges* (scopes, MFA, tenant context).
+3. If `authenticate()` throws an `AuthenticationException`, the authenticator's `onAuthenticationFailure()` runs. For an API, that returns a 401 JSON response.
+4. If it succeeds, the user provider loads the user, the token is created, and `onAuthenticationSuccess()` runs. **For a stateless API this returns `null`** — meaning "don't short-circuit; let the request continue to the controller, now authenticated."
+
+The two "what happens next" methods are where a login form and an API fork:
+
+| Method | Login form (browser) | Stateless API |
+|---|---|---|
+| `onAuthenticationSuccess()` | Return a redirect to a page | Return `null` (continue the request) |
+| `onAuthenticationFailure()` | Re-render the form with errors | Return a 401 JSON response |
+
+Everything in this chapter is variations on this loop. Let's build the first one by hand.
+
+---
+
+#### 21.3 Strategy 1: API keys
+
+API keys are the simplest stateless credential and, for server-to-server and internal integrations, often the *right* one. A key is a long random string; we store a hash of it, and every request sends it in a header.
+
+API keys are best when:
+
+- The caller is a **service or a partner backend**, not a human in a browser (a webhook consumer, a data-sync job, an integration on the client's side).
+- You want **zero protocol overhead** — no token endpoints, no expiry juggling, no refresh logic.
+- You can live with **coarse revocation**: rotate the key to revoke it. (There's no per-request server-side "is this still valid?" state beyond our own table.)
+
+They're a poor fit when the caller is a human who logs in and expects a short-lived, refreshable credential — that's the JWT section's job.
+
+##### 21.3.1 The entity
+
+We store the **hash** of the key, never the key itself, and we scope every key to a tenant. We also keep a short human-readable `prefix` so the UI can display "sk_invo_1a2b3c…" without revealing the secret.
+
+```php
+// src/Entity/ApiKey.php
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Ulid;
+
+#[ORM\Entity]
+#[ORM\Index(columns: ['hash'], unique: true)]
+class ApiKey
+{
+    #[ORM\Id]
+    #[ORM\Type('ulid')]
+    private Ulid $id;
+
+    #[ORM\Column(length: 10)]
+    private string $prefix;              // e.g. "sk_invo_1" — safe to show in a UI
+
+    #[ORM\Column(length: 64)]
+    private string $hash;                // sha256 of the full key
+
+    #[ORM\ManyToOne(targetEntity: Tenant::class, inversedBy: 'apiKeys')]
+    #[ORM\JoinColumn(nullable: false)]
+    private Tenant $tenant;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private User $owner;                 // who created the key (for audit)
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $revokedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $expiresAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastUsedAt = null;
+
+    #[ORM\ManyToOne(targetEntity: Tenant::class)]
+    // (kept simple; see 21.3.5 for scope/role scoping)
+    // ...
+
+    public function isRevoked(): bool
+    {
+        return null !== $this->revokedAt;
+    }
+
+    public function isExpired(): bool
+    {
+        return null !== $this->expiresAt
+            && $this->expiresAt->lessThan(new \DateTimeImmutable());
+    }
+
+    // getters/setters omitted
+}
+```
+
+Generate the key once, show it to the user *once*, and store only the hash:
+
+```php
+// src/Security/ApiKeyFactory.php
+namespace App\Security;
+
+use App\Entity\ApiKey;
+use App\Entity\Tenant;
+use App\Entity\User;
+
+class ApiKeyFactory
+{
+    public function create(string $name, Tenant $tenant, User $owner): array
+    {
+        // High-entropy random key. base64url of 32 bytes ≈ 43 chars, ~256 bits.
+        $secret = bin2hex(random_bytes(32));                 // 64 hex chars
+        $prefix = 'sk_invo_' . substr($secret, 0, 4);
+
+        $key = new ApiKey();
+        $key->setPrefix($prefix);
+        $key->setHash(hash('sha256', $secret));              // store the hash only
+        $key->setTenant($tenant);
+        $key->setOwner($owner);
+
+        return [$key, $secret];  // return the plaintext once, so the UI can display it
+    }
+}
+```
+
+> **Why `hash('sha256', …)` and not `password_hash()`?** `password_hash()` is for low-entropy secrets (human passwords) and deliberately slows down lookups. An API key is a high-entropy random string where an offline attack isn't meaningful once the DB leaks — a plain SHA-256 lookup is fast (it runs on *every* request) and is the convention for bearer tokens. The security comes from the key's randomness, not from the hash cost.
+
+A tiny console command ties it together (Chapter 15 covers commands in depth; this is a focused example):
+
+```php
+// src/Command/CreateApiKeyCommand.php
+namespace App\Command;
+
+use App\Entity\Tenant;
+use App\Entity\User;
+use App\Repository\TenantRepository;
+use App\Repository\UserRepository;
+use App\Security\ApiKeyFactory;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+
+#[AsCommand(name: 'app:apikey:create', description: 'Create an API key for a user in a tenant')]
+class CreateApiKeyCommand extends Command
+{
+    public function __construct(
+        private ApiKeyFactory $factory,
+        private EntityManagerInterface $em,
+        private UserRepository $users,
+        private TenantRepository $tenants,
+    ) {}
+
+    protected configure(): void
+    {
+        $this->addArgument('email', InputArgument::REQUIRED, 'Owner email');
+    }
+
+    protected execute(InputInterface $input, OutputInterface $output): int
+    {
+        $io = new SymfonyStyle($input, $output);
+
+        $email = $input->getArgument('email');
+        $user = $this->users->findOneBy(['email' => $email]);
+        if (null === $user) {
+            $io->error("No user with email {$email}.");
+            return Command::FAILURE;
+        }
+
+        [$key, $secret] = $this->factory->create('cli-key', $user->getTenant(), $user);
+        $this->em->persist($key);
+        $this->em->flush();
+
+        $io->success('API key created. Store this now — it will not be shown again.');
+        $io->text($secret);
+
+        return Command::SUCCESS;
+    }
+}
+```
+
+##### 21.3.2 The authenticator
+
+Let's generate a skeleton with Maker, then harden it. `make:security:custom` scaffolds the class and registers it under `custom_authenticators`.
+
+```
+$ php bin/console make:security:custom
+  > ApiKeyAuthenticator
+```
+
+Now replace the body. The key decisions for a stateless API authenticator:
+
+- `supports()` returns `true` when the `x-api-key` header is present, so this authenticator only claims API requests (it won't interfere with the browser firewall).
+- `authenticate()` returns a **`SelfValidatingPassport`** — there's no password to check, just a lookup.
+- All failure paths throw the *same* exception so we don't build an "is this key real?" oracle.
+- We implement `AuthenticationEntryPointInterface` so a request with no key at all gets a clean 401 JSON rather than a redirect.
+
+```php
+// src/Security/ApiKeyAuthenticator.php
+namespace App\Security;
+
+use App\Repository\ApiKeyRepository;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
+use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
+use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
+use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
+use Symfony\Component\Security\Http\Authenticator\AuthenticationEntryPointInterface;
+
+class ApiKeyAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
+{
+    public function __construct(
+        private ApiKeyRepository $apiKeys,
+    ) {}
+
+    // Only claim requests that actually carry a key.
+    public function supports(Request $request): ?bool
+    {
+        return $request->headers->has('x-api-key');
+    }
+
+    public function authenticate(Request $request): Passport
+    {
+        $hash = hash('sha256', (string) $request->headers->get('x-api-key', ''));
+        $apiKey = $this->apiKeys->findOneByHash($hash);
+
+        // One generic failure for every reason → no enumeration oracle.
+        if (null === $apiKey || $apiKey->isRevoked() || $apiKey->isExpired()) {
+            throw new CustomUserMessageAuthenticationException('Invalid API key.');
+        }
+
+        $this->apiKeys->touchLastUsedAt($apiKey); // optional analytics, flush in a subscriber
+
+        // Authenticate *as the owning user*; their tenant is then authoritative.
+        return new SelfValidatingPassport(
+            new UserBadge($apiKey->getOwner()->getEmail())
+        );
+    }
+
+    // Stateless: don't respond, let the request continue to the controller.
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
+    {
+        return null;
+    }
+
+    // Stateless: fail with a machine-readable 401.
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
+    {
+        // Never echo $exception->getMessage(); it can leak internals.
+        return new JsonResponse(
+            ['message' => strtr($exception->getMessageKey(), $exception->getMessageData())],
+            Response::HTTP_UNAUTHORIZED
+        );
+    }
+
+    // Called when a protected route is hit with NO credentials at all.
+    public function start(Request $request, ?AuthenticationException $authException): Response
+    {
+        return new JsonResponse(
+            ['message' => 'Authentication required. Provide an x-api-key header.'],
+            Response::HTTP_UNAUTHORIZED
+        );
+    }
+}
+```
+
+Because `ApiKeyAuthenticator` implements `AuthenticationEntryPointInterface`, Symfony uses it as the firewall's entry point automatically. Wire it up:
+
+```yaml
+# config/packages/security.yaml
+security:
+    firewalls:
+        api:
+            pattern: ^/api
+            stateless: true
+            custom_authenticators:
+                - App\Security\ApiKeyAuthenticator
+```
+
+That's the whole authenticator. Let's verify it behaves:
+
+```
+# No key → entry point → 401
+$ curl -s localhost:8000/api/invoices
+{"message":"Authentication required. Provide an x-api-key header."}
+
+# Bad key → onAuthenticationFailure → 401
+$ curl -s -H "x-api-key: wrong" localhost:8000/api/invoices
+{"message":"Invalid API key."}
+
+# Good key → onAuthenticationSuccess returns null → 200 with data
+$ curl -s -H "x-api-key: sk_invo_1a2b3c…" localhost:8000/api/invoices
+[ ... ]
+```
+
+##### 21.3.3 Tenant scoping
+
+Because we authenticate *as the owning user*, the tenant is already fixed: `$user->getTenant()`. Downstream, every repository query and every access decision should be filtered by the current user's tenant. In the running project we do this two ways (both introduced earlier, now doing real work):
+
+- **Repository scoping.** A base repository that injects `current_user->tenant` into every query, so a leaked query still can't cross tenants.
+- **A Voter.** `TenantIsolationVoter` denies any `Invoice::getId()` access where the target invoice's tenant ≠ the authenticated user's tenant.
+
+The authentication layer's only job is to get the *right user* onto the token; authorization is a separate layer, as Chapter 12 stressed. Don't let "we authenticated" become "we authorized."
+
+##### 21.3.4 (Advanced) Carrying more context with Passport badges
+
+If you need to attach extra context to the authenticated request — the specific key, an access level, a sub-account, OAuth2 scopes — a **Passport badge** is the mechanism. A badge is a value object you add to the passport and read back where you need it.
+
+```php
+// src/Security/ScopeBadge.php
+namespace App\Security;
+
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\BadgeInterface;
+
+class ScopeBadge implements BadgeInterface
+{
+    public function __construct(private array $scopes) {}
+
+    public function getScopes(): array
+    {
+        return $this->scopes;
+    }
+}
+```
+
+Attach it in `authenticate()`:
+
+```php
+return new SelfValidatingPassport(
+    new UserBadge($apiKey->getOwner()->getEmail()),
+    [new ScopeBadge(['invoices:read', 'invoices:write'])]
+);
+```
+
+Badges are consumed by listeners and by your own code that has access to the `Passport` (for example, a custom `PassportListener`, or inside an authenticator's own flow). For most invoicing-app needs, scoping through the owning user plus a Voter is enough; reach for badges when you need structured per-request context that doesn't belong on the user entity.
+
+##### 21.3.5 Rotating and revoking keys
+
+API-key revocation is a table update — set `revokedAt`. Rotation, however, is where real systems bite. When you rotate, you want a **grace period** where both the old and new key work, so a partner's job that's mid-deploy doesn't suddenly 401. A practical scheme:
+
+- Store both `hash` (the new key) and `previousHash` (the one being retired).
+- Accept either in `authenticate()`.
+- `previousHash` carries a `previousExpiresAt`; once it passes, reject it.
+- On rotation, move the current `hash` → `previousHash`, generate a fresh key, set `previousExpiresAt = now + 24h`.
+
+The lookup changes from `findOneByHash()` to `findOneByHashOrPrevious($hash)` and the validity check also honors `previousExpiresAt`. Keep the "one generic failure" rule so you can't tell which key (if any) matched.
+
+---
+
+#### 21.4 Strategy 2: JSON Web Tokens
+
+API keys are simple but static: they don't expire on their own, they're hard to scope per-request, and revocation is coarse. **JWTs** fix all three. A JWT is a signed, self-contained payload:
+
+```
+eyJhbGciOiJSUzI1NiIs... . eyJzdWIiOiJ4eXo... . <signature>
+  └──── header ───────┘    └───── payload ─────┘   └────────────┘
+```
+
+Because the server **verifies the signature** instead of looking the token up in a database, a JWT works across services without a shared store, carries arbitrary claims (roles, tenant, scopes), and expires via the `exp` claim. The trade-offs we'll manage: tokens can't be cheaply revoked (short TTL + a denylist, or an external revocation endpoint), and everything in the payload is *base64, not encrypted* — never put secrets in it.
+
+We'll use `lexik/jwt-authentication-bundle`, the de-facto standard (it's tested against the current Symfony line and handles key management, the `Authorization: Bearer` authenticator, and a set of console commands).
+
+##### 21.4.1 Install and generate keys
+
+```
+$ composer require lexik/jwt-authentication-bundle
+$ php bin/console lexik:jwt:generate-keypair
+```
+
+That drops `config/jwt/private.pem` (signing) and `config/jwt/public.pem` (verification) and prompts for a passphrase. Put the passphrase in the environment, never the repo:
+
+```
+# .env
+JWT_PASSPHRASE=change-me-in-your-real-env
+```
+
+> **Production note.** The passphrase protects the private key at rest. Keep `config/jwt/` out of version control (add it to `.gitignore`), ensure the web server can read the private key and *only* read the public key, and keep the private key off any machine that just verifies tokens (e.g., a read replica or another service).
+
+```yaml
+# config/packages/lexik_jwt_authentication.yaml
+lexik_jwt_authentication:
+    secret_key: '%kernel.project_dir%/config/jwt/private.pem'
+    public_key: '%kernel.project_dir%/config/jwt/public.pem'
+    pass_phrase: '%env(JWT_PASSPHRASE)%'
+    expiration: 3600          # 1 hour; keep access tokens short
+```
+
+##### 21.4.2 The token endpoint
+
+The one endpoint that *does* use a session-free credential check with a password is the login. It authenticates with the password hasher (no session involved) and returns a signed token:
+
+```php
+// src/Controller/Api/LoginController.php
+namespace App\Controller\Api;
+
+use App\Repository\UserRepository;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTManager;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Encoder\PasswordHasherInterface;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
+
+class LoginController extends AbstractController
+{
+    public function __construct(
+        private UserRepository $users,
+        private PasswordHasherInterface $passwordHasher,
+        private JWTManager $jwtManager,
+    ) {}
+
+    public function login(Request $request): JsonResponse
+    {
+        $body = json_decode($request->getContent(), true) ?? [];
+        $email = (string) ($body['email'] ?? '');
+        $password = (string) ($body['password'] ?? '');
+
+        $user = $this->users->findOneBy(['email' => $email]);
+
+        if (null === $user || !$this->passwordHasher->isPasswordValid($user, $password)) {
+            // Generic message — don't reveal whether the email exists.
+            throw new CustomUserMessageAuthenticationException('Invalid email or password.');
+        }
+
+        // The 'sub' claim is what lexik's authenticator uses to load the user.
+        $token = $this->jwtManager->encode([
+            'sub'   => $user->getId(),
+            'roles' => $user->getRoles(),
+            // Tenant scoping travels with the token, not the session.
+            'tenant' => $user->getTenant()->getId(),
+        ]);
+
+        return new JsonResponse(['token' => $token, 'expires_in' => 3600]);
+    }
+}
+```
+
+`sub` (subject) is the user identifier — lexik's authenticator will call the user provider with it. `roles` and `tenant` are our own claims that let downstream code and Voters make decisions without a second lookup. Because the payload is signed, a client can't tamper with `tenant` without breaking the signature.
+
+##### 21.4.3 The stateless JWT firewall
+
+lexik registers a `jwt` authenticator and a 401 entry point for us — no custom class needed:
+
+```yaml
+# config/packages/security.yaml
+security:
+    firewalls:
+        api_login:
+            pattern: ^/api/login$
+            security: false          # public
+
+        api:
+            pattern: ^/api
+            stateless: true
+            jwt: ~                   # reads "Authorization: Bearer <token>"
+```
+
+```
+# Get a token
+$ curl -s -X POST localhost:8000/api/login \
+    -H 'Content-Type: application/json' \
+    -d '{"email":"ada@example.com","password":"…"}'
+{"token":"eyJhbGciOi...","expires_in":3600}
+
+# Use it
+$ curl -s localhost:8000/api/invoices -H 'Authorization: Bearer eyJhbGciOi...'
+[ ... ]
+
+# Expired / tampered → 401 from the entry point
+```
+
+The login route is on a `security: false` firewall so it doesn't require a (nonexistent yet) token; everything else on `api` does.
+
+##### 21.4.4 The three JWT problems, and how to manage them
+
+**1. You can't revoke a valid, unexpired JWT** — verification is a signature check, and the server holds no token state. Mitigations, in order of preference:
+
+- **Keep `exp` short** (minutes, not hours). A stolen token dies quickly.
+- **Refresh tokens.** Issue a long-lived, *stored* refresh token (in the DB) used only to mint new access tokens. Because it's stored, you *can* revoke it. Access tokens stay short; the refresh token is the revocable anchor.
+- **A denylist.** For the rare "log this user out everywhere now" case, write the token's `jti` (a unique id claim you add at `encode()` time) to a short-TTL cache keyed by expiry, and check it in a small listener before the request proceeds. This is the escape hatch, not the default.
+
+**2. The payload isn't confidential.** Anyone can base64-decode it. This is fine for claims like `roles` and `tenant`; it is *wrong* for anything sensitive (balances, emails you didn't intend to expose, internal ids if they're secret).
+
+**3. Clock skew and trust boundaries.** Verify `exp`/`nbf` with a small skew allowance, and only accept tokens from issuers/audiences you control. (The `aud` claim matters the most in the multi-service world — the next section leans on it.)
+
+---
+
+#### 21.5 Strategy 3: OAuth 2.0 and OpenID Connect
+
+API keys are for *us trusting a key we issued*. JWTs (21.4) are for *us issuing and verifying our own tokens*. OAuth 2.0 / OIDC is for the third case: **a token is minted by a different authority** — an external identity provider (Auth0, Okta, Keycloak, your company's central IdP, or a partner's) — and our API is a **resource server** that just needs to *verify and trust* it.
+
+Getting the vocabulary straight, because it's where most confusion lives:
+
+- **OAuth 2.0** is an *authorization* framework: it lets a client obtain an **access token** for a resource. It says nothing about *who the user is*.
+- **OpenID Connect (OIDC)** is an *authentication* layer on top of OAuth 2.0: it adds an **ID token** (a JWT) carrying *who the user is*, and a standard **userinfo**/discovery setup.
+
+The grants you'll encounter, and when:
+
+| Grant | Who's acting | Typical use in this app |
+|---|---|---|
+| `authorization_code` (+PKCE) | A human, via a browser redirect | "Sign in with [Partner IdP]" for a web/mobile client |
+| `client_credentials` | A service, no human | Service-to-service: our billing worker pulling from a partner's API |
+| `refresh_token` | Same principal, renewing | Extending a session without re-prompting |
+| `password` / implicit | Legacy / deprecated | Avoid; the first two cover the real cases |
+
+##### 21.5.1 Consuming external tokens (the common case)
+
+When we're a resource server, we don't mint anything — we verify. Symfony ships a first-class **access-token authenticator** for exactly this, and — as of the recent releases — a built-in **OIDC token handler** that does the heavy lifting: fetch JWKS keys (with discovery), verify the signature, and check `iss`/`aud`/expiry for us.
+
+Install the two dependencies the OIDC handler needs:
+
+```
+$ composer require web-token/jwt-library symfony/cache
+```
+
+> **Performance warning.** `web-token/jwt-library` depends on `brick/math`, which *silently* falls back to a pure-PHP implementation when neither **GMP** nor **BCMath** is present. Since JWT verification runs on *every* request, that fallback is orders of magnitude slower. Enable GMP (or at least BCMath) in your PHP build.
+
+Configure the firewall to trust a specific issuer and audience, discovering the signing keys from the provider's OIDC discovery document:
+
+```yaml
+# config/packages/security.yaml
+security:
+    firewalls:
+        api:
+            pattern: ^/api
+            stateless: true
+            access_token:
+                token_handler:
+                    oidc:
+                        algorithms: [RS256, ES256]
+                        audience: 'https://api.invoiceapp.com'
+                        issuers: ['https://auth.invoiceapp.com/realms/invoice']
+                        # The `sub` claim is used as the user identifier by default.
+                        claim: sub
+                        discovery:
+                            base_uri: https://auth.invoiceapp.com/realms/invoice/protocol/openid-connect/
+                            cache:
+                                id: cache.app        # cache JWKS + discovery config
+```
+
+What this does per request:
+
+1. Extracts the token (default: `Authorization: Bearer <token>`; you can also use the `header`, `query_string`, or `request_body` extractors — the docs recommend *header only* in practice, since query-string tokens end up in logs).
+2. Verifies the signature against the JWKS from `base_uri` (cached, so it's not a network hit per request).
+3. Checks `iss` ∈ `issuers`, `aud` == `audience`, and expiry.
+4. Loads a user via your user provider using `claim`.
+
+Because the token is minted *elsewhere*, "loading the user" needs a provider that can map the external `sub` to one of ours — either an `AttributesBasedUserProvider` that creates/looks up a local identity, or a mapping table between the IdP's subject and our `User`. If a given `sub` has no local counterpart, decide explicitly whether to reject or to provision one; that's a product decision, not a framework default.
+
+##### 21.5.2 When *we* are the authorization server (client_credentials)
+
+Sometimes the integration is the reverse: a partner or one of our own services must authenticate to *our* API with OAuth 2.0 `client_credentials`. That means we act as an **authorization server** — we host a token endpoint, hold registered clients (with client ids/secrets), and mint tokens.
+
+Symfony does not ship a full OAuth 2.0 *server*; that's the ecosystem's territory (e.g., `league/oauth2-server` with a Symfony bridge, or a dedicated auth service). The patterns to internalize regardless of which server you run:
+
+- **Register clients, don't hardcode them.** Each client has a `client_id`, a *hashed* `client_secret`, and a set of allowed **scopes**. Store them like we stored API keys.
+- **`client_credentials` issues a token with no user** — the "principal" is the client itself. Model that as a first-class subject (a `Client` that carries scopes) and enforce scope checks with Voters, not with user roles.
+- **Scopes, not roles, are the access unit** for machine clients. `invoices:read`/`invoices:write` beat a `ROLE_*` list for a partner integration.
+- **Reuse 21.4 or 21.5.1 for verification.** Whether we mint the token (21.4-style) or trust an external one (21.5.1), the *resource-server* side of the API firewall is the same: stateless, verify, scope, authorize.
+
+For the invoicing running project, the pragmatic choice is usually: **API keys for simple internal/webhook integrations, JWTs (21.4) for our own users, and 21.5.1 to accept tokens from a corporate/partner IdP** — rather than standing up our own authorization server, which is real operational surface you only want if you genuinely have many external OAuth clients.
+
+---
+
+#### 21.6 Choosing a strategy
+
+A quick decision guide for the same `/api` firewall:
+
+- **Internal job / webhook / partner backend, low ceremony → API key (21.3).** Store a hash, scope to tenant, rotate with a grace period.
+- **Your own users, humans or apps, need short-lived + refreshable credentials → JWT (21.4).** Sign with `lexik`, keep `exp` short, add refresh tokens for long sessions.
+- **A third party mints the token; you just verify it → OIDC resource server (21.5.1).** Let the built-in `access_token` + `oidc` handler verify; provide a user provider that maps the external `sub`.
+- **You must expose your own OAuth 2.0 token endpoint to many external clients → OAuth 2.0 server.** Use the ecosystem; keep the resource-server firewall identical to the above.
+
+More than one can coexist. A single stateless firewall can run *multiple* authenticators (e.g., an API-key authenticator *and* a JWT authenticator); `supports()` on each decides which one claims a given request. That's how many production APIs accept "either an API key *or* a bearer token."
+
+---
+
+#### 21.7 Hardening checklist
+
+Whichever strategy you pick, these apply to every API firewall in this chapter:
+
+- **HTTPS, non-negotiable.** A bearer token in a header is a plaintext credential over HTTP. TLS is the only thing standing between your API and anyone on the path. HSTS on top.
+- **Never log tokens.** Scrub `Authorization` and `x-api-key` from request logs, error trackers, and debug output. (Wire this into the logging we set up in Chapter 24.)
+- **Uniform errors.** One generic failure message per credential type so attackers can't distinguish "unknown" from "expired" from "wrong tenant." Use `CustomUserMessageAuthenticationException` or `getMessageKey()`, never raw `getMessage()`.
+- **Rate-limit the credential endpoints.** Especially login (21.4.2). Chapter 26's `RateLimiter` component drops in as a firewall-level guard: cap attempts per identifier, back off, and alert.
+- **TTL + rotation.** Short access-token expiries; API-key rotation with a grace window; stored refresh tokens you can revoke.
+- **Authorization is separate.** Authentication (this chapter) puts the *right principal* on the token. Tenant scoping, scopes, and role checks happen in Voters and repository filters (Chapters 12–13). A valid token with the wrong tenant still 403s.
+- **Least privilege in claims.** Only put what downstream code needs in a JWT; scope machine clients to the minimum scopes; don't mint a `ROLE_ADMIN` token for a read-only integration.
+- **Key hygiene.** Private signing keys and client secrets out of VCS, passphrase-protected, readable only by what must read them; GMP/BCMath present for fast verification.
+
+---
+
+#### 21.8 Exercises
+
+1. **Stateless sanity check.** Add a `/api/me` route that returns `{"user": …, "tenant": …}` for the authenticated principal. Confirm it returns 401 JSON (not an HTML redirect) with no header, a bad key, and an expired JWT respectively. Why does the entry point — not `onAuthenticationFailure()` — produce the first of those?
+2. **No-oracle refactor.** Extend `ApiKeyAuthenticator` so that a *revoked*, an *expired*, and a *nonexistent* key all produce byte-identical 401 responses. Then use `security:debug` and a functional test to prove a client can't distinguish the three cases.
+3. **Tenant isolation test.** Write a functional test (Chapter 22's tools) proving that a key owned by *Tenant A* receives 403 — not 404, not empty 200 — when requesting *Tenant B's* invoice by id. What does the distinction between 403 and 404 buy you here?
+4. **JWT claims + revocation.** Add a `jti` claim at `encode()` time and a cache-based denylist checked in a listener. Write a test: mint a token, add its `jti` to the denylist, and assert the next request 401s while an *unrevoked* token still 200s. What breaks if the token's `exp` is in the past when you try to denylist it?
+5. **Rotation grace window.** Implement `previousHash` + `previousExpiresAt` on `ApiKey` and a `app:apikey:rotate` command. Write a test asserting both keys work during the grace period, only the new one works after it, and the old key's rejection is indistinguishable from a bad key.
+6. **Multi-authenticator firewall.** Configure the `api` firewall to accept *either* an `x-api-key` header *or* an `Authorization: Bearer` JWT. Trace which authenticator's `supports()` claims a request that sends **both**, and explain the ordering rule.
+7. *(Stretch, 21.5.1)* Stand up a local Keycloak (or use a mock OIDC issuer) and configure the `access_token`/`oidc` handler against it with discovery. Provide a user provider that maps the external `sub` to a local `User`, and prove in a functional test that a token with the *wrong `aud`* is rejected.
+
+---
+
+#### Where to go next
+
+Your API now has three interchangeable ways to say "who are you," and every one of them feeds the same stateless firewall and the same authorization layer. The next natural step is *proving* it holds up: Chapter 22 shows how to turn the curl one-liners above into a repeatable functional and browser-test suite, including fixtures and mocking of the token endpoints. And when a partner reports "it's slow," Chapter 23's cache pools and the GMP note here will be the first places to look.
+
+---
+
+## Part VI — Quality and Production
+
+### Chapter 22 — Testing
+
+> *"You've just watched your invoicing app survive a real client's first month in production. You caught the bug — the one where a tenant's overdue total leaked into another tenant's dashboard — but you caught it by reading their support email, not by running a test. That's the exact problem this chapter is here to solve."*
+
+Across Parts III–V we built a multi-tenant SaaS invoicing application: tenants, clients, invoices, a REST API, an authenticated web dashboard, asynchronous invoice dispatch, and a serializer that shapes every byte that leaves the process. What we didn't do, systematically, was *prove any of it keeps working*. Chapter 22 closes that gap.
+
+By the end of this chapter you will be able to:
+
+- Distinguish **unit**, **integration**, and **application (functional)** tests and know which tool fits which job.
+- Write fast, isolated unit tests for services, DTOs, and value objects using PHPUnit attributes.
+- Boot the kernel in tests, pull services from the container, and **mock dependencies** — including non-shared services.
+- Model realistic seed data with **Doctrine fixtures** and keep every test independent.
+- Drive the *whole* application with `WebTestCase`, asserting on status codes, HTML, JSON, and security behavior.
+- Test JavaScript-heavy flows in a **real browser** with **Panther**, and debug failures with screenshots.
+- Wire the whole suite into **CI** with a dedicated test database and code coverage.
+
+The code in this chapter reuses the running project: `Tenant`, `User`, `Client`, `Invoice`, `InvoiceLine` entities; `InvoiceGenerator` and `InvoiceCalculator` services; `InvoiceController` (web) and `InvoiceApiController` (REST); and the `ROLE_ADMIN` / `ROLE_ACCOUNTANT` / `ROLE_VIEWER` roles introduced in Chapter 12.
+
+---
+
+#### 22.1 The Symfony Testing Taxonomy
+
+Symfony deliberately uses a specific vocabulary, and it's worth pinning down before we write a line of test code, because the vocabulary tells you *which class to extend* and *what you're allowed to touch*.
+
+| Type | What it tests | Base class | Boots the kernel? | Speed |
+|---|---|---|---|---|
+| **Unit** | A single class in isolation | `PHPUnit\Framework\TestCase` | No | Fastest |
+| **Integration** | Several cooperating services | `KernelTestCase` | Yes | Medium |
+| **Application / Functional** | The full app over HTTP | `WebTestCase` | Yes | Slower |
+| **End-to-end (browser)** | The app through a real browser | `PantherTestCase` (extends `WebTestCase`) | Yes + browser | Slowest |
+
+Two things are worth internalizing:
+
+1. **The pyramid still applies.** You write *many* unit tests, *some* integration tests, and *few* functional/browser tests. Browser tests are the most expensive to run and the flakiest, so you reserve them for flows where JavaScript is genuinely part of the contract.
+2. **`WebTestCase` and `PantherTestCase` share an ancestor.** Because `PantherTestCase` *is* a `WebTestCase` under the hood, everything you can assert in a functional test you can also assert in a browser test — the browser tests just add real JavaScript execution on top.
+
+A common source of confusion is the word "functional." In Symfony, "functional test" = "application test" = "I sent a request into a booted kernel and asserted on the response." It does *not* necessarily mean "a real browser was involved." Panther is the thing that adds the browser.
+
+##### The test pyramid for our invoicing app
+
+Let's map the taxonomy onto what we actually built, so the rest of the chapter has a target:
+
+- **Unit:** `InvoiceCalculator::calculateTotal()` (a pure function over line items), the `InvoiceLine` DTO, and the `Invoice::status()` state logic.
+- **Integration:** `InvoiceGenerator` wiring together the number generator, the repository, and the event dispatcher.
+- **Functional:** "POST `/api/invoices` as an accountant creates a 201; the same request as a viewer gets a 403"; "tenant A's user can never see tenant B's invoices."
+- **End-to-end (Panther):** "the dashboard's *Mark as paid* button actually dispatches the async job and the badge updates," where that button's behavior is driven by JavaScript.
+
+We'll build each layer in order, bottom-up, exactly the way you'd build confidence in a real codebase.
+
+---
+
+#### 22.2 Setting Up the Test Environment
+
+Everything starts with the test tooling. If you started the project with Symfony Flex, most of this is already in place — but we want it *intentional*, so let's be explicit.
+
+##### Installing the packages
+
+```bash
+composer require --dev symfony/test-pack
+composer require --dev dama/doctrine-test-bundle
+composer require --dev doctrine/doctrine-fixtures-bundle
+```
+
+- `symfony/test-pack` pulls in `phpunit/phpunit`, `symfony/browser-kit`, `symfony/css-selector`, and `symfony/dom-crawler` — the toolkit for the whole chapter.
+- `dama/doctrine-test-bundle` gives us per-test database isolation via transactions (see §22.5).
+- `doctrine/doctrine-fixtures-bundle` lets us model seed data as ordinary PHP classes.
+
+##### `phpunit.dist.xml`
+
+Modern Symfony ships `phpunit.dist.xml` (PHPUnit 10+). If you still have `phpunit.xml.dist`, the only difference is the XML element names; the concepts are identical. Here's the configuration we'll grow throughout the chapter:
+
+```xml
+<!-- phpunit.dist.xml -->
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         backupGlobals="false"
+         colors="true"
+         bootstrap="tests/bootstrap.php"
+         cacheDirectory=".phpunit.cache">
+
+    <php>
+        <ini name="display_errors" value="1"/>
+        <ini name="error_reporting" value="-1"/>
+        <server name="APP_ENV" value="test" force="true"/>
+        <server name="SHELL_VERBOSITY" value="-1"/>
+        <env name="KERNEL_CLASS" value="App\Kernel"/>
+    </php>
+
+    <extensions>
+        <!-- Roll back the DB after every test (see §22.5) -->
+        <bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>
+    </extensions>
+
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+        <testsuite name="Functional">
+            <directory>tests/Functional</directory>
+        </testsuite>
+        <testsuite name="E2E">
+            <directory>tests/E2E</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
+```
+
+Three details in that file pay for themselves later:
+
+- **`APP_ENV=test` forced on.** This is what makes every booted kernel read `config/packages/test/` and your `.env.test`. It's the whole "test environment" mechanism in one line.
+- **Split test suites.** We'll run `Unit` constantly (it's fast), and run the heavier `Functional` and `E2E` suites selectively. This is the primary lever for keeping the suite snappy.
+- **The DAMA extension registered globally.** Once registered, *every* test that touches the database gets automatic transaction rollback — no boilerplate per class.
+
+The `bootstrap="tests/bootstrap.php"` file is where you'd clear the cache when you disable debug (a CI optimization, §22.8). A sensible default:
+
+```php
+// tests/bootstrap.php
+use Symfony\Component\Dotenv\Dotenv;
+
+require dirname(__DIR__).'/vendor/autoload.php';
+
+if (file_exists(dirname(__DIR__).'/config/bootstrap.php')) {
+    (new Dotenv())->bootEnv(dirname(__DIR__).'/.env');
+}
+```
+
+##### The test environment: `.env.test`
+
+Recall the `.env` hierarchy from Chapter 6. In the **test** environment Symfony reads, in order (later files override earlier ones):
+
+1. `.env`
+2. `.env.test`
+3. `.env.test.local`
+
+Note what is *not* read: **`.env.local` is deliberately ignored in tests** so that nobody's personal local secrets silently change test behavior. That single rule has saved a lot of "works on my machine, fails on CI" debugging.
+
+Our `.env.test` points at a **dedicated test database** and turns on a few strictness dials:
+
+```dotenv
+# .env.test
+APP_ENV=test
+APP_SECRET=S$ecretF0rt3st
+KERNEL_CLASS=App\Kernel
+
+# A separate DB so tests never touch dev/prod data
+DATABASE_URL="postgresql://app:app@127.0.0.1:5432/invoicing_test?serverVersion=16&charset=utf8"
+
+# A throwaway Messenger transport: tests must never touch the real queue
+MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
+
+# Fail loudly on deprecations during tests
+SYMFONY_DEPRECATIONS_HELPER=weak
+```
+
+And a per-developer `.env.test.local` (this file *is* gitignored) for machine-specific overrides:
+
+```dotenv
+# .env.test.local
+DATABASE_URL="postgresql://app:app@127.0.0.1:5432/invoicing_test_devbox?serverVersion=16"
+```
+
+> **Why a separate database, and a separate Messenger transport?** A test that writes invoices must never pollute the developer's local dev data, and a test that triggers "send invoice" must never enqueue a job onto the *real* async queue. Pointing `MESSENGER_TRANSPORT_DSN` at a fresh doctrine transport is the cheapest way to guarantee both.
+
+##### Creating the test database
+
+```bash
+php bin/console --env=test doctrine:database:create
+php bin/console --env=test doctrine:migrations:migrate --no-interaction
+```
+
+Because migrations (Chapter 13) are versioned, this is more robust than the old `doctrine:schema:create` guesswork — the test DB ends up in exactly the same shape as production.
+
+We can also do this from `tests/bootstrap.php` so a fresh clone works immediately, but keeping it as an explicit CI/developer step is usually clearer.
+
+---
+
+#### 22.3 Unit Tests: The Foundation
+
+A unit test verifies **one class** in isolation. It does not boot the kernel, it does not touch the database, and it does not require your app to be runnable. That's what makes it fast — and fast tests get run, which is the entire point.
+
+By convention, the `tests/` tree **mirrors** the `src/` tree: a class in `src/Service/` has its unit test in `tests/Unit/Service/`. Autoloading is already configured in `phpunit.dist.xml` via Composer, so no extra work is needed.
+
+##### Testing a pure service: `InvoiceCalculator`
+
+The `InvoiceCalculator` is a natural first target — it's a stateless service with a pure method, which is the *ideal* thing to unit-test.
+
+```php
+// src/Service/InvoiceCalculator.php
+namespace App\Service;
+
+use App\Dto\InvoiceLineData;
+
+final class InvoiceCalculator
+{
+    /**
+     * Total of all lines, rounded to 2 decimals.
+     *
+     * @param list<InvoiceLineData> $lines
+     */
+    public function calculateTotal(array $lines): float
+    {
+        $total = 0.0;
+        foreach ($lines as $line) {
+            $total += $line->quantity * $line->unitPrice;
+        }
+
+        return round($total, 2);
+    }
+}
+```
+
+```php
+// tests/Unit/Service/InvoiceCalculatorTest.php
+namespace App\Tests\Unit\Service;
+
+use App\Dto\InvoiceLineData;
+use App\Service\InvoiceCalculator;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+
+#[CoversClass(InvoiceCalculator::class)]
+final class InvoiceCalculatorTest extends TestCase
+{
+    private InvoiceCalculator $calculator;
+
+    protected function setUp(): void
+    {
+        $this->calculator = new InvoiceCalculator();
+    }
+
+    #[DataProvider('totalsProvider')]
+    public function testCalculateTotal(array $lines, float $expected): void
+    {
+        $this->assertSame($expected, $this->calculator->calculateTotal($lines));
+    }
+
+    /**
+     * @return array<string, array{list<InvoiceLineData>, float}>
+     */
+    public static function totalsProvider(): iterable
+    {
+        yield 'empty invoice is zero' => [[], 0.0];
+
+        yield 'single line' => [
+            [new InvoiceLineData(3, 10.0, 'Consulting')],
+            30.0,
+        ];
+
+        yield 'rounds to two decimals' => [
+            [new InvoiceLineData(1, 3.335, 'Rounding case')],
+            3.34,
+        ];
+
+        yield 'multiple lines' => [
+            [
+                new InvoiceLineData(2, 5.5, 'A'),
+                new InvoiceLineData(1, 1.25, 'B'),
+                new InvoiceLineData(4, 0.75, 'C'),
+            ],
+            16.5,
+        ];
+    }
+}
+```
+
+A few things to notice, because they're the modern PHPUnit idiom:
+
+- **`#[CoversClass(...)]`** declares what this test file is responsible for. It powers accurate coverage reporting and keeps you honest: if `InvoiceCalculator` changes, you know which tests to update.
+- **`#[DataProvider('totalsProvider')]`** + a **`static`** generator. Since PHPUnit 10, data providers must be static and use `yield`. The `yield 'label' => [...]` form gives each case a human-readable name that appears on failure — enormously helpful when a data-driven test breaks.
+- **`assertSame` over `assertEquals` for money.** `assertSame` checks type *and* value. `3.0` and `3` are different to `assertSame`, which is exactly the strictness you want when you're testing arithmetic on typed `float` returns.
+
+Running just this file, without booting the app:
+
+```bash
+php bin/phpunit tests/Unit/Service/InvoiceCalculatorTest.php
+```
+
+##### Testing a value object / DTO
+
+DTOs and value objects are the most under-tested code in most apps, precisely because they look trivial. `InvoiceLineData` is a great example of where a bug lives quietly:
+
+```php
+// src/Dto/InvoiceLineData.php
+final class InvoiceLineData
+{
+    public function __construct(
+        public readonly int $quantity,
+        public readonly float $unitPrice,
+        public readonly string $description,
+    ) {}
+
+    public function lineTotal(): float
+    {
+        return round($this->quantity * $this->unitPrice, 2);
+    }
+}
+```
+
+```php
+// tests/Unit/Dto/InvoiceLineDataTest.php
+namespace App\Tests\Unit\Dto;
+
+use App\Dto\InvoiceLineData;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\ExpectedException;
+use PHPUnit\Framework\TestCase;
+
+#[CoversClass(InvoiceLineData::class)]
+final class InvoiceLineDataTest extends TestCase
+{
+    public function testLineTotalMultipliesQuantityAndPrice(): void
+    {
+        $line = new InvoiceLineData(4, 12.5, 'Design');
+
+        $this->assertSame(50.0, $line->lineTotal());
+    }
+
+    #[ExpectedException(\InvalidArgumentException::class)]
+    public function testRejectsNegativeQuantity(): void
+    {
+        // If we add validation to the constructor, this documents it.
+        new InvoiceLineData(-1, 10.0, 'Bad');
+    }
+}
+```
+
+> **A note on `#[ExpectedException]`.** The old `$this->expectException()` call still works; the attribute is just the declarative form and reads well in a data-heavy test file. Use whichever you prefer — consistency within the codebase matters more than the spelling.
+
+##### Testing the entity's own logic
+
+We gave `Invoice` a little bit of behavior (its status can be derived from the due date rather than stored blindly). That logic deserves a unit test too — and testing an entity *without* Doctrine is trivial because we just `new` it:
+
+```php
+// tests/Unit/Entity/InvoiceTest.php
+namespace App\Tests\Unit\Entity;
+
+use App\Entity\Invoice;
+use App\Enum\InvoiceStatus;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+
+#[CoversClass(Invoice::class)]
+final class InvoiceTest extends TestCase
+{
+    #[DataProvider('overdueProvider')]
+    public function testIsOverdue(string $status, ?\DateTimeImmutable $due, \DateTimeImmutable $now, bool $expected): void
+    {
+        $invoice = new Invoice();
+        $invoice->setStatus(InvoiceStatus::from($status));
+        $invoice->setDueDate($due);
+
+        $this->assertSame($expected, $invoice->isOverdue($now));
+    }
+
+    public static function overdueProvider(): iterable
+    {
+        $now = new \DateTimeImmutable('2026-09-10 12:00:00');
+
+        yield 'paid invoices are never overdue' => [
+            'paid',
+            new \DateTimeImmutable('2026-01-01'),
+            $now,
+            false,
+        ];
+
+        yield 'sent invoice past its due date' => [
+            'sent',
+            new \DateTimeImmutable('2026-09-01'),
+            $now,
+            true,
+        ];
+
+        yield 'sent invoice still within terms' => [
+            'sent',
+            new \DateTimeImmutable('2026-10-01'),
+            $now,
+            false,
+        ];
+    }
+}
+```
+
+> **Keep entities thin.** We deliberately put `isOverdue()` on the entity because it's *intrinsic* to an invoice. The moment you feel tempted to put a method on an entity that needs a repository or a service, that logic belongs in a **service** or a **specification** object instead — and it becomes much easier to unit-test. Chapter 13 covered this boundary in the context of queries; it's the same rule here.
+
+##### When *not* to unit-test
+
+Not every method needs a unit test. `InvoiceRepository::findOverdueForTenant()` is a good example of where a unit test adds little: it's mostly a `QueryBuilder` call, and the real risk is *semantic* (does it return the right rows?), which is best verified with data — that's an integration or functional test, not a unit one. The rule of thumb:
+
+- **Pure logic, branches, edge cases → unit test.**
+- **"Does it talk to the outside world correctly?" → integration/functional test.**
+
+Trying to unit-test a repository by mocking every `QueryBuilder` method produces long, brittle tests that verify Doctrine's internals rather than your intent.
+
+---
+
+#### 22.4 Integration Tests and Mocking
+
+A unit test isolates *one* class. An **integration test** verifies that *several* classes cooperate the way you wired them together. That's where `KernelTestCase` comes in: it boots a real kernel and gives you a handle on the service container.
+
+##### `KernelTestCase` in a nutshell
+
+```php
+// tests/Integration/Service/InvoiceGeneratorTest.php
+namespace App\Tests\Integration\Service;
+
+use App\Entity\Client;
+use App\Entity\Invoice;
+use App\Entity\Tenant;
+use App\Entity\User;
+use App\Service\InvoiceGenerator;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+
+final class InvoiceGeneratorTest extends KernelTestCase
+{
+    public function testSomething(): void
+    {
+        // 1. Boot the kernel (and get the test container)
+        self::bootKernel();
+        $container = self::getContainer();
+
+        // 2. Fetch the service under test from the real container
+        $generator = $container->get(InvoiceGenerator::class);
+
+        // 3. ... and assert on the result
+    }
+}
+```
+
+Two things make `KernelTestCase` special:
+
+1. **The kernel is rebooted for every test**, so tests can't leak state through singletons.
+2. **`self::getContainer()` returns a *test container*** — a special container that exposes *private* services too. This is why you can `$container->get()` a service you never marked `public`. (If a service was *removed* at compile time because nothing referenced it, you'd need to declare it public in `config/services_test.yaml`; that's the one exception.)
+
+`KernelTestCase` finds your kernel via the `KERNEL_CLASS` env var (which we set in `phpunit.dist.xml` and `.env.test`).
+
+##### The two ways to inject a mock
+
+There are two fundamentally different situations when you "mock" in a test, and picking the right one is most of the skill.
+
+###### Way 1 — Pure constructor injection (no kernel)
+
+If the class you're testing receives its dependencies through its constructor — as good, testable services should — you can skip the kernel entirely and build it by hand. This is *technically* a unit test, but it's how most "integration-flavored" service tests are actually written, because it's the cleanest.
+
+```php
+// tests/Unit/Service/InvoiceGeneratorTest.php
+namespace App\Tests\Unit\Service;
+
+use App\Entity\Client;
+use App\Entity\Invoice;
+use App\Entity\InvoiceLine;
+use App\Entity\Tenant;
+use App\Entity\User;
+use App\Repository\InvoiceRepository;
+use App\Service\InvoiceCalculator;
+use App\Service\InvoiceGenerator;
+use App\Service\InvoiceNumberGenerator;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+
+#[CoversClass(InvoiceGenerator::class)]
+final class InvoiceGeneratorTest extends TestCase
+{
+    public function testGeneratePersistsLinesAndDispatchesEvent(): void
+    {
+        $numberGenerator = $this->createMock(InvoiceNumberGenerator::class);
+        $numberGenerator
+            ->method('next')
+            ->willReturn('INV-2026-0042');
+
+        $repository = $this->createMock(InvoiceRepository::class);
+        $repository->expects(self::once())
+            ->method('save');
+
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->expects(self::once())
+            ->method('dispatch')
+            ->with(self::callback(function (object $event) {
+                return $event instanceof \App\Event\InvoiceCreated;
+            }));
+
+        $generator = new InvoiceGenerator(
+            new InvoiceCalculator(),   // real collaborator — we trust it
+            $numberGenerator,           // mocked
+            $repository,                // mocked
+            $dispatcher,                // mocked
+        );
+
+        $tenant  = new Tenant();
+        $client  = new Client();
+        $user    = new User();
+        $invoice = $generator->generate($client, [
+            new \App\Dto\InvoiceLineData(2, 100.0, 'Retainer'),
+        ], $user);
+
+        $this->assertSame('INV-2026-0042', $invoice->getNumber());
+        $this->assertSame(200.0, $invoice->getTotalAmount());
+        $this->assertCount(1, $invoice->getLines());
+    }
+}
+```
+
+This test answers a precise question: *"Does `InvoiceGenerator` orchestrate its collaborators correctly — assign the number, persist, dispatch the right event — assuming the collaborators do their jobs?"* We mock the collaborators and assert on **how** they were used (`->expects(self::once())`, `->with(...)`). We kept `InvoiceCalculator` real because it's already unit-tested and we want to exercise the *real* total.
+
+###### Way 2 — Override a service in the booted container
+
+Sometimes you want the **real wiring** (the actual autowired service graph) but with *one* collaborator stubbed. That's `KernelTestCase` + `$container->set()`:
+
+```php
+// tests/Integration/Service/InvoiceGeneratorWiringTest.php
+namespace App\Tests\Integration\Service;
+
+use App\Repository\InvoiceRepository;
+use App\Service\InvoiceGenerator;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+
+final class InvoiceGeneratorWiringTest extends KernelTestCase
+{
+    public function testWiredGeneratorUsesConfiguredRepository(): void
+    {
+        self::bootKernel();
+        $container = self::getContainer();
+
+        // Swap the repository for a mock *before* the generator is built
+        $repoMock = $this->createMock(InvoiceRepository::class);
+        $repoMock->method('save')->willReturn(null);
+        $container->set(InvoiceRepository::class, $repoMock);
+
+        // Now pulling the generator resolves it against the mock
+        $generator = $container->get(InvoiceGenerator::class);
+
+        // ... invoke and assert
+    }
+}
+```
+
+The key detail: `set()` only affects a dependency if that service **hasn't been instantiated yet**. Because Symfony's service container instantiates lazily, setting the mock before you first `get()` the generator works — the generator's constructor pulls the mock out of the container. If the generator had already been built by an earlier line in the test, the swap would be ignored.
+
+###### Mocking non-shared services
+
+A subtlety worth knowing: some services are defined as **non-shared** (`shared: false`), meaning a *new instance* is created every time they're fetched. You can't mock those by `set()`-ing a single instance, because the container won't hand you that one object back each time. Instead you register a **factory closure**:
+
+```php
+$container->set(
+    \App\Service\InvoiceMailer::class,
+    static function () {
+        return new class implements \App\Service\InvoiceMailer {
+            public int $sent = 0;
+            public function send(Invoice $invoice): void { $this->sent++; }
+        };
+    },
+);
+```
+
+Now every resolution of `InvoiceMailer` produces a fresh instance from your closure. (Support for mocking non-shared services this way landed in Symfony 8.1; on 7.4 LTS the same factory-closure technique works against the test container.)
+
+##### A realistic integration scenario: tenant-scoped number generation
+
+The *distinctive* risk in our multi-tenant app is that a number generated for tenant A must never collide with tenant B. An integration test is exactly the right altitude for this — it needs the real container, a real repository, and real data:
+
+```php
+// tests/Integration/Service/InvoiceNumberGeneratorTest.php
+namespace App\Tests\Integration\Service;
+
+use App\Entity\Invoice;
+use App\Entity\Tenant;
+use App\Repository\InvoiceRepository;
+use App\Service\InvoiceNumberGenerator;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+
+final class InvoiceNumberGeneratorTest extends KernelTestCase
+{
+    public function testNumbersAreSequentialPerTenant(): void
+    {
+        self::bootKernel();
+        $container = self::getContainer();
+
+        $em   = $container->get(EntityManagerInterface::class);
+        $gen  = $container->get(InvoiceNumberGenerator::class);
+        $repo = $container->get(InvoiceRepository::class);
+
+        $acme   = new Tenant('Acme Corp');
+        $globex = new Tenant('Globex');
+        $em->persist($acme);
+        $em->persist($globex);
+        $em->flush();
+
+        // Interleave invoices across tenants; sequences must not interfere.
+        $this->assertSame('INV-ACME-2026-0001', $gen->next($acme));
+        $this->assertSame('INV-ACME-2026-0002', $gen->next($acme));
+        $this->assertSame('INV-GLOBEX-2026-0001', $gen->next($globex));
+
+        // ... (data rolled back automatically by DAMA — see §22.5)
+    }
+}
+```
+
+This test would be painful to write as a unit test (you'd have to mock `EntityManager` + `InvoiceRepository` + the query) and it wouldn't prove the *real* query. Here the real container and the real DB are exactly what we want. And because of the DAMA extension, the `Acme`/`Globex` rows we just inserted are **rolled back after the test** — the next test sees a clean database with zero effort.
+
+---
+
+#### 22.5 Fixtures: Modeling the Seed Data
+
+Any test that needs *data* (invoices, tenants, users) faces the same question: where does that data come from? Hand-constructing entities in every test quickly becomes noise. **Fixtures** factor the data modeling out into reusable classes.
+
+##### The fixture classes
+
+We build a small, ordered set of fixtures that model the running project's data. Order matters because of foreign keys, so we give them explicit ordering via the `GroupedFixtureInterface` / `getDependencies` or by relying on file order. The cleanest expression is to make later fixtures **depend** on earlier ones:
+
+```php
+// src/DataFixtures/TenantFixture.php
+namespace App\DataFixtures;
+
+use App\Entity\Tenant;
+use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Bundle\FixturesBundle\FixtureInterface;
+use Doctrine\Persistence\ObjectManager;
+
+class TenantFixture extends Fixture implements FixtureInterface
+{
+    public function load(ObjectManager $manager): void
+    {
+        $acme = new Tenant('Acme Corp');
+        $globex = new Tenant('Globex');
+
+        $manager->persist($acme);
+        $manager->persist($globex);
+        $manager->flush();
+
+        // Named references let other fixtures fetch these without re-querying
+        $this->addReference('tenant.acme', $acme);
+        $this->addReference('tenant.globex', $globex);
+    }
+}
+```
+
+```php
+// src/DataFixtures/UserFixture.php
+namespace App\DataFixtures;
+
+use App\Entity\Tenant;
+use App\Entity\User;
+use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Bundle\FixturesBundle\FixtureInterface;
+use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+
+class UserFixture extends Fixture implements FixtureInterface
+{
+    public function __construct(private UserPasswordHasherInterface $passwordHasher) {}
+
+    public function load(ObjectManager $manager): void
+    {
+        $acme = $this->getReference('tenant.acme', Tenant::class);
+
+        $accountant = new User('jane@acme.test');
+        $accountant->setTenant($acme);
+        $accountant->setRoles(['ROLE_ACCOUNTANT']);
+        $accountant->setPassword($this->passwordHasher->hashPassword($accountant, 'Test1234!'));
+
+        $viewer = new User('bob@acme.test');
+        $viewer->setTenant($acme);
+        $viewer->setRoles(['ROLE_VIEWER']);
+        $viewer->setPassword($this->passwordHasher->hashPassword($viewer, 'Test1234!'));
+
+        $manager->persist($accountant);
+        $manager->persist($viewer);
+        $manager->flush();
+
+        $this->addReference('user.acme.accountant', $accountant);
+        $this->addReference('user.acme.viewer', $viewer);
+    }
+
+    public function getDependencies(): array
+    {
+        return [TenantFixture::class];
+    }
+}
+```
+
+```php
+// src/DataFixtures/InvoiceFixture.php
+namespace App\DataFixtures;
+
+use App\Entity\Client;
+use App\Entity\Invoice;
+use App\Entity\InvoiceLine;
+use App\Entity\Tenant;
+use App\Enum\InvoiceStatus;
+use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Bundle\FixturesBundle\FixtureInterface;
+use Doctrine\Persistence\ObjectManager;
+
+class InvoiceFixture extends Fixture implements FixtureInterface
+{
+    public function load(ObjectManager $manager): void
+    {
+        $acme = $this->getReference('tenant.acme', Tenant::class);
+
+        $client = new Client('Widget LLC');
+        $client->setTenant($acme);
+        $manager->persist($client);
+
+        $invoice = new Invoice();
+        $invoice->setTenant($acme);
+        $invoice->setClient($client);
+        $invoice->setNumber('INV-ACME-2026-0001');
+        $invoice->setStatus(InvoiceStatus::Sent);
+        $invoice->setDueDate(new \DateTimeImmutable('2026-09-01'));
+
+        $line = new InvoiceLine();
+        $line->setInvoice($invoice);
+        $line->setDescription('September retainer');
+        $line->setQuantity(1);
+        $line->setUnitPrice(1500.0);
+        $line->setAmount(1500.0);
+
+        $invoice->getLines()->add($line);
+        $invoice->setTotalAmount(1500.0);
+
+        $manager->persist($invoice);
+        $manager->flush();
+
+        $this->addReference('invoice.acme.overdue', $invoice);
+    }
+
+    public function getDependencies(): array
+    {
+        return [TenantFixture::class];
+    }
+}
+```
+
+**Named references** (`addReference` / `getReference`) are the load-bearing feature here: they let fixtures cross-reference entities *without* re-querying the database, and they let your *tests* pull a known row by name. This is what keeps data-driven tests from becoming a tangle of `findOneBy(...)`.
+
+##### Loading fixtures into tests
+
+Once the classes exist, you can load them three ways, from lightest to heaviest:
+
+**1. The console command** (for setting up the DB once, or manually):
+
+```bash
+php bin/console --env=test doctrine:fixtures:load
+```
+
+**2. Load in `setUp()`** when a test class needs data. The `Fixture` base class implements `load()`, so you can call it directly against the test container's `EntityManager`:
+
+```php
+use App\DataFixtures\InvoiceFixture;
+use App\DataFixtures\TenantFixture;
+use App\DataFixtures\UserFixture;
+
+protected function setUp(): void
+{
+    parent::setUp();
+    self::bootKernel();
+    $em = self::getContainer()->get(EntityManagerInterface::class);
+
+    (new TenantFixture())->load($em);
+    (new UserFixture(self::getContainer()->get(UserPasswordHasherInterface::class)))->load($em);
+    (new InvoiceFixture())->load($em);
+}
+```
+
+**3. A small helper trait** — which is what we actually do in the running project, so we don't repeat the three lines in every class:
+
+```php
+// tests/Trait/LoadFixturesTrait.php
+namespace App\Tests\Trait;
+
+use App\DataFixtures\InvoiceFixture;
+use App\DataFixtures\TenantFixture;
+use App\DataFixtures\UserFixture;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+
+trait LoadFixturesTrait
+{
+    private function loadCoreFixtures(): void
+    {
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+        (new TenantFixture())->load($em);
+        (new UserFixture(self::getContainer()->get(UserPasswordHasherInterface::class)))->load($em);
+        (new InvoiceFixture())->load($em);
+    }
+}
+```
+
+##### DAMA: why your fixture writes "disappear"
+
+This is the payoff of registering `dama/doctrine-test-bundle` in `phpunit.dist.xml`. DAMA wraps **each test in a database transaction and rolls it back afterwards**. So the fixtures you load in `setUp()` are visible *during* the test, then vanish when it ends. No purge, no re-migrate, no cross-test contamination — and it's *fast*, because you're never truncating tables.
+
+There's one important caveat, and it comes up the moment you read the Panther section:
+
+> **DAMA only works when the test and the database live in the *same* PHP process.** A Panther test talks to your app through a *separate* web-server process, so the test's transaction can't see (or roll back) what the app writes. For browser tests you either use DAMA's **`ReloadDatabase`** trait (purge + reload fixtures per test) or accept that browser tests manage their own data. We'll come back to this in §22.7.
+
+The decision table, condensed:
+
+| Situation | Use |
+|---|---|
+| Kernel tests, same process, want speed | DAMA (default, already on) |
+| Browser tests (Panther), cross-process | `ReloadDatabase` trait, or no DB asserts |
+| You deliberately test a migration / DDL change | DAMA doesn't cover DDL well — isolate those tests |
+
+---
+
+#### 22.6 Functional (Application) Tests with `WebTestCase`
+
+Now we test the application the way a user or an API client experiences it: **send a real request into a booted kernel, assert on the response.** `WebTestCase` is the base class; it extends `KernelTestCase` and adds a **test client** plus a rich set of assertions.
+
+##### The basic loop
+
+```php
+// tests/Functional/Controller/InvoiceControllerTest.php
+namespace App\Tests\Functional\Controller;
+
+use App\Tests\Trait\LoadFixturesTrait;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+
+final class InvoiceControllerTest extends WebTestCase
+{
+    use LoadFixturesTrait;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        self::bootKernel();
+        $this->loadCoreFixtures();
+    }
+
+    public function testInvoiceListIsAccessibleToAccountant(): void
+    {
+        /** @var KernelBrowser $client */
+        $client = self::createClient();
+
+        $client->request('GET', '/invoices');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('h1', 'Invoices');
+    }
+}
+```
+
+`self::createClient()` returns a `KernelBrowser`. Every `$client->request(...)` boots the kernel, runs the full request pipeline (routing → firewall → controller → serializer/Twig → response) exactly as production would, and returns a **Crawler** so you can assert on the rendered HTML.
+
+##### The assertion toolkit
+
+`WebTestCase` gives you three families of shortcuts (backed by the `KernelAssertionsTrait`, `BrowserKitAssertionsTrait`, and `WebTestAssertionsTrait`). You'll use them constantly, so let's group them:
+
+**Response-level:**
+```php
+$this->assertResponseIsSuccessful();          // 2xx
+$this->assertResponseStatusCodeSame(201);     // exact code
+$this->assertResponseRedirects('/login');     // a redirect
+$this->assertResponseFormatSame('json');      // Content-Type family
+$this->assertStringEqualsFile('expected.html', $client->getResponse()->getContent()); // full snapshot
+```
+
+**Crawler (HTML) assertions:**
+```php
+$this->assertSelectorExists('.invoice-table');
+$this->assertSelectorTextContains('td.total', '1,500.00');
+$this->assertSelectorTextContains('table tbody', 'September retainer');
+$this->assertPageTitleContains('Invoices');
+```
+
+**Form / DOM:**
+```php
+$this->assertFormFieldExists('email');
+```
+
+Two conventions worth adopting from the start:
+
+- **Prefer `assertResponseIsSuccessful()` and `assertResponseStatusCodeSame()` over `assertSame(200, $client->getResponse()->getStatusCode())`.** The former give far better failure messages.
+- **Assert on what *matters* (a visible string, a status code), not the entire DOM.** Snapshotting whole HTML files is powerful but brittle — a single class-name change fails the test. Use them deliberately for a couple of critical views, not everywhere.
+
+##### Testing a full write flow
+
+The most valuable functional tests exercise the *complete* happy path: form → validation → persistence → redirect. Here's the invoice creation flow, end to end:
+
+```php
+public function testAccountantCanCreateAnInvoice(): void
+{
+    $client = self::createClient();
+
+    // Authenticate as the seeded accountant by going through the login form
+    $crawler = $client->request('GET', '/login');
+    $form = $crawler->selectButton('Sign in')->form([
+        'login_email'    => 'jane@acme.test',
+        'login_password' => 'Test1234!',
+    ]);
+    $client->submit($form);
+    $this->assertResponseRedirects('/dashboard');
+    $client->followRedirect();
+
+    // Now authenticated: submit the new-invoice form
+    $crawler = $client->request('GET', '/invoices/new');
+    $form = $crawler->selectButton('Create invoice')->form([
+        'invoice[client]'  => 'Widget LLC',
+        'invoice[lines][0][description]' => 'Q3 retainer',
+        'invoice[lines][0][quantity]'    => 1,
+        'invoice[lines][0][unit_price]'  => '2000.00',
+        'invoice[due_date]'              => '2026-10-15',
+    ]);
+    $client->submit($form);
+
+    $this->assertResponseRedirects('/invoices');
+    $crawler = $client->followRedirect();
+
+    $this->assertSelectorTextContains('table tbody', 'Q3 retainer');
+}
+```
+
+This single test is worth a dozen unit tests: it proves the route exists, the firewall admits the role, the form maps to the DTO, validation passes, the entity persists, *and* the redirect shows up. If any one of those breaks, you'll know — and you'll know it *before* the client does.
+
+##### Testing the API: JSON assertions
+
+For the REST endpoints (Chapter 19), `WebTestCase` is *the* right tool — and it's far cheaper than a browser. JSON assertions make API tests read like a contract:
+
+```php
+// tests/Functional/Api/InvoiceApiControllerTest.php
+namespace App\Tests\Functional\Api;
+
+use App\Tests\Trait\LoadFixturesTrait;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+
+final class InvoiceApiControllerTest extends WebTestCase
+{
+    use LoadFixturesTrait;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        self::bootKernel();
+        $this->loadCoreFixtures();
+    }
+
+    public function testListInvoicesReturnsJson(): void
+    {
+        $client = self::createClient();
+
+        // Stateless (JWT) auth: present a token in the header
+        $token = $this->obtainAccountantToken();
+        $client->request('GET', '/api/invoices', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseFormatSame('json');
+
+        $content = json_decode($client->getResponse()->getContent(), true);
+        $this->assertIsArray($content);
+        $this->assertArrayHasKey('items', $content);
+        $this->assertArrayHasKey('total', $content);
+
+        $first = $content['items'][0];
+        // Only the fields exposed by the serialization group appear
+        $this->assertArrayHasKey('number', $first);
+        $this->assertArrayHasKey('totalAmount', $first);
+        $this->assertArrayNotHasKey('clientEmail', $first); // not in the group
+    }
+
+    public function testCreatingAnInvoiceAsViewerIsForbidden(): void
+    {
+        $client = self::createClient();
+
+        $token = $this->obtainViewerToken();
+        $client->request('POST', '/api/invoices', server: [
+            'CONTENT_TYPE'    => 'application/json',
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
+        ], body: json_encode([
+            'client'   => 1,
+            'dueDate'  => '2026-10-15',
+            'lines'    => [['description' => 'X', 'quantity' => 1, 'unitPrice' => 10.0]],
+        ]));
+
+        $this->assertResponseStatusCodeSame(403);
+    }
+}
+```
+
+> **How do you get a token in a test?** For stateless JWT auth (Chapter 21), the cleanest helper is a small method that runs your real authenticator once and returns the encoded token, or one that mints a token for a known user through the token storage service. The important property is that the *same* security pipeline production uses is being exercised — you're not bypassing it with a hardcoded `ROLE_...`. For **session-based** auth (as in the web controller test above), you simply drive the login form; the client then carries the session cookie automatically across subsequent requests, because `KernelBrowser` persists cookies per test.
+
+That last assertion — `assertArrayNotHasKey('clientEmail', ...)` — is a genuinely valuable one. It's your guard against someone accidentally adding a sensitive field to the serialization group in a future refactor. API tests double as **contract documentation**.
+
+##### Testing the thing you almost always forget: tenant isolation
+
+This is the test that justifies the whole multi-tenant design, and it's exactly the class of bug that unit tests *can't* catch because it only manifests when real data flows through the query layer. A viewer in tenant A must never see tenant B's invoices, whether via the web or the API:
+
+```php
+public function testTenantACannotSeeTenantBInvoices(): void
+{
+    // Seed a second tenant with its own invoice (see Globex fixtures)
+    self::bootKernel();
+    $em = self::getContainer()->get(EntityManagerInterface::class);
+    // ... load a Globex invoice fixture, or construct + persist one
+
+    // Log in as an Acme accountant (tenant A)
+    $client = self::createClient();
+    $this->loginAs('jane@acme.test', $client);
+
+    // Enumerate every tenant A can reach
+    $crawler = $client->request('GET', '/api/invoices?filter[tenant]=all');
+    $content = json_decode($client->getResponse()->getContent(), true);
+
+    foreach ($content['items'] as $item) {
+        $this->assertSame('INV-ACME', substr($item['number'], 0, 8),
+            'Tenant A saw an invoice that does not belong to it');
+    }
+}
+
+private function loginAs(string $email, object $client): void
+{
+    $crawler = $client->request('GET', '/login');
+    $form = $crawler->selectButton('Sign in')->form([
+        'login_email' => $email,
+        'login_password' => 'Test1234!',
+    ]);
+    $client->submit($form);
+}
+```
+
+If the tenant-scoping query in Chapter 13 ever regresses, *this* test is the one that goes red. Keep tests like these close; they encode the invariants your architecture promises.
+
+> **`loginAs` vs. driving the form.** Symfony's security test utilities let you "impersonate" a user directly, which is faster and skips the login flow. But because our app has real throttling and 2FA (Chapter 12), driving the *actual* login form is more faithful — it proves the whole authentication path, not just the authorization outcome. Use impersonation for authorization-matrix tests (fast) and form-login for a couple of end-to-end authentication tests.
+
+##### Testing security matrices efficiently
+
+"Which role can do what" is a lot of combinations. Rather than 20 near-identical tests, drive them from a data provider:
+
+```php
+use PHPUnit\Framework\Attributes\DataProvider;
+
+#[DataProvider('accessMatrix')]
+public function testAccessControl(string $userEmail, string $role, string $path, int $expectedStatus): void
+{
+    $client = self::createClient();
+    $this->loginAs($userEmail, $client);
+
+    $client->request('GET', $path);
+
+    $this->assertResponseStatusCodeSame($expectedStatus);
+}
+
+public static function accessMatrix(): iterable
+{
+    yield 'viewer can list'      => ['bob@acme.test',  'ROLE_VIEWER',    '/invoices', 200];
+    yield 'viewer cannot create' => ['bob@acme.test',  'ROLE_VIEWER',    '/invoices/new', 403];
+    yield 'accountant can create'=> ['jane@acme.test', 'ROLE_ACCOUNTANT','/invoices/new', 200];
+    yield 'anonymous cannot list'=> ['nobody@test',    'ROLE_ANONYMOUS', '/invoices', 302];
+}
+```
+
+A table like this is a *living specification* of your access control. When you change a firewall or a voter, the matrix tells you exactly which behaviors are on the line.
+
+---
+
+#### 22.7 End-to-End Browser Testing with Panther
+
+`WebTestCase` is powerful, but it runs requests **in-process** through `BrowserKit` — which is a *PHP* simulation of a browser. It does **not** execute JavaScript. That's fine for most of our app, but our dashboard has real JS: the *Mark as paid* button triggers an async job via `fetch()`, a toast appears, and a badge updates via a client-side call. `WebTestCase` simply cannot see any of that.
+
+**Panther** solves this by driving a **real browser** (Chrome or Firefox) over the WebDriver protocol. It executes JavaScript, supports everything the engine does, waits for async elements, and — crucially — reuses the *exact same BrowserKit/Crawler API* you already know from functional tests.
+
+##### Installing Panther and its drivers
+
+```bash
+composer require --dev symfony/panther
+composer require --dev dbrekelmans/bdi
+vendor/bin/bdi detect drivers
+```
+
+`dbrekelmans/bdi` downloads a matching ChromeDriver/geckodriver into a local `drivers/` directory, which Panther picks up automatically. Alternatively, install them via your OS package manager. Panther finds your Chrome/Firefox installation on its own — no Selenium server needed.
+
+Then register the **Panther PHPUnit extension** in `phpunit.dist.xml`. It's strongly recommended: it keeps the internal web server running across the whole E2E suite (much faster than starting/stopping per class) and unlocks interactive debugging.
+
+```xml
+<extensions>
+    <bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>
+    <bootstrap class="Symfony\Component\Panther\ServerExtension"/>
+</extensions>
+```
+
+##### A first browser test
+
+```php
+// tests/E2E/DashboardTest.php
+namespace App\Tests\E2E;
+
+use Symfony\Component\Panther\PantherTestCase;
+
+final class DashboardTest extends PantherTestCase
+{
+    public function testDashboardRendersAndToastAppears(): void
+    {
+        // Panther boots a real browser and a real web server automatically
+        $client = self::createPantherClient();
+
+        // Log in through the real UI
+        $client->request('GET', '/login');
+        $client->fillField('login_email', 'jane@acme.test');
+        $client->fillField('login_password', 'Test1234!');
+        $client->clickButton('Sign in');
+
+        $client->request('GET', '/dashboard');
+
+        // The page is server-rendered, so a plain assertion works
+        $this->assertSelectorTextContains('h1', 'Dashboard');
+
+        // Click the JS-driven "Mark as paid" button
+        $client->clickButton('Mark as paid');
+
+        // ...and wait for the client-side toast to appear
+        $client->waitForVisibility('.toast-success');
+        $this->assertSelectorTextContains('.toast-success', 'Invoice marked as paid');
+    }
+}
+```
+
+The mental shift from `WebTestCase` is small: same `$client`, same assertions, but now `clickButton` triggers real JavaScript and you **wait for the DOM to catch up**.
+
+##### Waiting — the heart of browser testing
+
+Browser tests are only as stable as your waits. Never `sleep()`; use Panther's *conditional* waits, which poll until the condition holds (or times out):
+
+```php
+$client->waitFor('.popin');                       // element is in the DOM (even if hidden)
+$client->waitForVisibility('.loader');            // element is visible
+$client->waitForInvisibility('.loading-spinner'); // element is gone/hidden
+$client->waitForStaleness('.modal');              // element removed from the DOM
+$client->waitForElementToContain('.total', '25 €');
+$client->waitForElementToNotContain('.promotion', '5%');
+$client->waitForEnabled('[type="submit"]');
+$client->waitForAttributeToContain('.price', 'data-old-price', '25 €');
+```
+
+And for conditions that happen "soon," there are *future* assertions that assert the wait-and-check in one step:
+
+```php
+$this->assertSelectorWillBeVisible('.loader');
+$this->assertSelectorWillContain('.total', '€25');
+$this->assertSelectorWillBeDisabled('[type="submit"]');
+```
+
+If you find yourself reaching for a hard `sleep`, the bug is almost always a missing `waitFor`. Flaky E2E tests are overwhelmingly a *timing* problem, and the wait methods are the fix.
+
+##### Debugging failures: screenshots and headed mode
+
+Browser tests fail in ways that a text assertion can't explain — "why didn't the button become enabled?" Panther has two answers.
+
+**Automatic failure screenshots.** Set `PANTHER_ERROR_SCREENSHOT_DIR` (in `.env.test` or CI) and any failing Panther test drops a screenshot of the exact page state:
+
+```dotenv
+# .env.test
+PANTHER_ERROR_SCREENSHOT_DIR=./var/error-screenshots
+```
+
+Now a flaky "button not found" failure comes with a picture of what was actually on screen. This is the single biggest productivity win in E2E debugging.
+
+**Headed (visible) mode.** Locally, run a test with the browser window open so you can *watch* it:
+
+```bash
+PANTHER_NO_HEADLESS=1 php bin/phpunit tests/E2E/DashboardTest.php
+```
+
+You see the browser navigate, fill the form, click, and fail — invaluable when a test is hard to reason about. (On CI you'd *not* set this, so the browser runs headless and you rely on the screenshots.)
+
+> **A note on the DAMA interaction.** Because Panther talks to your app over a *separate* web-server process, the per-test transaction rollback doesn't reach across. For E2E tests that need database state, either load fixtures at test start and don't assert on "cleanness," or use DAMA's `ReloadDatabase` trait (which purges and reloads fixtures per test). In practice, we keep E2E tests focused on *behavior* (does the flow complete, does the toast appear) rather than on exact row counts — those live in the fast, transactional functional tests.
+
+##### Multi-client tests: two browsers at once
+
+Because Panther is a real browser, you can open *isolated* clients that interact — handy for real-time features (WebSockets, Mercure, live dashboards):
+
+```php
+public function testInvoiceStatusSyncsAcrossUsers(): void
+{
+    $viewer = self::createPantherClient();
+    $viewer->request('GET', '/login');
+    // ... log in as a viewer, open /dashboard
+
+    $accountant = self::createAdditionalPantherClient();
+    $accountant->request('GET', '/login');
+    // ... log in as an accountant, mark an invoice paid
+
+    // The viewer's live dashboard should reflect the change
+    $viewer->waitForElementToContain('.invoice-status', 'Paid');
+}
+```
+
+We don't need this for most of the invoicing app, but if you later add a live "payment received" notification, this is the pattern that tests it without any manual coordination.
+
+##### Which client for which test?
+
+`PantherTestCase` gives you access to *all three* client flavors, so you can pick the cheapest one that does the job:
+
+```php
+$symfonyClient     = static::createClient();            // in-process kernel, fastest
+$httpBrowserClient = static::createHttpBrowserClient(); // real HTTP via HttpClient, no JS
+$pantherClient     = static::createPantherClient();     // real browser, JS + CSS + screenshots
+```
+
+The discipline: use `createClient()` (in-process) for anything without JavaScript; reach for a Panther client only when the behavior genuinely requires a browser. That keeps your E2E suite small and your CI fast.
+
+---
+
+#### 22.8 Test Environments and CI Integration
+
+We've now got every layer. The last job is making the whole thing **reliable, fast, and repeatable** — on your machine *and* on the CI server — and surfacing **coverage** so you can see what's actually tested.
+
+##### Keeping the suite fast
+
+Three levers, in order of impact:
+
+1. **Run suites selectively.** `php bin/phpunit --testsuite Unit` for the fast inner loop; reserve `--testsuite E2E` for full runs. This is why we split the suites in `phpunit.dist.xml`.
+2. **DAMA transactions** (already on) mean no per-test DB teardown.
+3. **Disable debug in CI.** Booting the kernel with `debug=false` skips cache clearing on every request — a large speedup for functional tests. Set it in CI:
+   ```dotenv
+   # .env.test (CI-only override)
+   APP_DEBUG=0
+   ```
+   ...and, if you disable debug, clear the test cache *once* up front in `tests/bootstrap.php` (otherwise stale compiled config can cause spooky failures):
+   ```php
+   if ('test' === \$_SERVER['APP_ENV'] && !(\$_SERVER['APP_DEBUG'] ?? false)) {
+       (new \Symfony\Component\Filesystem\Filesystem())->remove(__DIR__.'/../var/cache/test');
+   }
+   ```
+
+##### Code coverage
+
+PHPUnit 10+ declares coverage with the `<coverage>` element. For the running project, we care most about the *service* and *entity* layers (the `Controller` layer is covered by functional tests' execution of them):
+
+```xml
+<coverage>
+    <include>
+        <directory suffix=".php">src</directory>
+    </include>
+    <exclude>
+        <directory>src/Kernel.php</directory>
+        <directory>src/DataFixtures</directory>
+        <directory>src/Migration</directory>
+    </exclude>
+</coverage>
+```
+
+Generate a report locally:
+
+```bash
+php bin/phpunit --testsuite Unit --testsuite Integration --testsuite Functional \
+    --coverage-text --coverage-html var/coverage
+```
+
+The `#[CoversClass]` attributes we sprinkled throughout now pay off: the coverage report is *accurate* about which tests actually touch which class, rather than a rough heuristic.
+
+##### A CI pipeline (GitHub Actions)
+
+This is the shape of the workflow that turns all of the above into a green checkmark on every pull request. It spins up a real Postgres *service*, points the app at it, migrates, runs the fast suites with coverage, and runs the (heavier) E2E suite separately so a slow browser test doesn't block the quick feedback loop.
+
+```yaml
+# .github/workflows/tests.yml
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: invoicing_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      APP_ENV: test
+      APP_DEBUG: 0
+      DATABASE_URL: postgresql://app:app@127.0.0.1:5432/invoicing_test?serverVersion=16
+      MESSENGER_TRANSPORT_DSN: doctrine://default?auto_setup=0
+      SYMFONY_DEPRECATIONS_HELPER: weak
+      PANTHER_ERROR_SCREENSHOT_DIR: var/error-screenshots
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Create database schema
+        run: |
+          php bin/console doctrine:database:create --if-not-exists --env=test
+          php bin/console doctrine:migrations:migrate --no-interaction --env=test
+
+      - name: Run fast suites with coverage
+        run: |
+          php bin/phpunit --testsuite Unit --testsuite Integration --testsuite Functional \
+            --coverage-clover var/clover.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: var/clover.xml
+          fail_ci_if_error: false
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: test              # only run browser tests if the fast suites pass
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: invoicing_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
+
+    env:
+      APP_ENV: test
+      APP_DEBUG: 0
+      DATABASE_URL: postgresql://app:app@127.0.0.1:5432/invoicing_test?serverVersion=16
+      MESSENGER_TRANSPORT_DSN: doctrine://default?auto_setup=0
+      PANTHER_ERROR_SCREENSHOT_DIR: var/error-screenshots
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+      - run: composer install --prefer-dist --no-progress
+      - name: Install browser drivers
+        run: |
+          composer require --dev dbrekelmans/bdi --no-interaction
+          vendor/bin/bdi detect drivers
+      - name: Migrate test database
+        run: |
+          php bin/console doctrine:database:create --if-not-exists --env=test
+          php bin/console doctrine:migrations:migrate --no-interaction --env=test
+      - name: Run browser tests
+        run: php bin/phpunit --testsuite E2E
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: var/error-screenshots
+```
+
+What makes this workflow *good* (rather than just present):
+
+- **Two jobs, gated.** `e2e` runs `needs: test`, so a broken unit test fails in ~30 seconds instead of after a two-minute browser run.
+- **Real service DB.** The tests hit a genuine Postgres, so connection and query behavior match production.
+- **The `PANTHER_ERROR_SCREENSHOT_DIR` + artifact upload** means a failing browser test on CI attaches a *screenshot*, so you diagnose without even checking out the code.
+- **`APP_DEBUG=0`** keeps functional tests fast, with the bootstrap clearing the stale cache once.
+
+##### The testing habits that make it stick
+
+The tooling above is only as useful as the discipline around it. These are the norms worth enforcing (they're the difference between a test suite that earns trust and one that becomes a chore):
+
+1. **A test for every bug.** When a bug slips through, write the test that *would have caught it* before you fix it. The tenant-leak from the chapter intro? That test now lives in the suite and guards the invariant forever.
+2. **Test behavior, not implementation.** Assert on the visible/observable outcome ("the invoice number is `INV-ACME-...`", "the response is 201"), not on internal call counts where you don't genuinely care.
+3. **Independent, deterministic tests.** No ordering dependencies, no shared mutable state across tests (DAMA helps), no `rand()`/`time()` without a clock you control. If a test only passes on the second run, it's broken.
+4. **Small, focused suites for the hot path.** Unit and integration tests are your *feedback* — they should run in seconds so you run them always.
+5. **When in doubt, one functional test > ten unit tests** for a *flow*. A single end-to-end test of "accountant creates an invoice" catches more integration bugs than a pile of isolated assertions.
+
+---
+
+#### Exercises
+
+Work through these against the running invoicing project. They're ordered from "should be quick" to "genuinely thinking."
+
+1. **Unit — calculator edge cases.** Add data-provider cases to `InvoiceCalculatorTest` for: a single line with `quantity = 0`, a line whose unit price is an integer (`10` vs `10.0`), and a list of a hundred lines. Confirm the rounding behavior is what you *intended* (this often reveals you've been rounding in the wrong place).
+
+2. **Unit — entity behavior.** Give `Invoice` an `isOverdue(\DateTimeImmutable $now)` method (if you haven't) and write `InvoiceTest` covering paid / sent-within-terms / sent-past-due / draft states. Add a case for a `null` due date and decide *with a test* what it should mean.
+
+3. **Integration — mocked collaborator.** Write a `KernelTestCase` that boots the kernel, swaps `InvoiceRepository` for a mock via `$container->set(...)`, retrieves `InvoiceGenerator`, and asserts the generator calls `save()` exactly once. Now *break* the wiring (e.g., rename a constructor arg) and watch the test catch it.
+
+4. **Functional — the creation flow.** Write a `WebTestCase` that logs in as the seeded accountant, submits the new-invoice form with valid data, and asserts: the redirect, the new row appears on the list, **and** that the invoice total in the response matches the sum of the submitted lines (catch a calculator/wiring mismatch this way).
+
+5. **Functional — access matrix.** Turn the role × endpoint matrix into a `#[DataProvider]`-driven test covering at least: viewer (list OK, create 403), accountant (create 201), admin (delete 204), and anonymous (302 to login). Make sure the test *fails* if you temporarily remove `ROLE_ACCOUNTANT` from the create route's `is_granted` check.
+
+6. **Functional — tenant isolation.** Seed two tenants each with an invoice. As an Acme user, assert that *no* Globex invoice number is reachable through either the web list or the API. This is the single most important test in the project — treat it that way.
+
+7. **Fixture hygiene.** Refactor the ad-hoc entity construction in your tests to use the `TenantFixture` / `UserFixture` / `InvoiceFixture` classes with named references. Add a fixture for a *second* tenant so the isolation tests have real data.
+
+8. **E2E — Panther for the JS flow.** Write a `PantherTestCase` that logs in through the real UI, clicks *Mark as paid*, and uses `waitForVisibility` / `assertSelectorTextContains` to confirm the toast. Set `PANTHER_ERROR_SCREENSHOT_DIR`, deliberately break the assertion, run with `PANTHER_NO_HEADLESS=1`, and confirm you get both a screenshot and a watchable browser run.
+
+9. **CI — wire it up.** Add the GitHub Actions workflow. Intentionally introduce a bug (e.g., break a validation rule) and confirm the `test` job fails fast; then introduce a JS bug and confirm the `e2e` job attaches a screenshot artifact.
+
+10. **Coverage gap analysis.** Run the fast suites with `--coverage-text`. Identify the lowest-coverage service or entity, and add the tests that would close the most meaningful gap. Write a short note on what you chose *not* to test (e.g., a thin repository method) and *why* — the decision is the real skill.
+
+---
+
+#### Where this leaves you
+
+You now have a layered safety net: fast unit tests guarding the pure logic, integration tests proving the services cooperate, functional tests proving the app behaves over HTTP — *including* the multi-tenant invariants that define the product — and a handful of browser tests guarding the flows only JavaScript can exercise, all of it running in CI with coverage and failure screenshots.
+
+Chapter 23 picks up the other half of "production quality": **when something does go wrong** — how you find it with VarDumper and the Web Profiler, how you keep it fast with caching, and how you keep the whole thing observable in production. Testing keeps the bugs out; debugging and performance keep the app honest when it's out there.
+
+---
+
+### Chapter 23. Debugging and Performance
+
+> *"First, we make our code work. Then we make it understandable. Then — and only then — we make it fast."*
+
+By the time you reach this chapter, the invoicing app has a real shape: tenants sign up, create customers, add line items, and generate invoices; there's a REST API (Ch. 19–21), asynchronous PDF rendering (Ch. 17), and a growing test suite (Ch. 22). What you don't yet have is a disciplined way to answer three questions every production application eventually asks:
+
+1. **Why is this behaving unexpectedly?** (debugging)
+2. **Where is the time actually going?** (profiling / performance)
+3. **How do we stop re‑doing work?** (caching)
+
+This chapter gives you the full toolbox for all three: **VarDumper**, the **Web Profiler**, **Blackfire**, the **Stopwatch** component, and — the bulk of the chapter — Symfony's **Cache** component (data caching with named pools) and **HTTP caching** (whole‑response caching with a reverse proxy). Throughout, we'll apply everything to the invoicing app, with particular care for the things that make multi‑tenant systems tricky: not leaking one tenant's data into another's cache.
+
+#### Chapter map
+
+| § | Topic | Tool |
+|---|-------|------|
+| 23.1 | Inspecting values at runtime | VarDumper |
+| 23.2 | Seeing a whole request | Web Profiler & custom data collectors |
+| 23.3 | Deep call‑tree profiling | Blackfire |
+| 23.4 | Measuring your own code | Stopwatch |
+| 23.5 | A worked debugging session | all of the above |
+| 23.6 | Data caching: pools, adapters, invalidation | Cache component |
+| 23.7 | HTTP caching: expiration, validation, proxies | HttpKernel + Varnish |
+| 23.8 | A caching strategy for the invoicing app | decision guide |
+| 23.9 | Exercises | — |
+
+A quick orientation before we start: Symfony gives you **four layers** of caching, each further from your application than the last. Confusing them is the single most common source of "my cache isn't working."
+
+1. **OPcache** — caches compiled PHP bytecode. Automatic; configured in `php.ini`.
+2. **System cache** (`cache.system`) — compiled metadata (routing, DI container, Doctrine/serializer proxies). Warmed at deploy; you should never touch it.
+3. **Data cache** (`cache.app` + custom pools) — *your* expensive results: query results, computed totals, tax rates. This is §23.6.
+4. **HTTP cache** — the full rendered response, held by a reverse proxy in front of PHP. This is §23.7.
+
+Everything in this chapter fits one of those layers.
+
+---
+
+#### 23.1 Inspecting values at runtime: VarDumper
+
+Your first instinct when something misbehaves is to look at a value. Symfony's **VarDumper** component replaces PHP's `var_dump()` with something far more useful, and it's already installed in every framework app (via `symfony/debug-bundle` in the dev environment).
+
+It gives you two global functions:
+
+```php
+dump($value);   // print the value and KEEP going
+dd($value);     // print the value and STOP (like var_dump() + exit)
+```
+
+##### Why `dump()` beats `var_dump()`
+
+`var_dump()` flattens everything into a wall of `array(...)` / `object(...)`. VarDumper, instead:
+
+- **Specializes per type.** Dumping a Doctrine proxy, a `Request`, a `Response`, or a `Money` object shows the fields that matter and hides the noise (Doctrine's internal `identifier`, `$em`, etc.).
+- **Detects references.** The same object appearing twice is shown once as `#12` and referenced afterward, so you can see circular and shared structure that `var_dump()` renders as an infinite loop.
+- **Adapts to the output.** In the CLI it writes colored `STDOUT`; in the browser it emits structured HTML.
+- **Respects output buffering.** It won't break a response by emitting before headers are sent — the framework intercepts dumps during a web request (see below).
+
+`dump()` also **returns the value it was given**, so you can dump and keep using it in the same expression:
+
+```php
+// src/Service/InvoiceTotalsCalculator.php
+public function total(Invoice $invoice): Money
+{
+    $subtotal = $this->sum($invoice->getLineItems());
+
+    // Inspect the subtotal, then keep using it — no extra variable needed.
+    return $subtotal
+        ->add($this->tax($invoice, $subtotal))
+        ->subtract($invoice->getDiscount());
+}
+```
+
+##### Where dumps actually appear (the DebugBundle behavior)
+
+This is the part people get wrong. Because generating output from a controller or service can corrupt an HTTP response, the DebugBundle **does not** print dumps straight into the page by default. Instead:
+
+- **During a web request**, `dump()` output is captured and injected into the **debug toolbar** (the bar at the bottom of every dev page, §23.2). The page you see is untouched.
+- **If the toolbar can't be shown** — you called `dd()`, or a fatal error fired first — the dump falls back to the normal output.
+- **In the CLI**, dumps go to `STDOUT` as usual.
+
+So in the browser you *expect* to find your `dump()` output in the little "Dump" panel of the toolbar, not in the HTML.
+
+##### Twig
+
+Two constructs are available in templates:
+
+```twig
+{# Sends the value to the debug toolbar; leaves the page output alone. #}
+{% dump invoice.lineItems %}
+
+{# Dumps INLINE into the page. Convenient for a quick look, but it changes
+   the output — never use it inside an attribute or a <script> tag. #}
+{{ dump(invoice.subtotal) }}
+```
+
+Prefer `{% dump %}` for almost everything; it's the non‑intrusive option.
+
+##### The dump server (for console and long‑running workers)
+
+When you `dump()` inside a **console command** or an **async worker** (e.g. the Messenger PDF worker from Ch. 17), the output lands in whichever terminal is running it — which is fine until you're running several things at once. The **dump server** collects all dumps in one place.
+
+Terminal A:
+
+```
+$ php bin/console server:dump
+  [OK] Server listening on tcp://0.0.0.0:9912
+```
+
+Terminal B (or your web app): dumps now stream into Terminal A instead of being scattered. It's configured by the `debug.dump_destination` option:
+
+```yaml
+# config/packages/dev/debug.yaml
+debug:
+    dump_destination: 'tcp://%env(VAR_DUMPER_SERVER)%'
+```
+
+If you'd rather not touch configuration (e.g. you just inherited a project), point any process at the server with an environment variable — handy for a one‑off console command:
+
+```
+$ VAR_DUMPER_FORMAT=server php bin/console app:recalculate-tax --tenant=42
+```
+
+> **Gotcha — the multi‑tenant trap.** The toolbar and the dump server are **development** conveniences. A `dump($invoice)` in a multi‑tenant app will happily print *every* field you pass it, including fields that identify another tenant. That's fine in dev. It's a leak the moment the same code path runs in production. The rule: **`dump()`/`dd()` are for `dev`/`test` only.** Before you ship, `git grep -n "dd(\|dump(" src/` and make sure nothing survives in a code path that prod traffic can reach. (Chapter 24 shows how to make the framework fatal about leftover debug code.)
+
+##### Capturing a dump as a string
+
+Occasionally you need the rendered dump *in a variable* — for a log line, an assertion, or a custom error payload. VarDumper exposes the same primitives it uses internally:
+
+```php
+use Symfony\Component\VarDumper\Cloner\VarCloner;
+use Symfony\Component\VarDumper\Dumper\CliDumper;
+
+$dumper = new CliDumper();
+$data   = (new VarCloner())->cloneVar($value);
+
+ob_start();
+$dumper->dump($data);
+$rendered = ob_get_clean();   // $rendered is now the dump text
+```
+
+> **Tip.** If you're writing unit tests that assert on a dump's shape, don't hand‑roll this. Ch. 22 uses the `VarDumperTestTrait` (`assertDumpEquals()`, `assertDumpMatchesFormat()`), which wraps exactly this machinery.
+
+---
+
+#### 23.2 Seeing a whole request: the Web Profiler
+
+`dump()` answers *"what is this value?"*. The **Web Profiler** answers *"what happened during this request?"* — timing, every SQL query, template renders, cache hits/misses, memory, deprecations, and the event flow from Ch. 4. It is the workhorse of day‑to‑day development.
+
+##### Installing and using it
+
+If you created the app with `symfony new`, the profiler pack is already present. Otherwise:
+
+```
+$ composer require --dev symfony/profiler-pack
+```
+
+Load any page in the `dev` environment. A **debug toolbar** is injected at the bottom (HTML responses only). For non‑HTML responses — your JSON API, for instance — the toolbar can't be injected, so Symfony instead returns a link in a response header:
+
+```
+X-Debug-Token-Link: http://localhost:8000/_profiler/8f2c1a.../
+```
+
+The `/_profiler` route lists every profile collected recently. Profiles are stored on disk and **pruned probabilistically after two days** to bound storage.
+
+> **Warning — never enable the profiler in production.** It writes per‑request data to disk, exposes the `/_profiler` interface, and adds meaningful overhead. It is a `dev`/`test`‑only tool by design. (Chapter 24 shows the configuration that keeps it out of prod.)
+
+##### What the panels tell you
+
+The toolbar has a tab per concern; each opens a page in the profiler. The ones you'll live in, for this app:
+
+- **Time** — a waterfall of where the request spent its milliseconds (routing, security, the controller, Doctrine, Twig).
+- **Queries** — every SQL statement with its duration, *and* the count. This is where N+1 problems from Ch. 13 announce themselves: 200 nearly‑identical `SELECT ... FROM line_item WHERE invoice_id = ?` queries is the signature.
+- **Logger** — every log message with its level and context.
+- **Cache** — hits, misses, and which pools were touched (more in §23.6).
+- **Exceptions / Deprecations** — the latter is your early warning before a 7.4 → 8.0 upgrade bites you.
+
+You can also **search** profiles by URL, IP, method, or time range via the profiler's search box — invaluable when a user reports "it was slow around 2pm" and you want to find exactly those requests.
+
+##### Accessing profiles programmatically
+
+Sometimes you want the data in code (a test assertion, a custom admin screen). The `profiler` service is autowired by typing it as `Symfony\Component\HttpKernel\Profiler\Profiler`:
+
+```php
+use Symfony\Component\HttpKernel\Profiler\Profiler;
+
+public function handle(Profiler $profiler, Request $request, Response $response): void
+{
+    // Load the profile for the response we just produced…
+    $profile = $profiler->loadProfileFromResponse($response);
+
+    // …or look one up by its token (from the X-Debug-Token header)…
+    $token   = $response->headers->get('X-Debug-Token');
+    $profile = $profiler->loadProfile($token);
+
+    // …or query a set of them.
+    $slowAdmin = $profiler->find('', '/admin/', 20, '', '', '');
+}
+```
+
+Ch. 22 shows how to assert on a collector inside a functional test using exactly this.
+
+##### Custom data collectors: surfacing *your* domain
+
+The profiler only knows what **data collectors** tell it. Symfony ships collectors for the framework's own concerns; you can add your own to put *domain* context on the toolbar — for this app, "which tenant is this, and how many entities did we load?"
+
+```php
+// src/DataCollector/TenantCollector.php
+namespace App\DataCollector;
+
+use Symfony\Bundle\FrameworkBundle\DataCollector\AbstractDataCollector;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+#[\Symfony\Component\DependencyInjection\Attribute\AsDataCollector]
+class TenantCollector extends AbstractDataCollector
+{
+    public function collect(Request $request, Response $response, ?\Throwable $exception = null): void
+    {
+        $this->data = [
+            'tenant'       => $this->currentTenantId($request),
+            'invoices'     => (int) $request->attributes->get('debug.invoice_count', 0),
+            'status'       => $response->getStatusCode(),
+        ];
+    }
+
+    // Getters expose data to the Twig template.
+    public function getTenant(): ?int { return $this->data['tenant']; }
+    public function getInvoices(): int { return $this->data['invoices']; }
+    public function getStatus(): int   { return $this->data['status']; }
+
+    // Where to find the display template.
+    public static function getTemplate(): ?string
+    {
+        return 'collector/tenant.html.twig';
+    }
+
+    private function currentTenantId(Request $request): ?int
+    {
+        // TenantResolveSubscriber (Ch. 12) stashes the tenant early in the
+        // request, from the subdomain or a trusted header.
+        $id = $request->attributes->get('_tenant_id');
+        return null === $id ? null : (int) $id);
+    }
+}
+```
+
+Three things to notice:
+
+- `#[AsDataCollector]` (with `autoconfigure` on) registers the collector for you — no manual `services.yaml` entry.
+- `collect()` runs once on `kernel.response` and **picks up** data your code stashed during the request; it doesn't gather data itself. That's why the invoice count is read from a request attribute that your repository or a subscriber set along the way.
+- The profiler **serializes** collectors, so don't stash non‑serializable objects (a live `EntityManager`, a `PDO`) in `$this->data`. Stash scalars and counts.
+
+The template renders in two places — the little toolbar icon, and the full profiler panel:
+
+```twig
+{# templates/collector/tenant.html.twig #}
+{% extends '@WebProfiler/Profiler/layout.html.twig' %}
+
+{% block toolbar %}
+    {% if collector.tenant is not null %}
+        {% set icon %}
+            <span class="sf-toolbar-value">{{ collector.tenant }}</span>
+        {% endset %}
+        {% set text %}
+            <b>Tenant</b> {{ collector.tenant }}
+            <span class="sf-toolbar-info-piece-additional-detail">
+                <b>Invoices</b> {{ collector.invoices }}
+            </span>
+        {% endset %}
+        {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: false }) }}
+    {% endif %}
+{% endblock %}
+
+{% block menu %}
+    <span class="label">Tenant</span>
+{% endblock %}
+
+{% block panel %}
+    <h2>Tenant</h2>
+    <div class="sf-tabs">
+        <div class="tab">
+            <h3>Request context</h3>
+            <table>
+                <tr><td>Tenant</td><td>{{ collector.tenant ?? '—' }}</td></tr>
+                <tr><td>Invoices loaded</td><td>{{ collector.invoices }}</td></tr>
+                <tr><td>HTTP status</td><td>{{ collector.status }}</td></tr>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+```
+
+Now every request in dev carries its tenant and entity‑load count right on the toolbar. When you're debugging "why is tenant 42's dashboard slow," you can *see* tenant 42 and, say, 1,400 loaded invoices at a glance — before you even open the Queries panel.
+
+##### Enabling the profiler conditionally
+
+The profiler has real cost. For a heavy invoicing endpoint you often want it **off by default** and only when you're actively looking. That's a one‑line config:
+
+```yaml
+# config/packages/dev/web_profiler.yaml
+framework:
+    profiler:
+        collect: false
+        collect_parameter: 'profile'
+```
+
+Now profiling only happens for requests that carry `?profile=1` (or a form field / attribute of the same name). Append it by hand when you want a profile; leave it off the rest of the time. You can also toggle it per‑controller by injecting `Profiler` and calling `disable()`.
+
+> **Tip — SPAs.** If the invoicing UI makes many AJAX calls, the toolbar by default reflects only the *first* load. Enable `web_profiler.toolbar.ajax_replace: true` to have it refresh after each XHR.
+
+---
+
+#### 23.3 Deep call‑tree profiling: Blackfire
+
+The Web Profiler tells you *which* component was slow. **Blackfire** tells you *which line of your code*, down the full call stack, with per‑line time and memory — in `dev`, `test`, **and** `production`.
+
+Blackfire is a commercial service: a small PHP agent runs alongside your app, you point it at URLs (or a suite of functional tests), and you get interactive **time traces** and **memory traces**. It's the right tool when the profiler says "the controller took 1.8s" and you need to see that 1.6s of it is a single loop that re‑instantiates a `Money` formatter.
+
+How it complements the profiler:
+
+| | Web Profiler | Blackfire |
+|---|---|---|
+| Environment | dev/test only | dev, test, **prod** |
+| Granularity | per‑component / per‑query | per‑line, full call tree |
+| Cost | free (built in) | paid |
+| Best for | "is Doctrine doing 200 queries?" | "which 3 lines in *my* code eat 80% of the time?" |
+
+The workflow that pays off in a project like this one:
+
+1. **Baseline.** Run Blackfire against a representative request (e.g. `GET /tenant/42/invoices/8842`) and save the trace.
+2. **Change.** Make the optimization.
+3. **Compare.** Blackfire diffs the two traces, so you *see* the delta rather than guessing whether it helped.
+
+You don't need Blackfire to do the debugging in §23.5 — the profiler and Stopwatch get you there. But when you need to profile **production** (where the data is real and the profiler is rightly off), Blackfill is the standard answer.
+
+> **Note.** If you'd rather not commit to a paid profiler, the **Stopwatch** component (§23.4) is the free, built‑in way to put named timers around your own code and have them appear in the profiler. It's the right first step for 90% of cases.
+
+---
+
+#### 23.4 Measuring your own code: Stopwatch
+
+The profiler measures the framework's work for you, but it can't label *your* work. The **Stopwatch** component lets you start/stop named timers (and measure memory) around anything, then see them in the profiler's Time panel. It's autowired by typing `Symfony\Component\Stopwatch\Stopwatch`.
+
+```php
+// src/Service/StatementBuilder.php
+namespace App\Service;
+
+use Symfony\Component\Stopwatch\Stopwatch;
+
+class StatementBuilder
+{
+    public function __construct(
+        private Stopwatch $stopwatch,
+        private LineItemRepository $lineItems,
+    ) {}
+
+    public function build(int $invoiceId): Statement
+    {
+        // First arg: event name (shown in the profiler). Second: a category/tag.
+        $this->stopwatch->start('statement.build', 'invoicing');
+
+        $lines = $this->lineItems->findByInvoice($invoiceId);
+
+        $total = new Money(0, 'USD');
+        foreach ($lines as $line) {
+            $total = $total->add($line->getAmount());
+            $this->stopwatch->lap('statement.build');   // a "lap" per line item
+        }
+
+        $this->stopwatch->stop('statement.build');
+
+        return new Statement($invoiceId, $total, count($lines));
+    }
+}
+```
+
+`start()`/`stop()`/`getEvent()` return a `StopwatchEvent`, which stringifies to a quick summary you can `dump()` or log:
+
+```php
+$event = $this->stopwatch->getEvent('statement.build');
+dump((string) $event);   // e.g. "12.40 MiB - 28 ms"
+```
+
+A few features worth knowing:
+
+- **Laps / periods** — `lap()` stops and immediately restarts an event, so you can measure each iteration of a loop. `$event->getPeriods()` returns them; `$event->getLastPeriod()` (Symfony 7.2+) the most recent.
+- **Categories** — the second argument to `start()` groups events, so the profiler can bucket `invoicing` timers apart from `import` timers.
+- **Sections** — `openSection()` / `stopSection('name')` split a timeline into named groups; `$this->stopwatch->getSectionEvents(Stopwatch::ROOT)` returns everything, and `Stopwatch::ROOT` (Symfony 7.2+) is the constant for the top‑level section.
+
+You can also time **Twig** directly, which is useful when a template is the slow part:
+
+```twig
+{% stopwatch 'render.invoice_rows' %}
+    {% for line in invoice.lines %}
+        {{ line.description }} … {{ line.amount|currency('USD') }}
+    {% endfor %}
+{% endstopwatch %}
+```
+
+If `render.invoice_rows` dominates the invoice page, your problem is in the loop or a per‑row filter — not in the controller. That's a fast, cheap way to localize template slowness without Blackfire.
+
+---
+
+#### 23.5 A worked debugging session
+
+Let's put the tools together on a realistic symptom. **Reported issue:** *"For some tenants, the invoice list page takes 5–8 seconds; for others it's instant."*
+
+**Step 1 — Isolate it to a request.** Because slowness correlates with tenant, we want a profile of *a slow tenant*. We append `?profile=1` (our conditional profiler, §23.2) to a request for the slow tenant, tenant 42.
+
+**Step 2 — Read the toolbar.** The **Tenant** panel (our custom collector) confirms `tenant: 42` and `invoices: 1437`. The **Time** panel shows 6.9s, dominated by the controller. The **Queries** panel shows **1,441 queries** — one `SELECT` for the invoice list, then 1,440 `SELECT ... FROM line_item WHERE invoice_id = ?`. That's the classic N+1 from Ch. 13, and it scales with the tenant's invoice count — which is exactly why small tenants are instant and tenant 42 is slow.
+
+**Step 3 — Confirm the mechanism in code.** The list controller maps each invoice and calls `$invoice->getTotal()`, which is a lazy getter that sums `getLineItems()` per invoice. With lazy `EAGER`/default‑`LAZY` loading, each `getTotal()` fires its own query.
+
+**Step 4 — Fix, using a cache to be safe.** The list view only needs the stored total, not a re‑sum. Two changes:
+
+1. Persist `total` on `Invoice` (updated when line items change), and fetch the list with a **single** query that selects `id`, `number`, `total`, `status` — no `line_item` loading at all.
+2. If we ever *do* need a computed value that's expensive and slow to change (e.g. a tenant's monthly spend summary), wrap it in the data cache (§23.6) instead of recomputing per request.
+
+**Step 5 — Verify.** Re‑profile tenant 42: **3 queries**, 90 ms. The **Tenant** panel now shows `invoices: 1437` but the Queries panel is back to single digits. We also drop a quick `dump()` in the totals service to confirm the cached/persisted total matches a fresh sum for a sample, then remove it.
+
+That's the whole discipline: **localize (profiler + domain collector) → confirm (code + dump) → fix → re‑measure.** The tools are cheap; the value is in the loop.
+
+---
+
+#### 23.6 Data caching: pools, adapters, invalidation
+
+This is the heart of the chapter. The **Cache component** (PSR‑6 + Symfony's simpler "Cache Contracts") lets you store the result of any expensive operation — a query, an HTTP call, a computation — so you don't recompute it.
+
+##### The two pools you already have
+
+Two pools are enabled by default; knowing the difference between them prevents the most common caching mistakes.
+
+- **`cache.system`** — used *internally* by Symfony (routing, DI, serializer and validation metadata, Doctrine proxies). It's **warmed at deploy** and treated as **read‑only** thereafter: contents should be derivable from source code and only change when you deploy. **Don't put your data here.**
+- **`cache.app`** — a general‑purpose pool for *your* data. It does **not** need to survive a deploy (it's fine to lose it), and it's the right home for computed totals, tax rates, remote‑API results, and so on.
+
+Both default to the **filesystem** adapter (`var/cache/pools/`). For anything you care about across restarts or across multiple app instances, point at a shared store like **Redis** or **Valkey** — we'll configure that next.
+
+> **New in 7.4 — the share directory.** Symfony 7.4 splits `var/cache` into two roles: an **immutable system cache** (the compiled container, routes, proxies — best kept on fast local disk) and **shared, mutable application data** (uploads, a shared file cache, SQLite) that belongs on **shared storage** when you run many instances. This is exposed as `APP_SHARE_DIR` / the `getShareDir()` kernel method / the `%kernel.share_dir%` parameter, so you can put genuinely shared files under `var/share/` while keeping the hot, per‑instance system cache local. For the invoicing app's *data* cache, though, the simplest and most robust choice for horizontal scale is still **Redis/Valkey** rather than a shared filesystem — use the share directory for things like uploaded attachments and generated PDFs (Ch. 24), not for `cache.app`. (Being recent, double‑check the 7.4 release notes for the exact behavior in your setup.)
+
+##### Choosing an adapter
+
+In a Symfony app, adapters are configured once and referenced by name:
+
+| Adapter | Service id | Notes |
+|---|---|---|
+| Filesystem | `cache.adapter.filesystem` | Default; zero‑infra, fine for dev / single instance |
+| APCu | `cache.adapter.apcu` | Fast, per‑process; great on one box, lost on restart |
+| Redis | `cache.adapter.redis` | Shared across instances; the default for prod |
+| **Redis (tag‑aware)** | `cache.adapter.redis_tag_aware` | Redis + efficient tag invalidation |
+| **Valkey** | `cache.adapter.valkey` (7.3+) | Drop‑in Redis replacement (unencumbered license) |
+| **Valkey (tag‑aware)** | `cache.adapter.valkey_tag_aware` (7.3+) | Valkey + tag invalidation |
+| PDO / Doctrine DBAL | `cache.adapter.pdo`, `cache.adapter.doctrine_dbal` | Reuse an existing DB |
+| Memcached | `cache.adapter.memcached` | Legacy shared store |
+| Array | `cache.adapter.array` | Per‑request only (tests, warmup); **no tags** |
+
+If you'll use **tag‑based invalidation** (§23.6, below), pick a tag‑capable adapter: filesystem and APCu work (via an internal tag‑aware wrapper), and the `*_tag_aware` Redis/Valkey adapters are the most efficient.
+
+##### Configuring pools for the invoicing app
+
+```yaml
+# config/packages/cache.yaml
+framework:
+    cache:
+        # Shared store for everything that must survive restarts and scale out.
+        default_redis_provider: '%env(REDIS_DSN)%'
+
+        app: cache.adapter.redis          # cache.app → Redis
+        system: cache.adapter.system      # leave the system cache alone
+
+        pools:
+            # Tax rates: read‑heavy, change rarely, invalidate by tag.
+            tax_rates.cache:
+                adapter: cache.adapter.redis_tag_aware
+                default_lifetime: 3600          # 1h default TTL
+                prefix_seed: 'invoicer.tax_rates'
+
+            # Monthly spend summaries: per‑tenant, a bit stale‑is‑OK.
+            spend.cache:
+                adapter: cache.app               # inherits Redis via cache.app
+                default_lifetime: 900            # 15 min
+                prefix_seed: 'invoicer.spend'
+```
+
+Two options worth understanding:
+
+- **`default_lifetime`** sets a TTL for items in that pool that don't specify one.
+- **`prefix_seed`** namespaces the keys. It matters for two reasons: it stops collisions if two apps share one Redis, and it makes per‑environment separation explicit. (For multi‑tenant isolation we add a *tenant* prefix in the key itself — §23.6 "multi‑tenant rules".)
+
+Each pool is also a **service**, autowired by name: `tax_rates.cache` → an argument named `$taxRatesCache`, `spend.cache` → `$spendCache`.
+
+##### Caching values: the Cache Contracts
+
+The recommended API is the simple **Cache Contracts** (`Symfony\Contracts\Cache\CacheInterface`), not raw PSR‑6. It has two methods, `get()` and `delete()`. `get()` takes a **key** and a **callback** that runs only on a miss — this "get‑or‑compute" shape is what makes stampede protection possible (§23.6).
+
+```php
+// src/Service/TaxRateService.php
+namespace App\Service;
+
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+
+class TaxRateService
+{
+    public function __construct(
+        private EntityManagerInterface $em,
+        private CacheInterface $taxRatesCache,   // autowired → tax_rates.cache
+    ) {}
+
+    public function rateFor(int $tenantId, string $region): float
+    {
+        // The key ALWAYS includes the tenant: no cross‑tenant leakage.
+        $key = "rate.{$tenantId}.{$region}";
+
+        return $this->taxRatesCache->get($key, function (ItemInterface $item) use ($tenantId, $region): float {
+            $item->expiresAfter(3600);          // explicit TTL (else pool default)
+            $item->tag("tenant.{$tenantId}");   // invalidate whole tenant at once
+            $item->tag('tax-rate');             // invalidate all rates at once
+
+            return (float) $this->em
+                ->getRepository(TaxRate::class)
+                ->findRate($tenantId, $region);
+        });
+    }
+}
+```
+
+Notes on the callback:
+
+- **`$item->expiresAfter(3600)`** / **`$item->expiresAt(\DateTime)`** control a per‑item TTL.
+- **`$item->tag('…')`** associates the item with tags for later bulk invalidation.
+- The callback **returns** the value; you never call a `set()`.
+- If you want to *discard* a computed value (not store it), have the callback accept `bool &$save` and set `$save = false`.
+
+`get()` also exposes **early‑expiration detection** for stampede protection: inside the callback, `if ($item->isHit()) { … }` is `true` when the value is being recomputed *ahead of time* because another process is already regenerating it (§23.6).
+
+##### Tag‑based invalidation
+
+TTLs are a safety net, but often you want to invalidate **immediately** when the underlying data changes. Tags let you delete many keys at once. The tag‑aware methods live on the PSR‑6 side (`Symfony\Component\Cache\Adapter\TagAwareCacheInterface`): **`invalidateTags()`** removes the *items* that carry the tag; **`deleteTags()`** only forgets the tag index (items remain). You want `invalidateTags()`:
+
+```php
+// src/EventSubscriber/TaxRateCacheInvalidator.php
+namespace App\EventSubscriber;
+
+use App\Event\TaxRateSavedEvent;
+use Symfony\Component\Cache\Adapter\TagAwareCacheInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+
+#[AsEventListener]
+class TaxRateCacheInvalidator
+{
+    public function __construct(
+        // The SAME pool as TaxRateService, injected for its tag API.
+        #[Target('tax_rates.cache')]
+        private TagAwareCacheInterface $taxRatesCache,
+    ) {}
+
+    public function onTaxRateSaved(TaxRateSavedEvent $event): void
+    {
+        // One tax rate changed → drop just that tenant's cached rates.
+        $this->taxRatesCache->invalidateTags("tenant.{$event->tenantId}");
+    }
+
+    public function onTaxTableRebuilt(): void
+    {
+        // A bulk import rewrote rates for everyone → drop them all.
+        $this->taxRatesCache->invalidateTags('tax-rate');
+    }
+}
+```
+
+> **Subtlety — two faces of one pool.** The *same* pool can be injected under two types: `CacheInterface` gives you the friendly `get()` (the Cache Contracts), and `TagAwareCacheInterface` gives you `invalidateTags()` (PSR‑6). `TaxRateService` and `TaxRateCacheInvalidator` above both use `tax_rates.cache` — one to read/write values, the other to invalidate by tag. Use `#[Target('…')]` (as here) to be explicit about which pool an argument binds to, rather than relying solely on argument‑name conventions.
+
+The pattern — **write path emits an event → a subscriber invalidates the relevant tags** — keeps caching concerns out of your domain services and makes invalidation a single, testable place. It's the same event flow you used in Ch. 7 and Ch. 17.
+
+##### Cache stampede prevention
+
+A classic failure: a hot key expires, and a burst of 500 concurrent requests all miss and all hit the database at once. The Cache Contracts handle this for you. Because `get()` takes a *callback*, Symfony can serialize regeneration: the first miss starts recomputing and sets a short "early expiry," while other requests that arrive during the recompute receive the **stale** value and let the first one finish. The `isHit()` check in the callback is how you tell "I'm the one regenerating" from "I'm an early‑expiry bystander." In practice you rarely need to do anything — the default behavior already prevents the thundering herd. Just *don't* bypass `get()` by doing a `has()`/`get()` two‑step, which reintroduces the race.
+
+##### Clearing and warming
+
+```
+$ php bin/console cache:pool:clear cache.app
+$ php bin/console cache:pool:clear tax_rates.cache
+$ php bin/console cache:pool:prune            # remove expired items
+$ php bin/console cache:warmup
+```
+
+You'll call `cache:pool:clear` in tests and in deploy scripts (Ch. 24) — e.g. after a bulk tax‑rate import, rather than relying on TTLs.
+
+---
+
+#### 23.7 HTTP caching: expiration, validation, and proxies
+
+Data caching (§23.6) speeds up *inside* PHP. **HTTP caching** removes PHP from the picture entirely: a **reverse proxy** (a "gateway cache") sits in front of your app and serves whole responses from memory, bypassing the application on every cache hit. This is the biggest performance win available — a cache hit costs a fraction of a millisecond and touches no database.
+
+The two ideas that unlock it are the **expiration model** and the **validation model**, expressed through four standard headers: `Cache-Control`, `Expires`, `ETag`, `Last-Modified`. (These are not Symfony inventions — they're RFC 7234/7232. Learning them is worth it on its own.)
+
+##### Putting a reverse proxy in front of the app
+
+Symfony ships a small PHP reverse proxy you can enable with one option. It's ideal for development and for hosts where you can only deploy PHP:
+
+```yaml
+# config/packages/prod/framework.yaml
+when@prod:
+    framework:
+        http_cache: true
+```
+
+The kernel now acts as a gateway: it stores cacheable responses and serves repeat requests without hitting your controllers. In debug it adds an `X-Symfony-Cache` header (`HIT`/`MISS`) so you can see its decisions; in production you can still emit a concise trace with `framework.http_cache.trace_level: short` and log it (e.g. `%{X-Symfony-Cache}o` in Apache) to measure cache efficiency.
+
+For serious traffic, the docs (and production reality) point to **Varnish**, a C‑written reverse proxy that is far faster and supports **Edge Side Includes**. Because Symfony emits standard HTTP cache headers, you can start with the built‑in proxy and swap to Varnish later without changing application code. The rest of this section is proxy‑agnostic — it's all about the headers *you* set.
+
+> **Multi‑tenant rule #1 — safe methods only.** HTTP caching applies to **GET** and **HEAD**. Never cache `POST`/`PUT`/`DELETE`, and never mutate state in a `GET` handler. Your API's `POST /invoices` is uncacheable by definition; the proxy won't (and shouldn't) touch it.
+
+##### Expiration model: "cache this for N seconds"
+
+The simplest model: tell the proxy to hold the response for a fixed time. Symfony provides a `#[Cache]` attribute for exactly this:
+
+```php
+// src/Controller/MarketingController.php
+use Symfony\Component\HttpKernel\Attribute\Cache;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Routing\Attribute\Route;
+
+class MarketingController extends AbstractController
+{
+    // A public, tenant‑agnostic pricing page — ideal for shared caching.
+    #[Route('/pricing', name: 'app_pricing')]
+    #[Cache(public: true, maxage: 3600, mustRevalidate: true)]
+    public function pricing(): Response
+    {
+        return $this->render('marketing/pricing.html.twig');
+    }
+}
+```
+
+That emits `Cache-Control: public, max-age=3600, must-revalidate`. For a full hour, *anyone* hitting `/pricing` is served by the proxy; PHP is never invoked. The trade‑off: if the page changes, up to an hour elapses before the change is visible. (You can force it earlier by **purging** the proxy — see below — but expiration alone can't.)
+
+> **Multi‑tenant rule #2 — `public` means "anyone on the internet."** `public` lets a *shared* proxy serve the response to *any* client. That's exactly right for a marketing/pricing page and exactly wrong for anything tenant‑specific. Tenant‑scoped responses must stay **`private`** (browser‑only cache) unless you take the isolation steps in §23.7 "Vary and tenant isolation." When in doubt: private.
+
+The same settings are available on the `Response` object for when you need per‑request control:
+
+```php
+$response->setCache([
+    'public'      => true,
+    'max_age'     => 3600,
+    's_maxage'    => 3600,   // lifetime in *shared* proxies
+    'immutable'   => true,   // content never changes (versioned assets)
+    'must_revalidate' => true,
+]);
+```
+
+##### Validation model: "cache it, but check with me"
+
+Expiration is simple but dumb — you can't see a change until the timer runs out. The **validation model** lets the proxy keep the response but **re‑validate** it against your app before serving. Your app then answers with a **`304 Not Modified`** (headers only, no body) when nothing changed. This gives you *immediate* correctness with a cheap revalidation round‑trip.
+
+Two headers implement it:
+
+- **`ETag`** — an arbitrary fingerprint of the representation (e.g. an `md5` of the content, or a content hash/revision).
+- **`Last-Modified`** — the timestamp of the latest change to the underlying data.
+
+The `Response` helper does the comparison for you. `isNotModified($request)` checks the request's `If-None-Match` (for ETag) and `If-Modified-Since` (for Last‑Modified); if they match, it sets the response to `304` and strips the body.
+
+The most valuable pattern is to **validate *before* doing the expensive work**, so a hit costs almost nothing:
+
+```php
+// src/Controller/InvoiceController.php
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+class InvoiceController extends AbstractController
+{
+    #[Route('/invoices/{id}/pdf', name: 'app_invoice_pdf', requirements: ['id' => '\d+'])]
+    public function pdf(int $id, Request $request, InvoiceRepository $invoices, InvoicePdfRenderer $renderer): Response
+    {
+        $invoice = $invoices->findForCurrentTenant($id);
+        if (null === $invoice) {
+            throw $this->createNotFoundException();
+        }
+
+        // 1. Build a cheap response carrying only the validators.
+        $response = new Response();
+        // Strong ETag (byte‑exact), from a stable fingerprint of the invoice.
+        $response->setEtag('"'.md5($invoice->getFingerprint()).'"');
+        // Last change: when the invoice was finalized (no more edits after this).
+        $response->setLastModified($invoice->getFinalizedAt());
+
+        // 2. If the client (or proxy) already has it, stop here — no PDF work.
+        if ($response->isNotModified($request)) {
+            return $response;   // 304, empty body
+        }
+
+        // 3. Only now do the expensive thing.
+        $response->setContent($renderer->render($invoice)->getBytes());
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->headers->set('Content-Disposition', "inline; filename=\"{$invoice->number}.pdf\"");
+
+        return $response;
+    }
+}
+```
+
+The win: re‑fetching an unchanged PDF costs one light query (to get `fingerprint`/`finalizedAt`) and a `304`, instead of re‑rendering the whole document.
+
+> **Multi‑tenant rule #3 — decide `private` vs `public` deliberately.** As written, this response is **`private`** by default (Symfony defaults responses to private, and using the session keeps it that way). That's the *safe* default for tenant data: the ETag/Last‑Modified validation now works at the **browser** level, saving bandwidth, without ever putting one tenant's PDF in a shared cache. If you *did* want a shared proxy to hold it, you'd set `setPublic()` **and** add a `Vary` header that separates tenants (§23.7 "Vary and tenant isolation") — or, better, keep it private and hand out a short‑lived signed URL. When tenant data and shared caching meet, prefer private + signed URLs.
+
+> **Tip — ETags and compression.** If your web server rewrites ETags when compressing (Apache `mod_deflate`/`mod_brotli` append `-gzip`/`-br`), ETag validation breaks. Configure the server to preserve the original ETag (e.g. `DeflateAlterETag Off`), or rely on `Last-Modified` for those assets.
+
+##### Vary and tenant isolation
+
+A reverse proxy caches **per URL** by default. If two tenants are served on different subdomains (`acme.app` vs `globex.app`) but the same path, the proxy sees the same URL and will happily serve *tenant A's page to tenant B* — a serious leak. The **`Vary`** header tells the proxy to keep separate copies per value of the named request header:
+
+```php
+// Vary on the host so each tenant subdomain gets its own cached copy.
+$response->vary('Host');
+
+// Or vary on an explicit tenant header you control:
+$response->vary('X-Tenant');
+```
+
+`Vary` is what makes per‑tenant shared caching *safe* — but it multiplies the cache size (one entry per tenant per URL) and only works when the tenant is unambiguously derivable from a header the proxy trusts. Because of that fragility, the practical guidance for a multi‑tenant SaaS is:
+
+- **Public, tenant‑agnostic content** (marketing, pricing, docs): `public` + long `maxage`. Freely shared.
+- **Tenant‑specific content** (dashboard, invoices, PDFs): **`private`**, validate with ETag/Last‑Modified at the browser. Do **not** put these in the shared proxy.
+- If you *must* cache tenant content at the edge: `Vary` on a trustworthy tenant header **and** verify in tests that tenant A can never receive tenant B's cached bytes.
+
+##### Sessions force private
+
+One gotcha that bites everyone: **if the session is started during a request, Symfony automatically makes the response private and non‑cacheable** (to avoid leaking one user's cart/profile to another). That's the right default. If you've deliberately built a response that's safe to share even though the session is in play, you opt out explicitly:
+
+```php
+use Symfony\Component\HttpKernel\EventListener\AbstractSessionListener;
+
+$response->headers->set(AbstractSessionListener::NO_AUTO_CACHE_CONTROL_HEADER, 'true');
+```
+
+Use this rarely and with care — it's an explicit assertion that the response contains nothing user‑specific.
+
+##### Invalidation / purging
+
+Expiration and validation manage *freshness*; **purging** removes a cached response from the proxy *immediately*. Purging is outside the HTTP spec, so it's proxy‑specific. Two routes:
+
+- **Symfony reverse proxy:** `php bin/console cache:pool:clear` won't touch it; use the proxy's own purge (or FOSHttpCache's tag‑based purge, below).
+- **FOSHttpCacheBundle** (for Varnish/other proxies): lets you define cache tags on responses and **purge by tag** — the HTTP‑cache analogue of the data‑cache tags in §23.6. Tag an invoice page with the invoice's id; when the invoice changes, purge that tag and only that page is evicted.
+
+Because this app keeps tenant data **private** (§23.7), you'll mostly rely on the data cache for invalidation and let HTTP caching handle the genuinely public pages. FOSHttpCache's tag purging earns its keep when you *do* cache tenant‑varying pages at the edge.
+
+---
+
+#### 23.8 A caching strategy for the invoicing app
+
+Let's consolidate. Here's the layer‑by‑layer strategy the running app converges on — a template you can adapt:
+
+| What | Layer | Where / how | Invalidation |
+|---|---|---|---|
+| Compiled PHP, DI container, Doctrine/serializer metadata | System cache + OPcache | Automatic; warmed at deploy | Deploy (`cache:clear` / rebuild) |
+| Tax rates per tenant | **Data cache** (`tax_rates.cache`, Redis tag‑aware) | `get()` + tags `tenant.{id}`, `tax-rate` | `invalidateTags()` on save/import; 1h TTL as backstop |
+| Tenant monthly spend summaries | **Data cache** (`spend.cache`) | `get()`, 15‑min TTL | TTL + `cache:pool:clear` after end‑of‑month job |
+| Invoice list (totals) | DB (persisted total) — *not* a cache | Single query, no N+1 | Updates with the data |
+| Invoice PDF | **HTTP validation** (ETag + Last‑Modified, **private**) | `isNotModified()` → `304` | Content change alters ETag/Last‑Modified |
+| Marketing / pricing / docs | **HTTP expiration** (`public`, `maxage`) | `#[Cache]` on the controller | TTL + proxy purge on publish |
+| Uploaded files, generated PDFs | **Share directory** (`%kernel.share_dir%`) / object storage | Flysystem (Ch. 14/24) | Versioned filenames / immutability |
+
+Three decisions to internalize:
+
+1. **Cache computed results, not state.** Totals and spend are *derived*; invalidate them when the inputs change, or let a short TTL absorb drift. Never use the data cache to store something that's the source of truth (that's the database's job).
+2. **Namespace keys by tenant, always.** Every data‑cache key in a multi‑tenant app carries the tenant id (`rate.{tenant}.{region}`), and pools carry a `prefix_seed`. This makes cross‑tenant leakage impossible *by construction*, not by discipline.
+3. **Match the layer to the volatility.** Fast‑changing, user‑specific → private HTTP validation or no HTTP cache. Slow‑changing, tenant‑agnostic → public HTTP expiration. Expensive, shared, rarely‑changing → data cache with tags. This mapping, more than any single feature, is what makes a caching story *correct* rather than just fast.
+
+---
+
+#### 23.9 Exercises
+
+Work through these against the running invoicing app. Difficulty is marked; several build on each other.
+
+**Warm‑up**
+
+1. **Stopwatch around a hot path.** Add a `Stopwatch` timer (with the category `'invoicing'`) around the totals calculation in `InvoiceTotalsCalculator`. Trigger an invoice page in `dev` and confirm the event appears in the profiler's **Time** panel. Add a `lap()` per line item and inspect `$event->getPeriods()` for a large invoice.
+
+2. **Route a dump through the dump server.** Start `php bin/console server:dump` in one terminal, add a `dump()` inside the Messenger PDF worker (Ch. 17), and watch the dump stream to the server terminal while you create an invoice. Then do the same with `VAR_DUMPER_FORMAT=server` for a console command and explain why the server is more useful here than inline output.
+
+**Intermediate**
+
+3. **A domain data collector.** Extend the `TenantCollector` from §23.2 so it also reports **memory usage** (`memory_get_peak_usage(true)`) and the **count of Doctrine queries** for the request (read from the `doctrine` data collector's data, or count via a `debug.*` attribute). Display both in the toolbar. Verify it renders on the API (JSON) path by checking that `X-Debug-Token-Link` is present and opening the profile.
+
+4. **Tag‑invalidated tax cache.** You already have `TaxRateService` (§23.6). (a) Write a functional test that caches a rate, asserts a second call is a **hit** (no new query — use the profiler or a query counter), then saves a new rate via your command/event and asserts the cache is **invalidated**. (b) Add a guard to the tests that confirms tenant 1 can never read tenant 2's cached rate.
+
+5. **Cache a public page.** Add `#[Cache(public: true, maxage: 300, mustRevalidate: true)]` to the marketing/pricing controller. Enable the Symfony reverse proxy for a throwaway environment, and use `curl -sI` to show the `Cache-Control` header and the `X-Symfony-Cache: HIT` on the second request. Explain what would break if the pricing page became tenant‑specific.
+
+**Advanced**
+
+6. **Validation caching that saves CPU.** Implement the invoice‑PDF endpoint from §23.7 (ETag + Last‑Modified + `isNotModified()`). Instrument the PDF renderer with a `Stopwatch` event. In a functional test: first request returns 200 and the timer runs; a second request with the matching `If-None-Match` returns **304** with an **empty body** and the timer event is **absent** (proving no render occurred).
+
+7. **Design the strategy (writing task).** In a one‑page memo, define the caching strategy for the *tenant dashboard*: for each data element (recent invoices, spend summary, chart aggregates, notifications), state the layer, the key (with tenant namespacing), the TTL, and the invalidation trigger. Conclude with the two or three elements you'd deliberately *not* cache and why. Swap memos with a peer and critique each other's tenant‑isolation choices.
+
+8. **Varnish, safely.** Stand up Varnish (Docker, see Ch. 24) in front of PHP‑FPM for a local `prod`‑like environment. Configure the proxy so that (a) public marketing pages are shared, and (b) tenant pages are **not** shared (either `private`, or `Vary: Host` on tenant subdomains). Write a test or `curl` sequence that proves tenant A's dashboard bytes are never served to tenant B. Document the exact `Vary`/`Cache-Control` headers you relied on.
+
+9. **Performance regression gate (stretch).** Using `Stopwatch` (or Blackfire if available), add a CI step that asserts a representative request (e.g. a 500‑invoice list) stays under a wall‑clock budget. Fail the build if a change regresses it. Reflect: what's the trade‑off between a wall‑clock budget and a query‑count budget as a regression signal?
+
+---
+
+#### Key takeaways
+
+- **`dump()`/`dd()`** are for dev/test only; in the browser they land in the **debug toolbar**, not the page. The **dump server** gathers dumps from console and async workers.
+- The **Web Profiler** is your per‑request microscope (timing, queries, cache, logs) — and **custom data collectors** let you put *domain* context (current tenant, entity counts) on the toolbar. Keep it out of production, and use `collect_parameter` to enable it on demand.
+- **Stopwatch** labels *your* code (timers, laps, sections) in the profiler; **Blackfire** goes deeper — per‑line call trees, including in production.
+- **Data caching** (`Cache` component): prefer the Cache Contracts `get()` with a callback; use `expiresAfter` for TTLs and **tags** for immediate, bulk **`invalidateTags()`**; pick a tag‑aware adapter (Redis/Valkey) for shared, multi‑instance setups. The callback design also gives you **stampede protection** for free.
+- **HTTP caching** sits in front of PHP: the **expiration model** (`#[Cache]`, `maxage`) is simple but slow to update; the **validation model** (ETag/Last‑Modified → `304`) gives immediate correctness cheaply — best when you validate *before* doing the work.
+- **Multi‑tenancy is a caching problem, not just a routing one.** Namespace every data‑cache key by tenant, keep tenant‑specific responses **`private`**, and only put genuinely public content in a **shared** proxy (using `Vary` + signed URLs when you must cache tenant content at the edge).
+
+Next, Chapter 24 turns from *making it fast and correct* to **making it deployable and observable**: web server choices (PHP‑FPM, FrankenPHP), Docker, CI/CD, zero‑downtime deploys, logging, and error tracking — where the OPcache and autoloader tuning hinted at here becomes part of the release pipeline.
+
+---
+
+### Chapter 24. Deployment and Operations
+
+Everything so far has happened on your laptop: `symfony serve` or a Vite dev server, a throwaway SQLite or local Postgres, a debugger attached, `APP_DEBUG=1`. That environment is deliberately forgiving — it shows you stack traces, rebuilds caches as you type, and runs every dependency under one roof. Production is the same *code* running under a very different *contract*: it must be fast, observable, stateless where it can be, and replaceable at any moment without losing a user.
+
+This chapter is the capstone of Part VI. It treats a Symfony application not as a pile of PHP files but as a **system** made of:
+
+- a **runtime** (a PHP engine — PHP-FPM or FrankenPHP),
+- a set of **long-running processes** (the web tier, Messenger workers, the scheduler),
+- **external dependencies** (database, cache, mail transport, object storage),
+- an **observability layer** (logs, metrics, health checks, error tracking), and
+- a **deployment mechanism** (the process by which a new build reaches users without breaking the old one).
+
+We will keep using the invoicing SaaS from Parts III–V: multi-tenant, with Doctrine for persistence, Messenger for async work (rendering invoice PDFs, sending mail), the Scheduler for recurring invoices and dunning, the Mailer for delivery, uploaded logos/attachments, and a customer-facing API. Every decision below is grounded in *that* app.
+
+> **The one-sentence summary:** a production app is *stateless per request*, *immutable per release*, *observable by design*, and *swapped in atomically*. Every section in this chapter is a way of making one of those four sentences true.
+
+---
+
+#### 24.1 From the dev machine to production: what actually changes
+
+Before we pick a server or write a `Dockerfile`, it is worth being explicit about what "production" changes, because a lot of "it works locally but not in prod" bugs are simply the difference between two environments.
+
+Symfony switches behavior on two variables: `APP_ENV` and `APP_DEBUG`. In `dev`, the kernel boots the Debug toolbar, registers a real exception page that prints file paths and variable contents, rebuilds the compiled container on every change, and logs verbosely. In `prod`, all of that is off:
+
+| Concern | `dev` | `prod` |
+|---|---|---|
+| Exceptions | Full stack trace, source, variable dump | Generic error page (details go to logs) |
+| Compiled container | Rebuilt on change | Cached in `var/cache/prod` |
+| Templates (Twig) | Re-rendered each request | Cached in `var/cache/prod` |
+| AssetMapper | Serves source assets with hot reload | Serves compiled, versioned, compressed assets |
+| Logging | `debug` level, console + file | `info`/`warning` level, structured, shipped |
+| Security features | Profiler, dev routes | None of the dev routes registered |
+| Env config | `.env` + `.env.local` | Injected at runtime; `.env` files *not* shipped |
+
+Two consequences follow, and both are easy to get wrong.
+
+**1. You do not ship `.env` files to production.** The `.env` file in your repo is a *default* for local development. In production, configuration arrives as real environment variables (from your orchestrator, PaaS, or a secrets manager) that take precedence. After building the image or on the host, run `composer dump-env prod` so that the container knows the *list* of allowed variables for `prod` without needing the whole `.env` tree. The SaaS therefore keeps secrets (`DATABASE_URL`, `MAILER_DSN`, `MESSENGER_TRANSPORT_DSN`, `APP_SECRET`, `SENTRY_DSN`) out of the code and out of the image, and injects them per environment.
+
+**2. Mutable state must outlive a release.** On the dev box, `var/cache`, `var/log`, and `public/uploads` live happily in your working copy. In production you will redeploy dozens of times a month, and each new release is a *fresh* directory. If the cache, logs, or uploaded tenant logos are baked into a release, they vanish the moment you swap to the next one. So these paths must live **outside** the release and be shared across all of them (see §24.5 for the directory layout, and §24.3 for the Docker volume equivalent).
+
+There is one more property that quietly determines everything else: **statelessness per request**. If the web tier is *stateless* — no data about a request is kept in local files that a *different* web server won't have — then you can run as many web servers as you like behind a load balancer, and you can retire any one of them at any moment without losing anyone's session. For the SaaS this means moving **sessions and cache out of the filesystem and into Redis**, so that any web container can resume any user's request:
+
+```yaml
+# config/packages/framework.yaml (excerpt)
+framework:
+    session:
+        handler_id: null                 # use the PdoSessionHandler via `session.handler`
+        cookie_secure: auto
+        cookie_samesite: 'Lax'
+    cache:
+        app: '%env(CACHE_REDIS_URL)%'    # redis://redis:6379  — shared, not per-container
+```
+
+```yaml
+# config/packages/doctrine.yaml (excerpt) — persist sessions in Postgres
+doctrine:
+    dbal:
+        # ...
+# config/services.yaml
+services:
+    session.handler:
+        class: Doctrine\DBAL\Schema\Schema   # placeholder — see note
+```
+
+> **Tip:** For sessions, the pragmatic choice is `PdoSessionHandler` (store session rows in your existing Postgres) or a `RedisSessionHandler`. Both are stateless from the web server's point of view. Avoid the default `NativeSessionHandler` (files) in any horizontally scaled or containerized setup — it is the most common cause of "I'm logged in, then suddenly I'm not."
+
+Once sessions, cache, and uploads are external, the web tier is a pure function: *request in, response out*. That single fact is what makes the rest of this chapter possible.
+
+---
+
+#### 24.2 Choosing a web server
+
+A Symfony app does not care which engine runs it; it only cares that something hands it a request through `public/index.php` and reads the `Response` back. What *does* care is the layer in front of PHP. There are two jobs: **terminate TLS**, **serve static assets fast**, and **run your PHP**. How you split those jobs is the main decision in this section.
+
+The classic request path looks like this:
+
+```
+Browser ──TLS──▶ Web server (nginx / Caddy)
+                     │  static assets?  ──▶ serve directly
+                     │  *.php            ──▶ PHP runtime
+                                              │  boots kernel
+                                              ▼
+                                        Symfony (public/index.php)
+```
+
+##### Option A — nginx + PHP-FPM
+
+This is the battle-tested split. **nginx** terminates TLS and serves anything it can serve on its own (static files, `public/` assets, compiled AssetMapper output). For dynamic routes it forwards to **PHP-FPM**, a pool of long-lived PHP worker processes that talk to nginx over FastCGI (a Unix socket or TCP port).
+
+A minimal, production-shaped nginx config for the SaaS:
+
+```nginx
+server {
+    listen 80;
+    server_name app.acme-invoice.io;
+
+    root /var/www/current/public;          # note: .../current, a symlink (§24.5)
+    index index.php;
+
+    # Compiled assets from AssetMapper — never touch PHP for these.
+    location ^~ /assets/ {
+        try_files $uri =404;
+    }
+
+    # Uploaded tenant logos / attachments — static, versioned, cached.
+    location ^~ /uploads/ {
+        try_files $uri =404;
+    }
+
+    # Everything else → front controller.
+    location / {
+        try_files $uri /index.php$is_args$args;
+    }
+
+    location ~ ^/index\.php(/|$) {
+        fastcgi_pass php-fpm:9000;
+        fastcgi_split_path_info ^(.+\.php)(/.*)$;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT    $realpath_root;
+        internal;                          # index.php is not directly fetchable
+    }
+
+    access_log /var/log/nginx/app_access.log;
+    error_log  /var/log/nginx/app_error.log;
+}
+```
+
+PHP-FPM is configured through a *pool* (`www.conf`). The settings that matter most for a SaaS:
+
+```ini
+; /etc/php/8.3/fpm/pool.d/www.conf (key settings)
+[www]
+user = www-data
+group = www-data
+listen = /run/php/php-fpm.sock          ; nginx connects here (or :9000)
+
+pm = dynamic
+pm.max_children = 32                   ; ≈ (RAM per child × available RAM)
+pm.start_servers = 8
+pm.min_spare_servers = 4
+pm.max_spare_servers = 16
+pm.max_requests = 1000                 ; recycle workers to reclaim memory
+
+request_terminate_timeout = 60         ; hard ceiling on a single request
+slowlog = /var/log/php-fpm/www-slow.log
+request_slowlog_timeout = 5            ; log the stack of anything > 5s
+```
+
+The FPM *slow log* is a quietly brilliant debugging tool in production: any request that exceeds `request_slowlog_timeout` dumps a backtrace. Combined with the Web Profiler-style data in logs (§24.7), it tells you *which* controller is slow without attaching a debugger to a live system.
+
+**Pros:** dead simple to reason about; each layer is a single, well-understood tool; FPM gives you fine-grained control of the PHP process pool; the pattern is what most managed hosts and PaaS already speak.
+**Cons:** two (or three) moving parts to operate; HTTP/3 and some newer niceties are extra work; per-request PHP bootstrap cost (mitigated, but real, under high concurrency).
+
+##### Option B — FrankenPHP
+
+**FrankenPHP** (created by Kévin Dunglas, one of the framework leads) is a single, statically-linked binary that *is* both the web server and the PHP runtime. It embeds [Caddy](https://caddyserver.com) for TLS/HTTP and a PHP runtime, so you run **one process** that serves static files *and* executes your app. It supports HTTP/2, HTTP/3, automatic HTTPS via ACME, webhooks, Mercure (push), and — the part that matters most for a framework that boots a lot of services — **worker mode**.
+
+Worker mode is the big one. Normally each request boots the kernel from scratch: build the container, warm the services, run, destroy. FrankenPHP in worker mode keeps the **application alive in a single PHP process** across requests, only running your *code* per request. For a Symfony app with a heavy service graph, this typically yields several times the throughput and a large latency reduction, because the expensive part — compiling and wiring the DI container — happens once, not per request.
+
+Since **Symfony 7.4, worker mode is supported natively** (no extra bridge package). You point FrankenPHP at your front controller with a `Caddyfile`:
+
+```
+{
+    # global options (email + ACME for automatic HTTPS in prod)
+    email ops@acme-invoice.io
+    http_port 80
+    https_port 443
+}
+
+app.acme-invoice.io
+{
+    root * /app/public
+
+    # Serve compiled AssetMapper output + uploads straight from disk.
+    file_server
+
+    encode zstd br gzip
+
+    php_server {
+        worker /app/public/index.php     # keep the app alive across requests
+    }
+}
+```
+
+You start it with `frankenphp run`. In Docker you typically pass the worker directive via the image's config (see §24.3).
+
+**The worker-mode caveat you must understand:** because the process is *reused*, anything that stores state in a long-lived variable and forgets to clean it up will **leak across requests** — a customer from tenant A sees data that belongs to tenant B. This is the multi-tenant version of a classic bug, and it is exactly the kind of thing that is invisible in per-request PHP-FPM. The fix is the `ResetInterface` contract: services that hold request-scoped state implement `ResetInterface` and clear their state in `reset()`, and the runtime calls it between requests. Symfony services and the framework already do this correctly; your *custom* services must too. There is a static linter for this specific risk — `igor-php` — that scans your code (and `vendor/`) for services missing `reset()`, stateful non-reset properties, mutable `static`s, and `exit()`/superglobal writes:
+
+```bash
+composer require --dev igor-php/igor-php
+vendor/bin/igor-php .
+```
+
+Run it in CI before you turn on worker mode in production.
+
+**Pros:** one process to operate; built-in HTTP/3, ACME, webhooks; excellent performance for framework apps via worker mode; first-class, maintained Docker setup (Symfony Docker).
+**Cons:** a younger system; worker mode demands discipline around state (`ResetInterface`); fewer of the "I have done this on a server in 2009" anecdotes.
+
+##### Choosing
+
+| You want… | Choose |
+|---|---|
+| Maximum simplicity, HTTP/3, a modern single-binary stack, top Symfony throughput | **FrankenPHP** (worker mode) |
+| A very custom web tier, per-pool FPM tuning, or a host/PaaS that already runs nginx | **nginx + PHP-FPM** |
+| To learn how the pieces fit | nginx + PHP-FPM |
+| Local development | Either — `symfony serve`, `frankenphp run`, or `docker compose up` |
+
+Both are first-class, and the app is identical either way — you only swap what sits in front of `public/index.php`. The remainder of this chapter uses FrankenPHP in the Docker stack because it keeps the topology small, but every statement translates directly to the nginx + FPM split.
+
+> **Never** run the PHP built-in server (`php -S`) in production. It is single-threaded and has no of the hardening you need. It is for development only.
+
+---
+
+#### 24.3 Containerizing the app with Docker
+
+We containerize for three reasons, in descending order of importance:
+
+1. **Parity.** The image you test in CI, stage against, and ship to production is the *same bytes*. "It works on my machine" becomes "it works in the image."
+2. **Immutability.** A deploy is "run this image," not "run these scripts on this box and hope." An image has a version; a mutable server does not.
+3. **Declarative topology.** One file describes the whole SaaS: web, workers, scheduler, database, cache, mail.
+
+##### The image: code + deps + a warmed cache
+
+An image should be built in **stages**. A *builder* stage runs Composer; a *runtime* stage starts from a small PHP-capable base and copies only what it needs. Baking in the **warmed production cache** means the first request after boot does not pay the cost of compiling the container and Twig caches cold.
+
+```dockerfile
+# syntax=docker/dockerfile:1
+
+# ── 1. Build stage: install production dependencies ─────────────────────
+FROM composer:2 AS builder
+WORKDIR /app
+COPY . .
+# --no-scripts: don't run app console commands during install (no DB needed here)
+RUN composer install --no-dev --prefer-dist --no-interaction --no-scripts \
+    && composer dump-env prod
+
+# ── 2. Runtime stage: FrankenPHP + your code + warmed cache ─────────────
+FROM dunglas/frankenphp:1-php8.3 AS runtime
+ENV APP_ENV=prod APP_DEBUG=0
+WORKDIR /app
+
+COPY --from=builder /app /app
+# Pre-warm the compiled container + Twig so the first request is fast.
+RUN php bin/console cache:warmup --no-interaction
+
+EXPOSE 8080
+CMD ["frankenphp", "run", "-r", "0.0.0.0:8080", "443"]
+```
+
+The key ideas:
+
+- **`--no-dev` and `--no-scripts`** in the build stage — dev deps and install-time console commands don't belong in a runtime image.
+- **`COPY --from=builder`** — the runtime stage never sees Composer, git, or build tooling. Smaller, more secure image.
+- **`cache:warmup` at build time** — the expensive one-time compilation happens in CI, not on the first real user's request.
+- **Immutable tags.** Tag images by a content identifier — the git SHA or a semantic version — never `:latest`. `ghcr.io/acme/invoicing:9f3a1c2` is a thing you can deploy, roll back to, and reason about. `:latest` is not.
+
+Keep the working tree tidy so you don't bake in junk:
+
+```gitignore
+# .dockerignore
+.git
+.env
+.env.local
+.env.*.local
+var/
+vendor/            # installed by the builder stage
+node_modules/
+tests/
+.phpunit.cache
+*.md
+```
+
+##### What to bake in, what to mount
+
+A good rule: **anything that changes with a release goes in the image; anything that must survive redeploys goes on a volume.**
+
+| Path | Where | Why |
+|---|---|---|
+| `src/`, `config/`, `vendor/`, `public/assets` | **Image** | Tied to a specific release |
+| `var/cache`, `var/log` | **Volume (shared)** | Must survive redeploy; shared if multi-replica |
+| `public/uploads` (tenant logos, attachments) | **Volume (shared) or object storage** | User data; never rebuilt |
+| Database data | **Volume (db service) or managed DB** | Persistence |
+
+For the SaaS, `public/uploads` is the delicate one. On a small stack a shared volume works; at real scale you would move uploads to object storage (S3-compatible) and store only a key in the database — which also makes tenant isolation and CDN caching cleaner.
+
+##### The full stack
+
+Here is the whole SaaS as one Compose file. Note the shape: **web** is stateless and can scale to N; **worker** and **scheduler** run the *same image* with a different entrypoint; **db** and **redis** hold the state.
+
+```yaml
+# docker-compose.yml (production shape)
+services:
+  web:
+    image: ghcr.io/acme/invoicing:${TAG:-9f3a1c2}
+    ports: ["8080:8080"]
+    environment: &env
+      APP_ENV: prod
+      APP_SECRET: ${APP_SECRET}
+      DATABASE_URL: ${DATABASE_URL}
+      CACHE_REDIS_URL: redis://redis:6379
+      MESSENGER_TRANSPORT_DSN: amqps://messenger:6379   # or amqp://rabbit:5672
+      MAILER_DSN: ${MAILER_DSN}
+      SENTRY_DSN: ${SENTRY_DSN}
+    volumes:
+      - app_cache:/app/var/cache
+      - app_logs:/app/var/log
+      - app_uploads:/app/public/uploads
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    deploy:
+      replicas: 2                 # web tier scales horizontally
+
+  worker:
+    image: ghcr.io/acme/invoicing:${TAG:-9f3a1c2}
+    command: ["php", "bin/console", "messenger:consume", "async",
+              "--limit", "1000", "--time-limit", "300"]
+    environment: *env
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    deploy:
+      replicas: 2                 # scale with queue depth
+
+  scheduler:
+    image: ghcr.io/acme/invoicing:${TAG:-9f3a1c2}
+    command: ["php", "bin/console", "scheduler:run"]
+    environment: *env
+    deploy:
+      replicas: 1                 # exactly one (see Lock, §24.8)
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: invoicing
+      POSTGRES_USER: invoicing
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes: [db_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U invoicing"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+
+volumes:
+  app_cache:
+  app_logs:
+  app_uploads:
+  db_data:
+```
+
+A few things to notice:
+
+- **`depends_on` with `condition: service_healthy`** uses the healthchecks so the web tier only starts once Postgres/Redis can actually accept connections.
+- **Secrets come from the environment** (`${APP_SECRET}`, `${MAILER_DSN}`, …) — they are read from the host's environment or a secrets manager at `docker compose up` time, and are *never* in the image or in a committed file. (For Compose, you can also use the top-level `secrets:` block, which mounts them as files the process reads — useful for TLS keys and long-lived credentials.)
+- **The same image, three entrypoints.** This is the whole point of immutable artifacts: `web`, `worker`, and `scheduler` are the *same* tested build, differing only in the `command`.
+
+> **Tip:** In CI, export the build cache so subsequent image builds are fast — either BuildKit's `--cache-from/--cache-to` to a registry, or `docker buildx` with a named cache. A cold Composer + asset build on every pipeline run will make your team stop running CI.
+
+---
+
+#### 24.4 Building a CI/CD pipeline
+
+**CI (continuous integration)** answers: *is this change safe to keep?* **CD (continuous delivery/deployment)** answers: *get the tested artifact to users, and be able to undo it quickly.* They are separate stages and should be separate jobs, because "build a trustworthy image" is not the same as "ship it."
+
+##### What CI runs, in order
+
+1. **Install dependencies** (`composer install`).
+2. **Static analysis** — PHPStan (or Psalm) at a high level, catching nullability and type bugs before a test does.
+3. **Coding style** — `php-cs-fixer` in dry-run mode.
+4. **Tests** — the unit and functional suites from Chapter 22, against a real database service container.
+5. **Build and push the image** — but *only* on the branch that deploys (e.g. `main`), tagged by commit SHA.
+
+A complete, readable GitHub Actions workflow for the SaaS:
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  APP_ENV: test
+  APP_DEBUG: 0
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:16
+        env: { POSTGRES_DB: invoicing_test, POSTGRES_USER: inv, POSTGRES_PASSWORD: inv }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U inv"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://inv:inv@127.0.0.1:5432/invoicing_test?serverVersion=16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3', extensions: pdo_pgsql, opcache }
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Coding style
+        run: ./vendor/bin/php-cs-fixer fix --dry-run --diff --format github
+      - name: Static analysis
+        run: ./vendor/bin/phpstan analyse --memory-limit=2G --no-progress
+      - name: Prepare database
+        run: php bin/console doctrine:migrations:migrate --no-interaction
+      - name: Run tests
+        run: php bin/phpunit
+
+  image:
+    needs: quality
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ github.repository }}:prod
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}:buildcache,mode=max
+
+  deploy:
+    needs: image
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production            # GitHub "environment" → required reviewers
+    steps:
+      - name: Deploy new SHA (rolling)
+        env:
+          DEPLOY_SSH: ${{ secrets.DEPLOY_SSH }}
+        run: ./deploy.sh "${{ github.sha }}"
+```
+
+Notes worth internalizing:
+
+- **`environment: production`** turns the deploy into a *reviewed* step (branch protection + required reviewers), so a bad merge doesn't auto-ship.
+- **Promote the same artifact.** The `image` job builds `ghcr.io/…/prod` *and* the SHA tag. What you deploy in production is the exact image that CI tested — no "build it again on the server."
+- **Tests run against a real Postgres service**, mirroring production, so Doctrine and migrations behave the same as they will live.
+
+##### The ordering of migrations is the part everyone gets wrong
+
+When a new release ships *new code* and *new schema*, the schema must be **backward compatible** so that old and new code can run side by side during the swap. The discipline is called **expand/contract**:
+
+- **Expand** (this release): add the new column/table in a nullable or defaultable form; write code that *reads* both old and new shapes. Old releases still work.
+- **Contract** (a later release): drop the old column once no old code is running anymore.
+
+The practical rule for the pipeline: **run migrations *before* you flip traffic to the new code**, and make migrations idempotent and non-destructive. `doctrine:migrations:migrate --no-interaction --allow-no-migration` (the last flag lets a migration-only deploy proceed even when there's nothing new). Never bake a destructive, non-reversible schema change into the same deploy that needs it — sequence it.
+
+##### The async side of a deploy
+
+The web tier swaps cleanly, but **workers** are a special case. If a worker is holding in-flight `GenerateInvoicePdf` messages when you redeploy, you have two choices, and both are fine as long as you're deliberate:
+
+- **Drain first**: stop accepting, let the worker finish its current batch (`--limit`/`--time-limit` make batches bounded), *then* replace it with the new image.
+- **Restart after swap**: swap web + migrate, then restart workers so they run the new handler code. Because messages are persisted on the transport (RabbitMQ/Redis), anything in the queue survives.
+
+Either way, the queue is your safety net: a message that didn't get processed is still there. This is a big reason to prefer a real transport over a `doctrine://default` (in-database) transport for anything you can't afford to lose.
+
+---
+
+#### 24.5 Zero-downtime deploys
+
+"Zero downtime" sounds grand but decomposes into a small, checkable set of conditions. A deploy is genuinely zero-downtime **only if all four are true**:
+
+1. **The app is stateless per request** — no request data is pinned to one machine (solved in §24.1 with Redis sessions/cache).
+2. **Mutable state is shared and outlives the release** — `var/cache`, logs, and uploads live outside the release (solved with volumes / a `shared/` directory).
+3. **The switch is atomic** — there is no window where "current" points to a half-ready release.
+4. **The switch is health-gated** — you only send traffic to the new release *after* you've confirmed it answers `/health`.
+
+Get all four and a deploy takes seconds and breaks nothing. Miss any one and you get a "deploy window" where users see 502s or lose their session.
+
+##### The `release / current / shared` layout
+
+The canonical non-container pattern (used by Capistrano and by hand-rolled scripts) keeps everything under one root:
+
+```
+/var/www/invoicing/
+├── current  →  releases/20260910141522     # symlink: what traffic actually hits
+├── releases/
+│   ├── 20260902111001/                      # previous release, kept for rollback
+│   └── 20260910141522/                      # newest
+│       ├── src/  config/  public/  vendor/  ...
+│       └── var/log  →  ../shared/logs        # symlinks OUT of the release
+└── shared/
+    ├── logs/        # survives every redeploy
+    ├── cache/
+    └── uploads/     # tenant logos & attachments
+```
+
+The web server's `root` points at `/var/www/invoicing/current/public`. Because `current` is a **symlink**, "deploying" is literally *re-pointing one symlink* — an atomic operation. There is no moment when it points to nothing or to a partial release.
+
+##### A deploy script that does it right
+
+This script encodes all four conditions. It's long but each block is small and named for what it does:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT=/var/www/invoicing
+REPO="https://github.com/acme/invoicing.git"
+TAG="${1:?usage: deploy.sh <git-sha-or-tag>}"
+
+RELEASE="$ROOT/releases/$(date +%Y%m%d%H%M%S)"
+PREVIOUS="$(readlink "$ROOT/current" 2>/dev/null || true)"   # for rollback
+
+# 1. Prepare a brand-new, isolated release directory.
+mkdir -p "$RELEASE"
+git clone --depth 1 --branch "$TAG" "$REPO" "$RELEASE"
+
+cd "$RELEASE"
+
+# 2. Point mutable state OUT of the release (condition 2).
+mkdir -p "$ROOT/shared"/{logs,cache,uploads}
+ln -sfn "$ROOT/shared/logs"     var/log
+ln -sfn "$ROOT/shared/cache"    var/cache
+ln -sfn "$ROOT/shared/uploads"  public/uploads
+
+# 3. Install prod dependencies + resolve the prod env list.
+composer install --no-dev --prefer-dist --no-interaction --no-scripts
+composer dump-env prod
+
+# 4. Warm the container + Twig caches (first request must be fast).
+APP_ENV=prod php bin/console cache:warmup --no-interaction
+
+# 5. Migrate the DB *before* switching traffic. Idempotent & backward-compatible.
+APP_ENV=prod php bin/console doctrine:migrations:migrate \
+    --no-interaction --allow-no-migration
+
+# 6. ATOMIC SWITCH (condition 3): re-point one symlink.
+ln -sfn "$RELEASE" "$ROOT/current"
+
+# 7. HEALTH GATE (condition 4): roll back if the new release can't serve.
+if ! curl -fsS --max-time 5 http://127.0.0.1/health >/dev/null; then
+    echo "✗ New release failed health check — rolling back to $PREVIOUS" >&2
+    [ -n "$PREVIOUS" ] && ln -sfn "$PREVIOUS" "$ROOT/current"
+    exit 1
+fi
+
+echo "✓ Deployed $TAG (previous: $PREVIOUS)"
+# Optional: keep only the last N releases.
+# ls -1dt releases/*/ | tail -n +6 | xargs -r rm -rf
+```
+
+Why this works end-to-end: the new release is fully built, cached, and migrated *before* step 6; step 6 is a single atomic symlink flip; step 7 either confirms success or re-points `current` to the previous release within a second. A user mid-request during the flip was already handed the response by whichever process owned it — nobody sees a blank page.
+
+##### The containerized variant: rolling updates
+
+With immutable images you get the same result more declaratively. Behind a load balancer with the `/health` healthcheck (defined in §24.3), a deploy is: *pull the new SHA tag, recreate the containers one at a time*. The load balancer stops routing to a container as soon as it stops passing health, and only routes to the next one once it passes. `docker compose up -d --no-deps --force-recreate web` or the equivalent `kubectl set image`/`helm upgrade` does this; on Kubernetes, `RollingUpdate` with a `readinessProbe` on `/health` is the built-in mechanism.
+
+For larger scale you reach for the higher-order strategies, but they are the *same* idea at more granularity:
+
+- **Blue/green** — run two full, identical stacks; point the LB entirely from blue to green; instant rollback = point it back. Costs double capacity.
+- **Canary** — route a small percentage of traffic to the new release, watch the error rate and latency on `/health` and your dashboards, then ramp up. Best when "all-or-nothing" is too risky for a big change.
+
+##### Rolling back
+
+Because a release is either a kept directory or an immutable image tag, **rollback is cheap and boring**: re-point the `current` symlink, or `docker compose` back to the previous tag. The only thing that needs care is the **database** — which is exactly why the expand/contract discipline in §24.4 exists. If every schema change was backward compatible, rolling the code back leaves the schema in a state the *old* code still understands. That is the real payoff of the discipline, and the reason destructive migrations should almost always be a separate, later release.
+
+---
+
+#### 24.6 Logging
+
+In development you have a debugger and `dump()`. In production you have **logs**, and they are your primary debugging tool — often the *only* window into what a request did. The difference between "we found the cause in ten minutes" and "we're doing archaeology on a prod incident" is almost always the *structure* of the logs, not the volume.
+
+##### Structured, channel-routed logging with Monolog
+
+Symfony ships with [Monolog](https://github.com/Symfony/Monolog). The three knobs that matter in production:
+
+- **Channels** — named log streams. Route different concerns to different handlers so the invoice engine's chatter doesn't drown out auth failures.
+- **Levels** — in prod, `info` or `warning`; `debug` is noise and (worse) a place to leak data.
+- **Formatters** — **JSON** (one JSON object per line) so the line is machine-parseable and indexable by a collector. Free-text logs are for humans reading one line; structured logs are for a query over a million lines.
+
+A production-shaped Monolog config for the SaaS:
+
+```yaml
+# config/packages/monolog.yaml
+when@prod:
+    monolog:
+        channels: [request, invoice, auth, messenger]
+
+        handlers:
+            # One JSON object per line → picked up by a log collector (Loki, CloudWatch, …)
+            main:
+                type: stream
+                path: php://stderr            # container runtime forwards stderr to the collector
+                level: info
+                formatter: json
+                channels: ['!php']
+
+            # Invoice-specific stream (rendering PDFs, sending, dunning).
+            invoice:
+                type: stream
+                path: php://stderr
+                level: debug                  # you can be chattier where you need it
+                formatter: json
+                channels: [invoice]
+
+        formatter:
+            json:
+                type: json
+```
+
+> **Why `php://stderr`?** When you're in containers, the most portable "ship my logs" story is to write structured lines to the process's stderr and let the runtime/agent (the Docker driver, a Fluent Bit sidecar, Loki, CloudWatch Logs) collect them. Files still work (and are fine for the `release/shared/logs` layout), but a collector that reads stdout/stderr scales to many replicas without shared storage.
+
+##### Give every request an identity
+
+Structured logs are only as useful as their *correlatability*. A 500 is one log line; the request that produced it spans the controller, a repository, a Messenger dispatch, and a mail send — four or more lines that should be joinable. The standard trick is a **request/correlation ID**: generate (or accept from the client/LB) an `X-Request-Id` at the start of the request, echo it back in the response, and inject it into every log record's context. Then a single `grep <id>` reconstructs the whole request.
+
+```php
+// src/EventSubscriber/RequestIdSubscriber.php
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
+
+final class RequestIdSubscriber implements EventSubscriberInterface
+{
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            KernelEvents::REQUEST  => 'onRequest',
+            KernelEvents::RESPONSE => 'onResponse',
+        ];
+    }
+
+    public function onRequest(RequestEvent $event): void
+    {
+        if (!$event->isMainRequest()) return;
+        $request = $event->getRequest();
+        $id = $request->headers->get('X-Request-Id') ?? bin2hex(random_bytes(8));
+        $request->attributes->set('request_id', $id);
+        // Make it available to log context — see note below.
+    }
+
+    public function onResponse(ResponseEvent $event): void
+    {
+        $id = $event->getRequest()->attributes->get('request_id');
+        if ($id) $event->getResponse()->headers->set('X-Request-Id', $id);
+    }
+}
+```
+
+To get the ID onto *every* log line, attach a small **Monolog processor** to your logger (a processor is a callable that receives each `LogRecord` before it's written and may enrich its `context`):
+
+```php
+// src/Logging/RequestIdProcessor.php
+use Monolog\LogRecord;
+
+final class RequestIdProcessor
+{
+    public function __invoke(LogRecord $record): LogRecord
+    {
+        $ctx = $record->context;
+        $ctx['request_id'] = $_SERVER['HTTP_X_REQUEST_ID'] ?? bin2hex(random_bytes(8));
+        return $record->with(context: $ctx);
+    }
+}
+```
+
+Register it so Monolog applies it to the loggers you care about, and now a support ticket that says "request `9f3a1c20b7e4d6aa`" is a single grep across every container.
+
+##### What to log — and what never to
+
+Log **enough to reconstruct a request** (request ID, tenant ID, route, outcome, duration) and **the context of a failure** (which invoice, which tenant, which mail recipient — *not* the recipient's address or the invoice total). The SaaS is full of **PII** and financial data; that makes logging discipline a *compliance* concern, not just a hygiene one. Concretely:
+
+- **Never** log passwords, tokens, `APP_SECRET`, or raw `DATABASE_URL`.
+- **Log IDs, not full PII.** `customer_id=4821` is useful; `customer email=billing@…` usually isn't.
+- Sanitize query strings that may carry tokens before they reach a log line (Symfony's request log already masks a few sensitive params, but review it).
+- Set a **retention** policy. A collector or log-rotation plan (e.g. `logrotate`, or the collector's retention setting) keeps you from a 40 GB `prod.log` and a bill-shaped surprise.
+
+---
+
+#### 24.7 Monitoring, health checks, and error tracking
+
+Logging tells you *why a request failed*. Monitoring tells you *whether the system is healthy right now* and *whether it's trending toward trouble*. They are different instruments and you need both. There are three distinct layers:
+
+##### 1. Health checks (is it up *now*)
+
+A **health check** is a fast, cheap probe: *can I reach the database? is the messenger transport alive? is the disk not full?* These are what the load balancer polls, what your orchestrator uses to decide a container is "ready," and what you curl at the end of a deploy (§24.5).
+
+Since **Symfony 6.2**, the framework has built-in support. You tag a service with `kernel.health_check` and implement `HealthCheckInterface`; the framework wires up a **`/health`** route (configurable) and a **`monitor:health`** command for free:
+
+```yaml
+# config/packages/framework.yaml
+framework:
+    health_checks:
+        enabled: true
+        path: /health
+```
+
+```php
+// src/Health/DatabaseHealthCheck.php
+namespace App\Health;
+
+use App\Entity\Invoice;
+use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\DependencyInjection\Attribute\AsTag;
+use Symfony\Component\HttpKernel\Health\HealthCheckInterface;
+use Symfony\Component\HttpKernel\Health\HealthCheckResult;
+use Symfony\Component\HttpKernel\Health\Status;
+
+#[AsTag('kernel.health_check')]
+final class DatabaseHealthCheck implements HealthCheckInterface
+{
+    public function __construct(private ManagerRegistry $registry) {}
+
+    public function check(): HealthCheckResult
+    {
+        try {
+            $this->registry
+                ->getManagerForClass(Invoice::class)
+                ->getConnection()
+                ->query('SELECT 1')
+                ->fetchNumeric();
+            return new HealthCheckResult('database', Status::Ok);
+        } catch (\Throwable $e) {
+            return new HealthCheckResult('database', Status::Error, ['error' => $e->getMessage()]);
+        }
+    }
+}
+```
+
+Add a second one that pings the Messenger transport, and `/health` now reflects the two things the SaaS can't serve invoices without. Run `php bin/console monitor:health` to see the individual results. Point your orchestrator's readiness/liveness probe and the deploy health gate at `/health`, and the whole chain is driven by the same signal.
+
+Then put a **dead-man's switch** in front of it: an *external* service (UptimeRobot, Checkly, Better Stack, or a cron on a separate host) hits `/health` every 30–60 seconds and pages you if it *stops* being hit. The point of the "dead-man's" framing is that you're alerted by the *absence* of the heartbeat — so if your monitoring box itself dies, you still get paged.
+
+##### 2. Error tracking (what broke, and how often)
+
+Health checks are coarse. For *which* exceptions are recurring, *how many* users they hit, and *in which release* they started, use an error tracker. **Sentry** has first-class Symfony support and turns uncaught exceptions, failed Messenger handlers, and (optionally) N+1/log-level errors into searchable, grouped incidents with a release tag attached — so you can see "this error appeared after deploy `9f3a1c2`":
+
+```bash
+composer require sentry/sentry-symfony
+```
+
+```yaml
+# config/packages/sentry.yaml
+sentry:
+    dsn: '%env(SENTRY_DSN)%'
+    environment: '%kernel.environment%'
+    release: '%env(GIT_SHA)%'          # tag every event with the build you're running
+    traces_sample_rate: 0.1            # sample 10% of requests for performance traces
+    # capture_silenced_errors: true    # opt in if you have @-silenced errors you care about
+```
+
+The `release` tag is the detail that makes it useful in an ops context: it ties every reported error to an exact image, so "roll back to the last release without this error" is a two-minute decision, not a guess.
+
+##### 3. Metrics, APM, and alerting (is it *trending* badly)
+
+This is the "how fast / how error-prone / how loaded" layer. Two complementary lenses:
+
+- **RED** (for your *requests*): **R**ate (throughput), **E**rrors (5xx rate), **D**uration (latency percentiles, not averages). These are the numbers for the web tier.
+- **USE** (for your *resources*): **U**tilization (CPU, RAM, disk), **S**aturation (queue depth, FPM busy-children), **E**rrors (connection resets, OOM kills). These are the numbers that say "we're about to run out."
+
+For the SaaS, the metrics that actually matter map to the features you built:
+
+- **Messenger** — `async` queue depth and consume rate. A PDF job failing and retrying will *grow* the queue; alert when depth or oldest-message-age crosses a threshold.
+- **Mailer** — send failures per tenant. If one tenant's mail is bouncing, that's an alert before a customer complains.
+- **Scheduler** — did the recurring-invoice / dunning run *succeed*? A scheduler that silently fails to run is a revenue bug. (The Lock component, §24.8, guarantees one run; the log/health entry tells you it happened.)
+- **Web** — p95/p99 latency and 5xx rate, broken out by route.
+
+Tooling: **APM** like Blackfire, Datadog, or New Relic for trace-level "where did this request spend its time"; **Prometheus + Grafana** (or a managed equivalent) for the RED/USE dashboards. The operational discipline matters more than the vendor: **alert on symptoms and SLOs, not on every metric** — "p99 latency over 800 ms for 5 minutes" is a page; "CPU at 41%" is a dashboard tile, not a page. Alerting on noise trains the team to ignore the pager, and a pager people ignore is worse than no pager.
+
+> **The three questions, in one line each:**
+> - *Health check:* "Is it up?" → load balancer, orchestrator, deploy gate.
+> - *Error tracker:* "What's broken, in which release?" → Sentry.
+> - *Metrics/APM:* "Is it fast and trending right?" → Grafana / Blackfire, with SLO-based alerts.
+
+---
+
+#### 24.8 Running the invoicing SaaS in production
+
+Let's assemble everything into the picture this app actually runs under, and call out the multi-tenant specifics that change ops.
+
+```
+                                ┌─────────────────────────────────────────────┐
+   Customers / portal / API ──▶ │  Load balancer  (TLS termination)          │
+                                └───────┬───────────────────────────┬────────┘
+                                        │ HTTP                       │ /health probes
+              ┌─────────────────────────┴───────────┐        ┌───────▼────────┐
+              │  web (FrankenPHP)  × N  [stateless]  │        │  health/uptime │
+              └───┬──────────────┬──────────────┐    └────────┬───────┘
+                  │              │              │             │
+         ┌────────▼───┐   ┌──────▼──────┐   ┌───▼───────────┐ │
+         │  Postgres  │   │  Redis      │   │ Object storage │ │
+         │ (tenant    │   │ (sessions + │   │ (logos, PDFs, │ │
+         │  data)     │   │  cache)     │   │  attachments) │ │
+         └────────────┘   └─────────────┘   └───────────────┘ │
+              ▲                    ▲                          │
+   ┌──────────┴───────────┐  ┌─────┴──────────┐               │
+   │ worker (Messenger) ×N │  │ scheduler × 1  │  ────────────┘
+   │  PDF render, mail send │  │ recurring +    │   (one, guarded
+   └──────────┬─────────────┘  │ dunning, lock  │   by the Lock
+              │                └────────────────┘   component)
+              ▼
+      Mailer (SMTP/SES) ──▶ customers
+```
+
+Read it as processes, not boxes: **`web` is the only tier that scales to absorb traffic spikes; `worker` scales to absorb *backlog*; `scheduler` is exactly one and stays there.** Everything durable (tenant rows, queue, uploads) lives *behind* the stateless processes, which is what lets you scale and swap any of them freely.
+
+##### Multi-tenant operations, specifically
+
+The tenant model from Parts III–V (a `tenant` dimension on every business row) mostly lives in the data layer, but it has real operational consequences:
+
+- **Tenant isolation is at the data layer, not the ops layer.** Every repository/repository-query filters by tenant; a bug that forgets the tenant predicate is a **data-leak across tenants**, not a 500. This is the highest-severity bug class in the app — the `igor-php`-style discipline of "assume the request context, not the DB" matters here, and your health checks + Sentry release tags are how you'd spot a leak ("tenant A's invoices suddenly appear under tenant B").
+- **Noisy tenants.** One tenant with a 50,000-line invoice or a runaway export can saturate a shared worker. Give long/expensive jobs their own Messenger routing key (e.g. `invoice_pdf` on a separate queue) so a single tenant's heavy work can't starve everyone else's email. This is "saturation" in the USE sense, made concrete.
+- **Per-tenant scheduled work, one scheduler.** The scheduler that generates recurring invoices and fires dunning runs once, across all tenants. Guard it with the **Lock** component (Chapter 26) so that even if two scheduler containers are ever briefly up, only one holds the lock for a given run:
+  ```php
+  $lock = $lockFactory->createLock('scheduler.recurring-invoices', 600);
+  if ($lock->acquire()) {
+      try { $this->recurringInvoices->runAll(); }
+      finally { $lock->release(); }
+  }
+  ```
+  Log the run's outcome at `info` with a `scheduler` log context — that line is what your "did dunning actually run today?" alert greps for.
+- **The uploads boundary.** Because uploads must survive redeploys and be shared across web replicas, they live on a shared volume (small stack) or object storage (real scale). For object storage, the database stores a *key*, the URL is signed/expiring per tenant, and a CDN sits in front — which also solves tenant-scoped caching and delivery bandwidth.
+
+##### A day-2 deploy checklist
+
+The first deploy is a learning exercise; the *n-th* deploy should be boring. Here's the checklist that keeps it boring:
+
+- [ ] Image built and tagged by **git SHA** in CI; SHA verified against the merge.
+- [ ] CI **static analysis + full test suite green** on the same artifact.
+- [ ] **Migrations reviewed** for backward compatibility (expand/contract); non-destructive.
+- [ ] New release **built, warmed (`cache:warmup`), migrated** *before* the switch.
+- [ ] **`/health` passes** (DB + Messenger) on the new release *before* it takes traffic.
+- [ ] **Atomic switch** (symlink flip / rolling container update) — no traffic window.
+- [ ] **Workers restarted** *after* the switch so they run the new handler code; queue drained or bounded.
+- [ ] **Rollback rehearsed**: previous SHA tag / `current` target known and reachable.
+- [ ] **Sentry** shows no *new* error groups in the first minutes; **queue depth** not climbing.
+- [ ] **Dead-man's heartbeat** still firing (the external monitor still sees `/health`).
+
+---
+
+#### 24.9 Exercises
+
+1. **Containerize the SaaS end-to-end.** Write a multi-stage `Dockerfile` (FrankenPHP runtime, `--no-dev`, warmed `cache:warmup`) and a `docker-compose.yml` for `web`, `worker`, `scheduler`, `db`, and `redis`, with healthchecks and shared volumes for `var/log`, `var/cache`, and `public/uploads`. Bring it up, then verify `curl -fsS http://localhost:8080/health` returns `200` and that `var/cache` and `public/uploads` survive a `docker compose up -d --force-recreate`.
+
+2. **Structured, correlatable logs.** Switch the prod Monolog config to one-JSON-object-per-line on `stderr`, split into `request`/`invoice`/`messenger` channels, and add a request-ID subscriber + log processor. Send a request, capture the logs, and reconstruct the full request by grepping a single `request_id` across the web and worker containers.
+
+3. **Zero-downtime deploy script.** Using the `release / current / shared` layout, write a deploy script (or adapt the one in §24.5) that prepares a release, warms the cache, migrates the DB *before* the switch, flips the `current` symlink atomically, gates on `/health`, and rolls back on failure. Deploy twice in a row and confirm no request returns a 5xx during the switch; then trigger a deliberate health failure (e.g. point the new release at a bad `DATABASE_URL`) and confirm the automatic rollback.
+
+4. **CI that fails for good reasons.** Extend the GitHub Actions workflow so that a pull request *cannot* merge unless (a) PHP-CS-Fixer is clean, (b) PHPStan passes at level ≥ 6, and (c) the functional tests are green against a Postgres service. Add the `image` and `deploy` jobs so that only `main` builds and deploys an immutable, SHA-tagged image through a reviewed `production` environment.
+
+5. **Observability for the async side.** Add a `HealthCheckInterface` that verifies the Messenger transport is reachable, and wire Sentry with a `release` tag set from the build SHA. Then deliberately throw in a `GenerateInvoicePdf` handler and watch: (a) the `/health` endpoint reflect the transport, (b) Sentry group the failure under the right release, and (c) the `async` queue depth metric move.
+
+6. **Stretch — dead-man's switch and one SLO alert.** Set up an external heartbeat against `/health` that pages you on *absence*, and define one alert on a symptom, not a resource: for example, page when the `async` queue's oldest-message age exceeds five minutes (invoice PDFs not reaching customers). Explain in a short paragraph why alerting on that symptom is more actionable than alerting on "worker CPU > 80%."
+
+---
+
+#### Summary
+
+You now have the full operational picture for a Symfony app, not a list of tools:
+
+- **The contract:** stateless per request, immutable per release, observable by design, swapped in atomically. Everything else is a technique in service of those four.
+- **Web tier:** nginx + PHP-FPM and FrankenPHP are both first-class; FrankenPHP's worker mode is the modern default for framework throughput, and it demands `ResetInterface` discipline (check it with `igor-php`).
+- **Docker:** a multi-stage, `--no-dev`, cache-warmed image, tagged immutably; mutable state on volumes, secrets in the environment, and the *same image* running web, workers, and scheduler.
+- **CI/CD:** analyze → test → build an immutable artifact → deploy it; migrations run *before* the switch and are always backward compatible (expand/contract).
+- **Zero downtime:** four conditions — stateless, shared state, atomic switch, health gate — plus a rehearsed, cheap rollback.
+- **Observability in three layers:** health checks (`/health`, `monitor:health`) for *is it up*, Sentry for *what broke in which release*, and metrics/APM (RED + USE) for *is it trending right*, with SLO-based alerts and a dead-man's heartbeat.
+
+Deployment isn't a one-time event; it's the loop you run dozens of times a month. Once the loop is boring — build, gate on `/health`, flip, watch Sentry and the queue — you're free to spend that energy on the product.
+
+Next, in **Part VII**, we step back inside the application. An invoice isn't a flat record — it's a *life cycle*: draft → sent → partially paid → paid, with voids and dunning along the way. **Chapter 25** models exactly that with the **Workflow** component: states, transitions, guards, and the events that let the rest of the system react the moment an invoice changes its mind.
+
+---
+
+## Part VII — Advanced Topics
+
+### Chapter 25. Workflows: Modeling State Machines
+
+By the time you reach this chapter, your invoicing SaaS has a working `Invoice` entity, authenticated endpoints, and a serializer that happily emits JSON. But there's a gap: an invoice is not just a bag of fields. It has a *life*. It starts as a draft, gets submitted, is either approved or rejected, is eventually paid — or it goes overdue, or gets voided. Right now that lifecycle is probably implied by a `$status` string and a scattering of `if ($invoice->getStatus() === 'approved')` checks across your controllers, services, and templates. That's the fragile kind of code that quietly accepts a payment on a rejected invoice.
+
+This chapter replaces all of that with Symfony's **Workflow** component. You'll define an invoice's lifecycle *once*, in configuration, and then drive it from anywhere — controllers, console commands, API endpoints, even background workers — with the state rules enforced in exactly one place. Along the way you'll add guards (so a manager can approve but a customer cannot), hook in side effects (send a receipt the instant an invoice is paid), expose the allowed actions to your templates and API, visualize the whole thing for onboarding, and test it like the rest of the app. We'll finish with a feature that only landed in **Symfony 7.4**: *weighted transitions*, which let you model "three approvals required" instead of hand-rolling the count.
+
+> **Where this fits.** Workflows are a cross-cutting concern. Chapter 12 (Security) supplies the `is_granted()` guards; Chapter 16 (Mailer) sends the receipt; Chapter 17 (Messenger) can react asynchronously; Chapter 19 (Serializer) can expose the enabled transitions in your API. This chapter is where those pieces get wired together around a single, authoritative state model.
+
+---
+
+#### 25.1 Workflows and state machines
+
+Before writing any configuration, it's worth learning the component's vocabulary, because it comes straight from *Petri nets* and the terms are specific.
+
+| Term | Meaning |
+| --- | --- |
+| **Place** | A single stage or state a subject can be in. (The docs also say "state" or "step".) |
+| **Transition** | A named action that moves a subject from one or more places to one or more places. |
+| **Marking** | The subject's current position: *which* places it occupies (and, since 7.4, *how many times*). |
+| **Marking store** | The strategy that reads and writes the marking on your object (a property, a method, a Doctrine column, etc.). |
+| **Definition** | The whole model: the set of places plus the set of transitions. |
+
+A workflow needs two things: a **definition** and a **marking store**. Everything else is built on top of those.
+
+##### The distinction that matters: *workflow* vs *state machine*
+
+Symfony's component covers both, and the difference is small but important — it determines which `type:` you configure and how transitions "fire."
+
+- A **state machine** holds a *single* place at a time. Your subject is *either* `draft` *or* `submitted`, never both. A transition can fire if the subject is in **at least one** of the transition's source places.
+- A **workflow** can occupy *multiple* places at once. A transition can only fire if the subject is in **all** of its source places simultaneously.
+
+| | State machine | Workflow |
+| --- | --- | --- |
+| Places at once | Exactly one | One or many |
+| Marking store | `single_state` (a string) | `multiple_state` (an array) |
+| Transition requires | Subject in **any** source place | Subject in **all** source places |
+| `type` config | `state_machine` | `workflow` |
+| Marking property | `string` (or `BackedEnum`) | `array` |
+
+An **invoice** is a textbook *state machine* — it's in exactly one state at a time. A **reconciliation** that needs three independent line-items confirmed before it can close is a *workflow*. We'll build the invoice as a state machine (Section 25.2) and come back to a multi-place workflow at the end (Sections 25.8–25.9).
+
+> **Note.** You almost never configure the marking store type yourself: Symfony infers `single_state` from `type: state_machine` and `multiple_state` from `type: workflow`. Configure the *property*, not the type, and let the `type` drive the rest.
+
+---
+
+#### 25.2 Designing the invoice lifecycle
+
+Let's design the lifecycle *before* we write config. Good workflow design is a paper exercise first; the diagram is the deliverable.
+
+```
+                 +-------+  submit   +-----------+  approve   +----------+
+        (new) --> | draft | --------> | submitted | ---------> | approved |
+                 +-------+            +-----------+            +----------+
+                      |                    |  ^                     |  ^
+                void  |              reject|  | reissue        pay  |  | mark_
+                      v                    v  |                 |    |  | overdue
+                 +----------+        +----------+               v    |  |
+                 | voided   |        | rejected |          +-------+ |  |
+                 +----------+        +----------+          | paid  |<+--+-+
+                                                           +-------+   |
+                       mark_overdue <------------------------------+
+```
+
+In a cleaner tabular form, the places and transitions are:
+
+| Transition | From | To | Notes |
+| --- | --- | --- | --- |
+| `submit` | `draft` | `submitted` | Customer or agent submits. |
+| `approve` | `submitted` | `approved` | **Manager only** (guarded). |
+| `reject` | `submitted` | `rejected` | With a reason. |
+| `record_payment` | `approved` | `paid` | Requires a payment reference. |
+| `void` | `draft`, `submitted` | `voided` | Final, irreversible. |
+| `mark_overdue` | `submitted`, `approved` | `overdue` | Usually driven by a cron (Ch. 18). |
+| `reissue` | `rejected`, `overdue` | `draft` | Start a corrected copy. |
+
+Notice that `void`, `mark_overdue`, and `reissue` each have **multiple source places** — that's exactly the kind of thing that's easy to get wrong with ad-hoc `switch` statements and trivial to declare once here. We'll treat `paid` and `voided` as terminal states (no outgoing transitions), which the component enforces for free.
+
+---
+
+#### 25.3 Installation and configuration
+
+##### Install the component
+
+If you're on a Flex project, installing the recipe pulls in the `framework.workflows` configuration section and registers the `workflow:dump` command:
+
+```
+$ composer require symfony/workflow
+```
+
+You can dump every available option at any time — it's the fastest way to stop guessing:
+
+```
+$ php bin/console config:dump-reference framework workflows
+```
+
+##### Model the states as an enum
+
+Because we're on PHP 8.2+, the natural representation of a place is a backed enum. The Workflow component transparently converts between the enum and its string backing value, so the marking store works with a typed property.
+
+```php
+<?php
+// src/Enum/InvoiceStatus.php
+
+namespace App\Enum;
+
+enum InvoiceStatus: string
+{
+    case Draft     = 'draft';
+    case Submitted = 'submitted';
+    case Approved  = 'approved';
+    case Rejected  = 'rejected';
+    case Paid      = 'paid';
+    case Overdue   = 'overdue';
+    case Voided    = 'voided';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Draft     => 'Draft',
+            self::Submitted => 'Submitted',
+            self::Approved  => 'Approved',
+            self::Rejected  => 'Rejected',
+            self::Paid      => 'Paid',
+            self::Overdue   => 'Overdue',
+            self::Voided    => 'Voided',
+        };
+    }
+}
+```
+
+The enum's *backing values* (`'draft'`, `'submitted'`, …) are the place names the workflow will use. Keeping them lowercase and stable matters: they're what gets persisted.
+
+##### The entity and its marking store
+
+The marking store of type `method` reads and writes a property via its getter and setter. For our `Invoice`, that's `status`:
+
+```php
+<?php
+// src/Entity/Invoice.php
+
+namespace App\Entity;
+
+use App\Enum\InvoiceStatus;
+use App\Enum\InvoiceTransition;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity]
+#[ORM\Table(name: 'invoice')]
+class Invoice
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\ManyToOne(inversedBy: 'invoices')]
+    #[ORM\JoinColumn(nullable: false)]
+    private Tenant $tenant;
+
+    #[ORM\ManyToOne]
+    private ?Customer $customer = null;
+
+    /**
+     * The marking-store property. Typed as the enum; the store casts it for you.
+     */
+    #[ORM\Column(enumType: InvoiceStatus::class)]
+    private InvoiceStatus $status;
+
+    // ... amount, currency, dueDate, lineItems, etc. (omitted)
+
+    public function __construct(Tenant $tenant)
+    {
+        $this->tenant = $tenant;
+        $this->status = InvoiceStatus::Draft;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getTenant(): Tenant
+    {
+        return $this->tenant;
+    }
+
+    public function getStatus(): InvoiceStatus
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param array $context Passed straight through from apply(); see §25.7.
+     */
+    public function setStatus(InvoiceStatus $status, array $context = []): void
+    {
+        $this->status = $status;
+    }
+    // ... other getters/setters
+}
+```
+
+A couple of deliberate choices here:
+
+- **The marking-store property must have a getter and a setter.** The setter accepts an optional `$context` array; the workflow passes the same context through `apply()` to every event listener and back into the marking. We'll use that in Section 25.7 to record *who* performed a transition.
+- **The constructor sets the initial state.** The docs' recommended pattern is to leave the property `null` and initialize it by calling `$workflow->getMarking($invoice)` (which reads `initial_marking` from config). That's clean for plain value objects, but for a Doctrine entity the column is `NOT NULL`, so a constructor default is the pragmatic choice. We *also* declare `initial_marking` in config (below) so the workflow's view of the starting place is the single source of truth and works even if you hydrate from the database.
+
+##### The workflow definition
+
+Now the heart of it. This lives in `config/packages/workflow.yaml`:
+
+```yaml
+# config/packages/workflow.yaml
+framework:
+    workflows:
+        invoice:
+            type: state_machine
+            audit_trail:
+                enabled: true            # logs every transition to the PSR-3 logger
+            marking_store:
+                type: method
+                property: status
+            supports:
+                - App\Entity\Invoice     # required for the Registry and Twig helpers
+            initial_marking: draft
+            places:
+                draft:
+                    metadata: { label: 'Draft' }
+                submitted:
+                    metadata: { label: 'Submitted' }
+                approved:
+                    metadata: { label: 'Approved', bg_color: 'LightBlue' }
+                rejected:
+                    metadata: { label: 'Rejected', bg_color: 'LightCoral' }
+                paid:
+                    metadata: { label: 'Paid', bg_color: 'LightGreen' }
+                overdue:
+                    metadata: { label: 'Overdue', bg_color: 'Orange' }
+                voided:
+                    metadata: { label: 'Voided', bg_color: 'Grey' }
+            transitions:
+                submit:
+                    from: draft
+                    to: submitted
+                    metadata: { label: 'Submit invoice' }
+                approve:
+                    from: submitted
+                    to: approved
+                    guard: is_granted('ROLE_MANAGER')
+                    metadata: { label: 'Approve' }
+                reject:
+                    from: submitted
+                    to: rejected
+                    metadata: { label: 'Reject' }
+                record_payment:
+                    from: approved
+                    to: paid
+                    metadata: { label: 'Record payment' }
+                void:
+                    from: [draft, submitted]
+                    to: voided
+                    metadata: { label: 'Void', color: 'Red' }
+                mark_overdue:
+                    from: [submitted, approved]
+                    to: overdue
+                    metadata: { label: 'Mark overdue' }
+                reissue:
+                    from: [rejected, overdue]
+                    to: draft
+                    metadata: { label: 'Reissue' }
+```
+
+Let's unpack the options you might not have expected:
+
+- **`supports`** tells the `Registry` "which class does this workflow operate on?" Without it, `Registry::get($invoice)` and the Twig functions can't find the right workflow for an object. *This is not optional if you intend to use the Twig helpers.*
+- **`places`** can be omitted entirely — if you do, Symfony derives them from the `from`/`to` of every transition. We keep them here because we want to attach **`metadata`** (labels for the UI, colors for the visualizer). The same `metadata` key works on transitions and on the workflow itself.
+- **`guard`** is the shorthand for a single expression-language guard. `is_granted('ROLE_MANAGER')` means "this transition is only enabled for users who have the `ROLE_MANAGER` role." More on guards in Section 25.6.
+- **`initial_marking`** documents the starting place. It's a string (a backing value), but you can also reference the enum or a constant.
+
+> **Tip — reference constants and enums in YAML.** Symfony's YAML parser understands the `!php/const` and `!php/enum` tags, so the config can stay in lockstep with your code. Instead of sprinkling the literal string `'draft'` around, you can write:
+>
+> ```yaml
+> initial_marking: !php/enum App\Enum\InvoiceStatus::Draft
+> transitions:
+>     submit:
+>         from: !php/enum App\Enum\InvoiceStatus::Draft
+>         to:   !php/enum App\Enum\InvoiceStatus::Submitted
+> ```
+>
+> Rename the enum case and the compiler catches every place that references it — instead of you finding them in production.
+
+At cache warm-up Symfony **validates** every workflow: it checks that every place referenced by a transition exists, that the `initial_marking` is a real place, and (for state machines) that no transition is structurally impossible. If you've made a typo, you'll find out before you deploy, not after.
+
+---
+
+#### 25.4 Driving the workflow
+
+Every workflow you define becomes a service. For `invoice`, the service id is `workflow.invoice` and it implements `WorkflowInterface`. You have two idiomatic ways to reach it.
+
+##### Autowiring by name
+
+The convention is `camelCase(workflow name) + ('Workflow' | 'StateMachine')`. Because `invoice` is a state machine, the parameter is `$invoiceStateMachine`:
+
+```php
+use Symfony\Component\Workflow\WorkflowInterface;
+
+class InvoiceStateService
+{
+    // Symfony injects the 'workflow.invoice' state machine service
+    public function __construct(
+        private readonly WorkflowInterface $invoiceStateMachine,
+    ) {
+    }
+    // ...
+}
+```
+
+##### The registry
+
+The `Registry` resolves the workflow *from the object*. This is more robust when you have several workflows or you don't want to hard-code the name:
+
+```php
+use Symfony\Component\Workflow\Registry;
+
+class InvoiceStateService
+{
+    public function __construct(
+        private readonly Registry $registry,
+    ) {
+    }
+
+    private function workflowFor(object $subject)
+    {
+        // Resolves the single workflow that supports $subject.
+        return $this->registry->get($subject);
+    }
+}
+```
+
+You can inspect all available workflow services any time with `php bin/console debug:autowiring workflow`.
+
+##### A thin service around the raw workflow
+
+I rarely call the raw state machine from a controller. A small service gives me one home for the state logic, one place to translate a failed transition into a friendly error, and a seam for the tenant-aware rules coming up later. Here's the whole wrapper:
+
+```php
+<?php
+// src/Service/InvoiceStateService.php
+
+namespace App\Service;
+
+use App\Entity\Invoice;
+use App\Exception\InvoiceTransitionException;
+use Symfony\Component\Workflow\Exception\TransitionException;
+use Symfony\Component\Workflow\Registry;
+use Symfony\Component\Workflow\Transition;
+use Symfony\Component\Workflow\TransitionBlocker;
+use Symfony\Component\Workflow\WorkflowInterface;
+
+class InvoiceStateService
+{
+    public function __construct(
+        private readonly Registry $registry,
+    ) {
+    }
+
+    // One method per transition — an explicit, greppable API.
+    public function submit(Invoice $invoice): void          { $this->transition($invoice, 'submit'); }
+    public function approve(Invoice $invoice): void         { $this->transition($invoice, 'approve'); }
+    public function reject(Invoice $invoice): void          { $this->transition($invoice, 'reject'); }
+    public function recordPayment(Invoice $invoice): void   { $this->transition($invoice, 'record_payment'); }
+    public function void(Invoice $invoice): void            { $this->transition($invoice, 'void'); }
+    public function markOverdue(Invoice $invoice): void     { $this->transition($invoice, 'mark_overdue'); }
+    public function reissue(Invoice $invoice): void         { $this->transition($invoice, 'reissue'); }
+
+    public function can(Invoice $invoice, string $transition): bool
+    {
+        return $this->workflowFor($invoice)->can($invoice, $transition);
+    }
+
+    /**
+     * @return Transition[]
+     */
+    public function enabledTransitions(Invoice $invoice): array
+    {
+        return $this->workflowFor($invoice)->getEnabledTransitions($invoice);
+    }
+
+    public function transition(Invoice $invoice, string $transition): void
+    {
+        $workflow = $this->workflowFor($invoice);
+
+        try {
+            $workflow->apply($invoice, $transition);
+        } catch (TransitionException) {
+            // Turn the low-level exception into a domain exception with human reasons.
+            $reasons = array_map(
+                static fn (TransitionBlocker $b): string => $b->getMessage(),
+                [...$workflow->buildTransitionBlockerList($invoice, $transition)],
+            );
+
+            throw new InvoiceTransitionException(sprintf(
+                'Cannot apply "%s" to invoice #%d: %s',
+                $transition,
+                $invoice->getId(),
+                implode(' ', array_filter($reasons)),
+            ));
+        }
+    }
+
+    private function workflowFor(Invoice $invoice): WorkflowInterface
+    {
+        return $this->registry->get($invoice, 'invoice');
+    }
+}
+```
+
+A few things worth calling out:
+
+- **`apply()` is the only way the state changes.** It fires the full event pipeline (guards → leave → transition → enter → entered → completed) and writes the marking. If the transition isn't currently enabled, it throws `TransitionException` (which extends the workflow's `LogicException`).
+- **`buildTransitionBlockerList()` tells you *why*.** Each `TransitionBlocker` has a `getMessage()` and a machine-readable `getCode()` (e.g. `BLOCKED_BY_MARKING` when the object simply isn't in the right place, or `BLOCKED_BY_EXPRESSION_GUARD_LISTENER` when a guard vetoed it). We surface the messages in the user-facing error.
+
+And the small domain exception:
+
+```php
+<?php
+// src/Exception/InvoiceTransitionException.php
+
+namespace App\Exception;
+
+class InvoiceTransitionException extends \DomainException
+{
+}
+```
+
+##### The core verbs, at a glance
+
+| Method | Returns | Use it for |
+| --- | --- | --- |
+| `can($subject, $name)` | `bool` | Deciding whether to offer an action. Runs guards. |
+| `getEnabledTransitions($subject)` | `Transition[]` | Listing every action currently available. |
+| `getEnabledTransition($subject, $name)` | `?Transition` | Checking one specific transition. |
+| `apply($subject, $name, array $context = [])` | `Marking` | Actually performing the transition. |
+| `buildTransitionBlockerList($subject, $name)` | `TransitionBlockerList` | Diagnosing a disabled transition. |
+| `getMarking($subject)` | `Marking` | Reading the current place(s); initializes a `null` marking. |
+
+Because `can()`, `getEnabledTransitions()`, and `apply()` *all* run the guard logic, a guard that does expensive work runs on each of them — keep guards cheap, or read Section 25.7's note on the `announce` event before you optimize prematurely.
+
+---
+
+#### 25.5 Exposing state in the UI
+
+The point of a workflow is that the UI can be *derived* from the model instead of hard-coded. You never write "if status is approved, show a Pay button." You ask the workflow what's possible.
+
+##### A controller action that drives a transition
+
+Transitions that change state should be `POST` (they're not idempotent and not safe to repeat). We route the transition name in the path and let the workflow reject anything that isn't actually enabled:
+
+```php
+<?php
+// src/Controller/InvoiceController.php
+
+namespace App\Controller;
+
+use App\Entity\Invoice;
+use App\Exception\InvoiceTransitionException;
+use App\Service\InvoiceStateService;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Attribute\Route;
+
+class InvoiceController extends AbstractController
+{
+    #[Route('/invoices/{id<\d+>}/{transition}/transition',
+            name: 'app_invoice_transition', methods: ['POST'])]
+    public function transition(
+        Invoice $invoice,
+        string $transition,
+        Request $request,
+        InvoiceStateService $states,
+    ): RedirectResponse {
+        // Defense in depth: the guard handles roles, a voter handles object-level access (Ch. 12).
+        $this->denyAccessUnlessGranted('EDIT', $invoice);
+
+        $from = $invoice->getStatus();
+
+        try {
+            $states->transition($invoice, $transition);
+        } catch (InvoiceTransitionException $e) {
+            $this->addFlash('danger', $e->getMessage());
+            return $this->redirectToRoute('app_invoice_show', ['id' => $invoice->getId()]);
+        }
+
+        $this->entityManager->flush();
+        $this->addFlash('success', sprintf(
+            'Invoice moved from %s to %s.',
+            $from->label(),
+            $invoice->getStatus()->label(),
+        ));
+
+        return $this->redirectToRoute('app_invoice_show', ['id' => $invoice->getId()]);
+    }
+}
+```
+
+Note that there's no `switch` over transition names here. The workflow is the switch. Adding a new transition means touching the YAML and one service method — not this controller.
+
+##### Twig's workflow helpers
+
+The Twig bridge ships a small set of functions that read straight from the workflow (and require `supports` to be set):
+
+| Function | Returns |
+| --- | --- |
+| `workflow_can(subject, name)` | `bool` — is this transition enabled? |
+| `workflow_transitions(subject)` | `Transition[]` — every enabled transition |
+| `workflow_transition(subject, name)` | `?Transition` — a single enabled transition |
+| `workflow_has_marked_place(subject, place)` | `bool` — (workflows) is this place occupied? |
+| `workflow_marked_places(subject)` | `string[]` — (workflows) which places are occupied |
+| `workflow_metadata(subject, key, [subject])` | `mixed` — metadata on the workflow, a place, or a `Transition` |
+| `workflow_transition_blockers(subject, name)` | `TransitionBlockerList` — why a transition is blocked |
+
+The `metadata` function takes an optional third argument: pass a place name to read *place* metadata, a `Transition` object to read *transition* metadata, or omit it to read the *workflow's* metadata.
+
+Here's the invoice detail view. It renders the current state, then offers exactly the transitions the workflow says are available:
+
+```twig
+{# templates/invoice/show.html.twig #}
+<h1>Invoice #{{ invoice.id }}</h1>
+
+<p>
+    Status: <span class="badge badge-status">{{ invoice.status.label }}</span>
+    {# Billed to: {{ invoice.customer.name }} ({{ invoice.tenant.name }}) #}
+</p>
+
+<h2>Actions</h2>
+{% set transitions = workflow_transitions(invoice) %}
+{% if transitions is empty %}
+    <p class="muted">This invoice is in a final state; no further actions are available.</p>
+{% else %}
+    {% for transition in transitions %}
+        <form method="post" class="inline"
+              action="{{ path('app_invoice_transition', { id: invoice.id, transition: transition.name }) }}">
+            {{ csrf_token('invoice_' ~ invoice.id) }}
+            <button type="submit" class="btn">
+                {{ workflow_metadata(invoice, 'label', transition) or transition.name }}
+            </button>
+        </form>
+    {% endfor %}
+{% endif %}
+
+{# Explain, inline, why a specific action is *not* available right now. #}
+{% if not workflow_can(invoice, 'record_payment') %}
+    <p class="muted small">
+        Cannot record payment:
+        {% for blocker in workflow_transition_blockers(invoice, 'record_payment') %}
+            {{ blocker.message }}{% if not loop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+{% endif %}
+```
+
+Because the buttons come from `workflow_transitions()`, a new transition appears here automatically. And because each button is its own `POST` form with a CSRF token, "record payment on a rejected invoice" simply isn't a button that exists.
+
+> **Tip — expose this to your API too.** In Chapter 19 you'll add `TransitionalProvider`-style data to your serializer. The cleanest approach is a denormalization callback (or a DTO) that returns the *enabled transition names* alongside the invoice, so a REST/GraphQL client knows exactly which actions it can perform — the same "server is the source of truth" principle as the UI.
+
+---
+
+#### 25.6 Guards
+
+A **guard** decides whether a transition is allowed *beyond* just "are you in the right place." You've already seen the simplest guard: `guard: is_granted('ROLE_MANAGER')`. Symfony gives you three escalating levels of control.
+
+##### Level 1 — an expression on the transition
+
+For simple checks, an expression-language string on the transition is the least code. The expression is evaluated with `subject` available (and, with the Security component installed, functions like `is_granted()`):
+
+```yaml
+transitions:
+    record_payment:
+        from: approved
+        to: paid
+        guard: subject.hasPaymentReference()
+```
+
+No PHP class, no service — just a condition. Great for "the subject must satisfy X."
+
+##### Level 2 — named callback/expression guards
+
+For anything that needs real logic, a service, or a *named reason*, use the `on_transition`, `on_leave`, and `on_enter` keys. Each is a list of guard definitions. A guard can be an `expression` or a `callback` (a `[service, method]` pair). Each guard may have a `name`, which becomes the blocker reason when it fails:
+
+```yaml
+transitions:
+    record_payment:
+        from: approved
+        to: paid
+        on_transition:
+            - name: has_payment_reference
+              expression: "subject.hasPaymentReference()"
+            - name: paid_in_full
+              callback: [App\Workflow\InvoiceGuard, 'paymentCoversTotal']
+```
+
+```php
+<?php
+// src/Workflow/InvoiceGuard.php
+
+namespace App\Workflow;
+
+use App\Entity\Invoice;
+
+class InvoiceGuard
+{
+    public function paymentCoversTotal(Invoice $invoice): bool
+    {
+        return $invoice->paymentAmount() >= $invoice->total();
+    }
+}
+```
+
+The callback receives the **subject** and returns `bool`. `true` passes; `false` blocks the transition and reports its `name` as the reason. That name is what a user sees ("Cannot record payment: paid_in_full") and what your tests can assert on.
+
+`on_leave` runs as the subject is leaving a place, and `on_enter` as it enters one — both can block the transition. You'll most often use `on_transition`.
+
+##### Level 3 — guard events (the flexible option)
+
+For logic that depends on many collaborators, that you want to unit-test in isolation, or that shouldn't live in YAML at all, listen to the **guard events** and call `setBlocked()`. Guard events fire whenever `can()`, `getEnabledTransitions()`, or `apply()` is called. They come in three granularities:
+
+- `workflow.guard` — every guard, every workflow
+- `workflow.[name].guard` — every guard for one workflow
+- `workflow.[name].guard.[transition]` — one specific transition
+
+```php
+<?php
+// src/EventSubscriber/InvoiceGuardSubscriber.php
+
+namespace App\EventSubscriber;
+
+use App\Entity\Invoice;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Workflow\Event\GuardEvent;
+
+class InvoiceGuardSubscriber
+{
+    public function __construct(
+        private readonly Security $security,
+    ) {
+    }
+
+    #[AsEventListener(event: 'workflow.invoice.guard.approve')]
+    public function onlyManagersCanApprove(GuardEvent $event): void
+    {
+        /** @var Invoice $invoice */
+        $invoice = $event->getSubject();
+
+        // Tenant policy: this tenant's invoices need a manager to approve.
+        if ($invoice->getTenant()->getBillingPolicy()->requiresManagerApproval()
+            && !$this->security->isGranted('ROLE_MANAGER')
+        ) {
+            $event->setBlocked(true, 'Approval requires a manager for this tenant.');
+        }
+    }
+}
+```
+
+This is where the multi-tenancy theme of this book pays off: the *same* transition is governed by *per-tenant policy*. A tenant on the "Standard" plan can let any agent approve; a tenant on "Enterprise" requires a manager. The rule lives in a subscriber, reads the tenant's policy, and blocks with a reason — no fork in the workflow definition, no `if` in the controller.
+
+> **Note — you can't call `is_granted()` inside a plain callback guard** the way you can in an expression; the expression evaluator wires up the security functions for you. In a callback or a subscriber, inject the `Security` service (or a voter) and call `isGranted()` yourself, as above.
+
+**Which level do you pick?**
+
+| Need | Use |
+| --- | --- |
+| Simple property check | `guard:` / `expression` |
+| Logic in a service, with a named reason | `callback` guard |
+| Multi-service logic, per-tenant rules, easy to test | Guard **event** subscriber |
+
+All three coexist and are all evaluated; a single `false`/`setBlocked()` vetoes the transition.
+
+---
+
+#### 25.7 Events and side effects
+
+When you call `apply()`, the workflow dispatches a well-ordered stream of events. Each event is available at three granularities (generic → workflow → specific), exactly like the guard events:
+
+| Order | Event (specific form) | Class | Fires when |
+| --- | --- | --- | --- |
+| 1 | `workflow.[name].guard.[transition]` | `GuardEvent` | Deciding whether the transition is allowed. Always fired. |
+| 2 | `workflow.[name].leave.[place]` | `LeaveEvent` | Subject is *about to* leave a place. |
+| 3 | `workflow.[name].transition.[transition]` | `TransitionEvent` | Subject is going through the transition. |
+| 4 | `workflow.[name].enter.[place]` | `EnterEvent` | Subject is *about to* enter a place — **marking not yet updated**. |
+| 5 | `workflow.[name].entered.[place]` | `EnteredEvent` | Subject has entered — **marking now updated**. |
+| 6 | `workflow.[name].completed.[transition]` | `CompletedEvent` | The transition is fully complete. |
+| 7 | `workflow.[name].announce.[transition]` | `AnnounceEvent` | After the transition, for each newly-accessible transition (re-runs guards). |
+
+The single most common mistake is listening to `enter` when you need `entered`. During `enter`, the marking store has **not** been written yet, so `$invoice->getStatus()` still returns the *old* state. Use `entered` when you need the fresh state.
+
+##### Logging the audit trail
+
+`audit_trail.enabled: true` already logs transitions for you. For a richer, tenant-aware record (which the operations chapter will ship to your logs and your audit table), add a subscriber:
+
+```php
+<?php
+// src/EventSubscriber/InvoiceAuditSubscriber.php
+
+namespace App\EventSubscriber;
+
+use App\Entity\Invoice;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Workflow\Event\TransitionEvent;
+
+class InvoiceAuditSubscriber
+{
+    public function __construct(
+        private readonly LoggerInterface $logger,
+        private readonly Security $security,
+    ) {
+    }
+
+    #[AsEventListener(event: 'workflow.invoice.transition')]
+    public function log(TransitionEvent $event): void
+    {
+        /** @var Invoice $invoice */
+        $invoice = $event->getSubject();
+        $actor   = $this->security->getUser();
+
+        $this->logger->info('invoice.transition', [
+            'tenant_id'   => $invoice->getTenant()->getId(),
+            'invoice_id'  => $invoice->getId(),
+            'transition'  => $event->getTransition()->getName(),
+            'marking'     => array_keys($event->getMarking()->getPlaces()),
+            'actor'       => $actor?->getUserIdentifier(),
+            'context'     => $event->getContext(),
+        ]);
+    }
+}
+```
+
+That single listener gives you a complete, queryable history of every state change, tied to the tenant and the actor — the backbone of an "invoice activity" timeline and of compliance.
+
+##### Side effects: send the receipt the moment it's paid
+
+This is where workflows really shine over ad-hoc status strings. The "send a receipt email" behavior is *attached to the state change itself*, so it fires no matter which path triggered the transition — a controller, an API call, a console command, or a payment webhook:
+
+```php
+<?php
+// src/EventSubscriber/InvoiceReceiptSubscriber.php
+
+namespace App\EventSubscriber;
+
+use App\Entity\Invoice;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Workflow\Event\EnteredEvent;
+
+class InvoiceReceiptSubscriber
+{
+    public function __construct(
+        private readonly MailerInterface $mailer,
+    ) {
+    }
+
+    // 'entered', not 'enter': the status is now actually 'paid'.
+    #[AsEventListener(event: 'workflow.invoice.entered.paid')]
+    public function sendReceipt(EnteredEvent $event): void
+    {
+        /** @var Invoice $invoice */
+        $invoice = $event->getSubject();
+        $customer = $invoice->getCustomer();
+
+        if (null === $customer || null === $customer->getEmail()) {
+            return;
+        }
+
+        $email = (new TemplatedEmail())
+            ->from('billing@' . $invoice->getTenant()->getDomain())
+            ->to($customer->getEmail())
+            ->subject(sprintf('Payment received for invoice #%d', $invoice->getId()))
+            ->htmlTemplate('email/invoice_paid.html.twig')
+            ->context(['invoice' => $invoice]);
+
+        $this->mailer->send($email);
+    }
+}
+```
+
+The same hook is the natural place to dispatch a **Messenger** message (Chapter 17) so heavier work — updating the tenant's revenue rollup, notifying a finance queue — happens asynchronously without slowing the request.
+
+> **Tip — pass data through `apply()`.** The third argument to `apply()` is a context array that the workflow forwards to every event (except `guard`) and into the marking store setter. Use it to record metadata about *how* a transition happened:
+>
+> ```php
+> $states->transition($invoice, 'record_payment'); // wraps apply()
+> // or, with the raw workflow:
+> $workflow->apply($invoice, 'record_payment', ['source' => 'stripe_webhook']);
+> ```
+>
+> Your audit subscriber above reads it via `$event->getContext()`.
+
+##### Choosing which events to dispatch
+
+Dispatching *every* event for *every* transition has a cost, and the `announce` event (which re-runs guards for each newly-available transition) is the priciest. You can trim it two ways.
+
+Per workflow, restrict which events are dispatched at all (guard events are always fired and can't be disabled):
+
+```yaml
+framework:
+    workflows:
+        invoice:
+            # ...
+            events_to_dispatch: ['workflow.leave', 'workflow.completed']
+            # or: events_to_dispatch: []   to dispatch nothing
+```
+
+Per transition, disable a specific event from the apply call:
+
+```php
+use Symfony\Component\Workflow\Workflow;
+
+$workflow->apply($invoice, 'submit', [
+    Workflow::DISABLE_ANNOUNCE_EVENT => true,
+    Workflow::DISABLE_LEAVE_EVENT    => true,
+]);
+```
+
+The available constants are `DISABLE_LEAVE_EVENT`, `DISABLE_TRANSITION_EVENT`, `DISABLE_ENTER_EVENT`, `DISABLE_ENTERED_EVENT`, and `DISABLE_COMPLETED_EVENT`. Disable the event you don't listen to — not "most of them" out of caution — and measure before micro-optimizing.
+
+---
+
+#### 25.8 One object, many workflows (and multiple places)
+
+We've been treating one entity as owning one state machine. That's not a rule. The `Registry` lets **several workflows support the same class**, each with its own marking store property. The classic invoicing example: an invoice has a *billing* state (draft → paid, a state machine) **and** a *fulfillment* state (invoiced → shipped → delivered, possibly a multi-place workflow). Each is configured separately and each `supports: [App\Entity\Invoice]`.
+
+The catch: when two workflows support the same class, you **must** disambiguate by name, or `Registry::get($subject)` will refuse to guess:
+
+```php
+$billing  = $registry->get($invoice, 'invoice');
+$shipping = $registry->get($invoice, 'shipment');
+```
+
+And this is where the *workflow* (multi-place) half of the component finally earns its keep. A state machine can only say "I'm in one place." A *workflow* can say "I've been marked in these several places at once," and a transition can require *all* of them.
+
+---
+
+#### 25.9 Weighted transitions (new in Symfony 7.4)
+
+Multi-place workflows already let you be in several places at once. **Weighted transitions**, added in **7.4**, add *multiplicity*: a place can now record **how many times** the subject is in it. The practical effect — you can model "you need *N* of the same thing before this can proceed."
+
+A realistic invoicing case: **a large contract cannot be signed until three independent parties have approved it.** Before 7.4 you'd hand-roll a counter and a bunch of `>= 3` checks. Now the model *is* the rule.
+
+##### The entity (multiple-state, JSON marking)
+
+Because a workflow's marking is an array of `place => count`, the Doctrine column is JSON:
+
+```php
+<?php
+// src/Entity/Contract.php
+
+namespace App\Entity;
+
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity]
+class Contract
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    /**
+     * The multi-place marking: ['draft' => 1], then
+     * ['awaiting_approval' => 3], then ['approved' => 3], then ['signed' => 1].
+     *
+     * @var array<string, int>
+     */
+    #[ORM\Column(type: Types::JSON)]
+    private array $approvalMarking = ['draft' => 1];
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getApprovalMarking(): array
+    {
+        return $this->approvalMarking;
+    }
+
+    public function setApprovalMarking(array $approvalMarking, array $context = []): void
+    {
+        $this->approvalMarking = $approvalMarking;
+    }
+}
+```
+
+##### The config
+
+A **weight** on a `to` means "produce N tokens in that place"; a weight on a `from` means "require N tokens in that place before this can fire." A plain place name (no `weight`) defaults to a weight of `1`:
+
+```yaml
+# config/packages/workflow.yaml
+framework:
+    workflows:
+        contract_approval:
+            type: workflow                 # MUST be a workflow for weights to apply
+            marking_store:
+                type: method
+                property: approvalMarking
+            supports:
+                - App\Entity\Contract
+            initial_marking: draft
+            places:
+                draft:             ~
+                awaiting_approval: ~
+                approved:          ~
+                signed:            ~
+            transitions:
+                submit:
+                    from: draft
+                    to:
+                        - place: awaiting_approval
+                          weight: 3         # 3 approval slots open at once
+                approve:
+                    from: awaiting_approval
+                    to: approved            # consumes 1 slot, produces 1 approval
+                sign:
+                    from:
+                        - place: approved
+                          weight: 3         # requires all 3 approvals
+                    to: signed
+```
+
+Read it as a pipeline. `submit` consumes the single `draft` token and opens **three** `awaiting_approval` slots. Each `approve` consumes one slot and lays down one `approved` token; you can run it exactly three times. `sign` won't fire until **three** `approved` tokens exist — the workflow enforces the "three approvals" rule structurally, with zero `if (count >= 3)` in your code.
+
+```
+draft --submit--> [awaiting x3] --approve x3--> [approved x3] --sign--> signed
+```
+
+##### Driving it
+
+The verbs are identical to the state machine; the counts just flow through `can()` and `getEnabledTransitions()`:
+
+```php
+$wf = $registry->get($contract, 'contract_approval');
+
+$wf->apply($contract, 'submit');   // now 3 awaiting_approval tokens
+
+for ($i = 0; $i < 3; $i++) {
+    $wf->apply($contract, 'approve');
+}
+
+$wf->can($contract, 'sign');       // true only once 3 approvals exist
+$wf->apply($contract, 'sign');     // -> signed
+```
+
+If you try to `sign` after only two approvals, `can()` returns `false` and `apply()` throws — the model refuses an impossible transition, which is the whole point.
+
+##### Defining it in PHP (with `Arc`)
+
+You can also build the definition programmatically, which is handy in tests or when the structure is dynamic. Weighted ends are described with the `Arc` class (a plain string is shorthand for weight `1`):
+
+```php
+use Symfony\Component\Workflow\Arc;
+use Symfony\Component\Workflow\Definition;
+use Symfony\Component\Workflow\Transition;
+use Symfony\Component\Workflow\Workflow;
+
+$definition = new Definition(
+    ['draft', 'awaiting_approval', 'approved', 'signed'],
+    [
+        new Transition('submit', 'draft', [new Arc('awaiting_approval', 3)]),
+        new Transition('approve', 'awaiting_approval', 'approved'),
+        new Transition('sign', [new Arc('approved', 3)], 'signed'),
+    ],
+);
+
+$workflow = new Workflow($definition);
+$workflow->apply($contract, 'submit');
+```
+
+> **Warning.** Weights only work with `type: workflow`. A `state_machine`'s marking is a single string and can't hold a count — if you set a `weight` there, you're modeling the wrong thing.
+
+---
+
+#### 25.10 Visualizing and debugging
+
+A workflow you can't see is a workflow you can't trust — or explain to a teammate, or ship confidently. Symfony's `workflow:dump` command renders any workflow to **Graphviz** (`dot`), **Mermaid**, or **PlantUML**.
+
+```
+# Graphviz -> SVG (install `graphviz` for the `dot` binary)
+$ php bin/console workflow:dump invoice | dot -Tsvg -o invoice.svg
+
+# Highlight specific places in the diagram
+$ php bin/console workflow:dump invoice paid voided | dot -Tsvg -o invoice.svg
+
+# Mermaid (render with the `mmdc` CLI, or paste into mermaid.live)
+$ php bin/console workflow:dump invoice --dump-format=mermaid
+
+# Include the labels and colors you configured under `metadata`
+$ php bin/console workflow:dump invoice --with-metadata | dot -Tsvg -o invoice.svg
+```
+
+The `--with-metadata` flag pulls the `label` and `bg_color`/`color` values you set in Section 25.3, so the diagram matches what users see in the UI. (In Symfony 8.1, `--with-listeners` also annotates the graph with the event listeners bound to each place and transition — handy for understanding side effects at a glance.)
+
+A few housekeeping tools worth knowing:
+
+- **`config:dump-reference framework workflows`** — the full option reference (see Section 25.3).
+- **`debug:autowiring workflow`** — lists every workflow/state-machine service and its type, so you get the autowiring parameter name right.
+- **Cache warm-up validation** — invalid definitions (unknown places, an impossible state-machine transition, a bad `initial_marking`) fail the build. You don't need `workflow:dump` to catch a typo; the compiler does it for you.
+
+I keep a `docs/workflows/` directory of committed SVGs in real projects. It's the single best onboarding artifact for anyone who touches billing: the entire invoice lifecycle, one image.
+
+---
+
+#### 25.11 Testing workflows
+
+Workflows are *designed* to be tested: the model is pure, the guards are isolated, and the events are deterministic. Two layers matter most.
+
+##### Functional test of the lifecycle
+
+This boots the kernel (so the real workflow services and guards are wired) and drives the whole lifecycle, asserting both the happy path and the refusal:
+
+```php
+<?php
+// tests/Service/InvoiceStateServiceTest.php
+
+namespace App\Tests\Service;
+
+use App\Entity\Invoice;
+use App\Entity\Tenant;
+use App\Enum\InvoiceStatus;
+use App\Exception\InvoiceTransitionException;
+use App\Service\InvoiceStateService;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+
+class InvoiceStateServiceTest extends KernelTestCase
+{
+    private InvoiceStateService $states;
+    private Invoice $invoice;
+
+    protected function setUp(): void
+    {
+        self::bootKernel();
+        $this->states  = self::getContainer()->get(InvoiceStateService::class);
+        $this->invoice = new Invoice(new Tenant('acme'));
+    }
+
+    public function testFullLifecycle(): void
+    {
+        $this->assertSame(InvoiceStatus::Draft, $this->invoice->getStatus());
+
+        $this->states->submit($this->invoice);
+        $this->assertSame(InvoiceStatus::Submitted, $this->invoice->getStatus());
+
+        $this->states->approve($this->invoice);
+        $this->assertSame(InvoiceStatus::Approved, $this->invoice->getStatus());
+
+        $this->states->recordPayment($this->invoice);
+        $this->assertSame(InvoiceStatus::Paid, $this->invoice->getStatus());
+    }
+
+    public function testCannotPayADraft(): void
+    {
+        $this->expectException(InvoiceTransitionException::class);
+        $this->expectExceptionMessageMatches('/record_payment/');
+
+        $this->states->recordPayment($this->invoice); // still in Draft
+    }
+
+    public function testTerminalStateHasNoTransitions(): void
+    {
+        $this->states->submit($this->invoice);
+        $this->states->void($this->invoice);
+
+        $this->assertSame([], $this->states->enabledTransitions($this->invoice));
+    }
+}
+```
+
+The `expectExceptionMessageMatches` assertion is worth keeping: it ties the failure to *which* transition was refused, so a future refactor that accidentally renames the transition is caught.
+
+##### Unit test of a guard
+
+Because a guard event is just a method you can call with a `GuardEvent`, it unit-tests without a kernel. Build the event, block or don't block, and assert:
+
+```php
+<?php
+// tests/EventSubscriber/InvoiceGuardSubscriberTest.php
+
+namespace App\Tests\EventSubscriber;
+
+use App\Entity\Invoice;
+use App\Entity\Tenant;
+use App\EventSubscriber\InvoiceGuardSubscriber;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Workflow\Event\GuardEvent;
+
+class InvoiceGuardSubscriberTest extends TestCase
+{
+    public function testApproveIsBlockedForNonManagerWhenPolicyRequiresIt(): void
+    {
+        $tenant = new Tenant('acme');
+        $tenant->getBillingPolicy()->setRequiresManagerApproval(true);
+
+        $invoice = new Invoice($tenant);
+
+        $security = $this->createMock(Security::class);
+        $security->method('isGranted')->with('ROLE_MANAGER')->willReturn(false);
+
+        $event  = new GuardEvent($invoice, 'approve');
+        $guard  = new InvoiceGuardSubscriber($security);
+
+        $guard->onlyManagersCanApprove($event);
+
+        $this->assertTrue($event->isBlocked());
+        $this->assertSame('Approval requires a manager for this tenant.', $event->getBlockedReason());
+    }
+}
+```
+
+(Constructing the event directly is the trick — you don't need the full pipeline to verify a single guard's decision. For the weighted example in Section 25.9, the same approach tests that `sign` is blocked until three approvals exist.)
+
+---
+
+#### Key takeaways
+
+- The Workflow component turns a scattered `if (status === ...)` mess into a single, declared, *validated* model: **places** (states), **transitions** (actions), a **marking** (where you are), and a **marking store** (where that's persisted).
+- **State machines** hold one place; **workflows** hold many. Pick `type: state_machine` for invoices, `type: workflow` for anything that's "in several states at once" — or when you need **weighted transitions** (7.4) to enforce "N of the same thing."
+- The **`Registry`** resolves a workflow from an object; `supports` is required for the registry and the Twig helpers.
+- **`can()` / `getEnabledTransitions()` / `apply()`** are your verbs. Let the UI and API be *derived* from `getEnabledTransitions()` rather than hard-coded.
+- **Guards** scale from a one-line `guard:` expression, to named `callback` guards, to **guard event** subscribers for per-tenant and multi-service rules. A guard can only veto; a wrong *place* vetoes on its own.
+- **Events** (`leave` → `transition` → `enter` → `entered` → `completed`, plus `announce`) are where side effects live: audit logging, receipts, Messenger dispatch. Use **`entered`**, not `enter`, when you need the updated state.
+- **Visualize** with `workflow:dump` and commit the pictures; the compiler validates your definitions at build time.
+
+---
+
+#### Exercises
+
+1. **Add a transition.** The finance team wants invoices that are `rejected` to be able to go straight to `paid` only if a *partial* credit note exists. Add a `settle` transition and a callback guard for it, wire it into `InvoiceStateService`, and update the test suite. Verify the button appears in the template *only* when the guard passes — without touching the template at all.
+
+2. **Per-tenant terminal states.** One of your tenants treats `overdue` invoices as immediately *voided* (no reissue), while others allow reissue. Implement this as a **guard event** that reads the tenant's billing policy and blocks `reissue` for that tenant. Write a functional test that proves the same `Invoice` in the same `overdue` state exposes *different* enabled transitions under the two tenants.
+
+3. **Audit to the database.** Extend `InvoiceAuditSubscriber` to persist an `InvoiceStatusHistory` row (tenant, invoice, from, to, transition, actor, timestamp, context) instead of only logging. Model the entity, add a migration, and render the history as a timeline on the invoice detail page. Make sure the `from` place is captured correctly (hint: read it during `leave` or `transition`, before the marking is updated).
+
+4. **React asynchronously.** On `workflow.invoice.entered.paid`, dispatch a Messenger message that increments the tenant's monthly revenue counter (an atomic `UPDATE ... SET total = total + ?`). Use a retry strategy and a dead-letter queue (Chapter 17). Prove the counter is correct even when two payments land for the same tenant in the same request burst.
+
+5. **Weighted reconciliation.** Model an **expense report** that must be reconciled by the submitter, a manager, *and* a controller (three approvals) before it can be `reimbursed`. Use weighted transitions. Then relax it: "manager **or** controller is enough" for reports under a per-tenant threshold. (The threshold check will want to be a guard on the `reimburse` transition — think about how a guard and a weight combine.)
+
+6. **Two workflows, one entity.** Give `Invoice` a second workflow, `shipment` (`invoiced → shipped → delivered`), with its own marking-store property and JSON column. Update `InvoiceStateService` to disambiguate via `Registry::get($invoice, '...')`. Add an API serializer attribute (Chapter 19) that exposes the *enabled transitions of both* workflows, so a client can see billing and shipping actions side by side.
+
+7. **Ship the diagram.** Add a console command `app:invoice:diagram` that dumps the `invoice` workflow to Mermaid and writes it to `docs/workflows/invoice.md` (with a title and the current list of transitions). Wire it into CI so a merged PR that changes `workflow.yaml` without regenerating the diagram fails the build.
+
+### Chapter 26. Specialized Components
+
+In Part VI you learned to make the invoicing app *deployable*: multiple processes, background workers, a public API, and more than one server behind a load balancer. Once the app stops running as a single PHP process, two concerns move from "nice to have" to "if you get these wrong, customers lose money or data":
+
+1. **Identity.** Every invoice, customer, and tenant needs a stable identifier that can travel across processes, be stored safely, be returned from an API, and (ideally) be sorted without a second `ORDER BY` column.
+2. **Concurrency.** Two nightly commands might fire at once, a burst of workers might hammer the payment provider, and an abusive client might hammer the login form. You need explicit tools to say *only one of these may run*, *at most *N* of these may run*, or *no more than *N* of these per unit of time*.
+
+Symfony bundles four components that address exactly these problems. They are "specialized" not because they are exotic, but because each solves one narrow class of problem very well:
+
+- **UID** — generate and represent ULIDs and UUIDs (Section 26.1).
+- **Lock** — guarantee *exclusive* access to a shared resource (Section 26.2).
+- **Semaphore** — allow *bounded* (up to *N*) concurrent access (Section 26.3).
+- **RateLimiter** — control *how often* an event may happen over a time window (Section 26.4).
+
+We'll use the same running app throughout — a multi-tenant SaaS invoicing service with `Tenant`, `Customer`, `Invoice`, and `ApiKey` entities, background workers that render PDFs and retry payments, and a public API keyed by API token. By the end you'll be able to reach for the right tool, configure it against a shared backend, and know why the "obvious" choice (auto-increment IDs, a `sleep()` in a loop, a boolean flag in the database) is usually wrong.
+
+---
+
+#### 26.1 The UID Component: Identity Without a Central Sequence
+
+For years the default primary key in a PHP web app was an auto-incrementing integer. It is fast, it is small, and — because it is issued by a single database server — it is unique *within that database*. It falls apart in the scenarios this book has been building toward:
+
+- **Read replicas and sharding.** If you ever split tenants across databases, a local sequence no longer guarantees global uniqueness.
+- **Pre-generation.** You often want an ID *before* the row exists — when you return a `202 Accepted` with an `id` in the body, when you build a filename, or when you dispatch a message to a worker that must know which row it belongs to.
+- **Multi-tenant privacy.** A global auto-increment leaks information: `invoice 4821` tells a client that roughly 4,820 invoices exist in the whole system. A per-tenant counter helps, but you still want a robust internal key.
+- **Sorting for free.** Invoices are almost always listed by creation time. If the identifier encodes the time, `ORDER BY id` is equivalent to `ORDER BY created_at` — no extra index column.
+
+The UID component gives you a clean, object-oriented API for the two most useful identifier families: **ULIDs** and **UUIDs**.
+
+##### 26.1.1 Installing it
+
+```terminal
+$ composer require symfony/uid
+```
+
+If you already use the Doctrine bridge (`symfony/doctrine-bridge`), the `uuid` and `ulid` column types are available too.
+
+##### 26.1.2 ULIDs: sortable, compact, and time-ordered
+
+A [ULID](https://github.com/ulid/spec) (Universally Unique *Lexicographically Sortable* Identifier) is a 128-bit value, normally rendered as 26 characters of Crockford base32. Its layout is deliberately simple: the first
+
+### Chapter 27: Internationalization and Localization
+
+*Your invoicing SaaS just landed its first European customer. Their accountant wants invoices in German, amounts formatted as `1.234,56 €`, and dates as `25.01.2026`. Two weeks later, a team in São Paulo asks for Portuguese. You could hard-code `str_replace()` calls and a dozen `if ($locale === 'de_DE')` branches, but your codebase would become unmanageable within a month.*
+
+*This chapter shows how Symfony's Translation component and PHP's Intl extension turn that tangle into a set of declarative catalog files, a locale-negotiation pipeline, and format rules that the framework handles for you. By the end, your invoicing app will serve fully localized UIs, emails, and validation messages to customers in any locale you support — without a single `if` statement in business logic.*
+
+#### 27.1 Setting Up the Translator
+
+The Translation component is not enabled by default in a blank Symfony project. Install it first:
+
+```bash
+$ composer require symfony/translation
+```
+
+This creates a starter config file:
+
+```yaml
+# config/packages/translation.yaml
+framework:
+    default_locale: 'en'
+    translator:
+        default_path: '%kernel.project_dir%/translations'
+```
+
+The `default_locale` is the language your source code is written in and the fallback when no translation is found. For this book's project we use `en`.
+
+The `default_path` is where Symfony looks for catalog files. Our project will accumulate catalogs for several locales and domains:
+
+```
+translations/
+├── messages.en.yaml
+├── messages.de.yaml
+├── messages.pt_BR.yaml
+├── messages+intl-icu.en.yaml
+├── messages+intl-icu.de.yaml
+├── invoices.en.yaml
+├── invoices.de.yaml
+├── emails+intl-icu.en.yaml
+├── emails+intl-icu.de.yaml
+├── validation.en.yaml
+├── validation.de.yaml
+└── security.en.yaml
+```
+
+> **Tip:** You can restrict the locales your application accepts by adding `enabled_locales`. This is useful in a multi-tenant SaaS where each tenant may only have purchased a subset of languages:
+>
+> ```yaml
+> framework:
+>     translator:
+>         enabled_locales: ['en', 'de', 'pt_BR']
+> ```
+>
+> Locales outside this list are silently ignored, and the translator falls back to `default_locale`.
+
+##### The polyfill caveat
+
+Symfony bundles polyfills (`symfony/polyfill-intl-icu`, `symfony/polyfill-intl-messageformatter`, etc.) so that the component *boots* even without the PHP `intl` extension. However, these polyfills only support English ICU rules. If you plan to serve German, Portuguese, French, or any other non-English locale, install `intl`:
+
+```bash
+$ sudo apt install php8.4-intl   # or your package manager's equivalent
+$ php -m | grep intl
+```
+
+Without `intl`, pluralization and ICU select rules for non-English languages will produce incorrect output.
+
+---
+
+#### 27.2 Translation Catalogs
+
+A **catalog** is a file that maps message IDs to their translations for one locale and one domain. Symfony supports several formats:
+
+| Format | File extension | Notes |
+|---|---|---|
+| YAML | `.yaml` / `.yml` | Human-readable; supports nested keys |
+| XLIFF 2.0 | `.xlf` | XML; the standard in professional translation workflows |
+| PO | `.po` | Gettext-compatible |
+| INI | `.ini` | Simple key/value |
+| PHP | `.php` | Returns an array; allows dynamic logic |
+
+For this chapter we use **YAML** because it is the most readable for inline editing. In a real production pipeline you would likely author catalogs in XLIFF 2.0 so that translators can work in CAT tools (Phrase, Lokalise, Crowdin, Weblate).
+
+##### 27.2.1 File naming convention
+
+The convention is `domain.locale.format`:
+
+```
+invoices.de.yaml          # domain "invoices", locale "de", YAML
+emails+intl-icu.en.yaml   # domain "emails+intl-icu" (ICU), locale "en"
+```
+
+The `+intl-icu` suffix is mandatory for catalogs that use ICU MessageFormat syntax (see §27.4). Forgetting it means your `{count, plural, ...}` messages will be returned literally, unprocessed.
+
+##### 27.2.2 Real messages vs. keyword messages
+
+You have two strategies for the *source string* (the key you pass to `trans()`):
+
+**Real messages** — the English text *is* the key:
+
+```yaml
+# translations/messages.en.yaml
+"Invoice has been paid": "Invoice has been paid"
+"Total due": "Total due"
+```
+
+This is self-documenting: if the translator layer is disabled, users still see readable English.
+
+**Keyword messages** — you invent semantic keys:
+
+```yaml
+# translations/messages.en.yaml
+invoice:
+    status:
+        paid: "Invoice has been paid"
+        overdue: "This invoice is overdue"
+        draft: "Draft invoice"
+    total_due: "Total due"
+```
+
+Keywords are more robust when the English wording changes ("Total due" → "Outstanding balance") — you update one value instead of every catalog. For a multi-tenant SaaS with frequent UX copy iterations, **keywords are strongly preferred**.
+
+Nested YAML keys produce dotted IDs automatically: `invoice.status.paid`, `invoice.status.overdue`, etc.
+
+##### 27.2.3 Domains
+
+Domains let you separate catalogs by feature, team, or access level. In our invoicing app:
+
+- `messages` — generic UI strings (buttons, headings, navigation)
+- `invoices` — invoice-domain messages (statuses, line-item descriptions)
+- `emails` — email body and subject templates
+- `validation` — form/validation error messages
+- `security` — login, 2FA, password-reset messages
+
+Domains are useful when different teams own different catalogs, or when you want to load only a subset (e.g., the admin panel only needs `messages` and `security`).
+
+---
+
+#### 27.3 Translating Messages in PHP and Twig
+
+##### 27.3.1 The `trans()` method
+
+The `Translator` service (or the `TranslatorInterface` contract) is the central API. Autowire it anywhere:
+
+```php
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\HttpFoundation\Response;
+
+final class InvoiceSummaryController
+{
+    public function __construct(
+        private readonly TranslatorInterface $translator,
+    ) {}
+
+    public function index(int $id, InvoiceRepository $invoices): Response
+    {
+        $invoice = $invoices->find($id);
+
+        $title = $this->translator->trans(
+            id: 'invoice.title',
+            parameters: ['%number%' => $invoice->getNumber()],
+            domain: 'invoices',
+        );
+
+        // ...
+    }
+}
+```
+
+With the catalog:
+
+```yaml
+# translations/invoices.en.yaml
+invoice.title: "Invoice %number%"
+
+# translations/invoices.de.yaml
+invoice.title: "Rechnung %number%"
+```
+
+The `parameters` array uses `strtr()` under the hood. The `%` wrapper is a convention, not a requirement — you could use `{number}` or `#number#` as long as the key matches. However, stick to `%param%` in non-ICU catalogs and `{param}` in ICU catalogs to avoid confusion.
+
+##### 27.3.2 The `t()` shortcut
+
+For one-liners, Symfony 6.3+ provides the `t()` function, which returns a `TranslatableMessage` without injecting a translator:
+
+```php
+use function Symfony\Component\Translation\t;
+
+// In a service, value object, or even an enum
+public function getOverdueWarning(): TranslatableMessage
+{
+    return t('invoice.overdue_warning', ['%days%' => 30], 'invoices');
+}
+```
+
+In Twig, the same function is available:
+
+```twig
+{{ t('invoice.draft', domain='invoices') }}
+```
+
+##### 27.3.3 `TranslatableMessage` and `TranslatableInterface`
+
+A `TranslatableMessage` (or any object implementing `TranslatableInterface`) is a *deferred* translation: it stores the ID, parameters, and domain but does not resolve the string until it is rendered. This matters in three places:
+
+1. **Enums and value objects** that produce user-facing labels.
+2. **Form field errors** that are generated during validation and rendered later in a template.
+3. **Email and notification services** that build a message in one layer and render it in another.
+
+A practical example from our invoicing app — an `InvoiceStatus` enum:
+
+```php
+// src/Enum/InvoiceStatus.php
+enum InvoiceStatus: string
+{
+    case Draft   = 'draft';
+    case Sent    = 'sent';
+    case Partial = 'partial';
+    case Paid    = 'paid';
+    case Overdue = 'overdue';
+
+    public function label(): TranslatableMessage
+    {
+        return new TranslatableMessage(
+            'invoice.status.'.$this->value,
+            domain: 'invoices',
+        );
+    }
+}
+```
+
+```yaml
+# translations/invoices.en.yaml
+invoice.status.draft: "Draft"
+invoice.status.sent: "Sent"
+invoice.status.partial: "Partially paid"
+invoice.status.paid: "Paid"
+invoice.status.overdue: "Overdue"
+
+# translations/invoices.de.yaml
+invoice.status.draft: "Entwurf"
+invoice.status.sent: "Gesendet"
+invoice.status.partial: "Teil bezahlt"
+invoice.status.paid: "Bezahlt"
+invoice.status.overdue: "Fällig"
+```
+
+In a Twig template:
+
+```twig
+<span class="badge badge-{{ invoice.status.value }}">
+    {{ invoice.status.label|trans }}
+</span>
+```
+
+The `trans` filter accepts `TranslatableInterface` objects directly. The `translation:extract` command (§27.7) also detects `new TranslatableMessage(...)` calls, so your catalogs stay in sync.
+
+If you need more control than a static ID — for instance, the label depends on a runtime condition — implement `TranslatableInterface` directly:
+
+```php
+enum InvoiceStatus: string implements TranslatableInterface
+{
+    // ...
+
+    public function trans(TranslatorInterface $translator, ?string $locale = null): string
+    {
+        return $translator->trans(
+            'invoice.status.'.$this->value,
+            locale: $locale,
+            domain: 'invoices',
+        );
+    }
+}
+```
+
+##### 27.3.4 Twig filters and the `trans_default_domain` tag
+
+Most translation happens in templates. The two Twig filters are:
+
+```twig
+{{ 'messages.hello'|trans }}
+{{ 'invoice.due_date'|trans({'%date%': invoice.dueDate|date('Y-m-d')}, 'invoices') }}
+```
+
+You can set a default domain for the entire template with the `trans_default_domain` tag:
+
+```twig
+{% trans_default_domain 'invoices' %}
+
+<h1>{{ 'invoice.title'|trans }}</h1>
+<p>{{ 'invoice.status.paid'|trans }}</p>
+```
+
+This applies to the *current* template only, not to templates included via `{% include %}`, to avoid side effects.
+
+> **Note on escaping.** The `trans` filter outputs escaped HTML by default (Twig's auto-escaping). If a translation legitimately contains HTML (e.g., a `<strong>` tag around a keyword), apply `|raw` *after* `|trans`:
+>
+> ```twig
+> {{ 'invoice.overdue_notice'|trans|raw }}
+> ```
+>
+> Use this sparingly and only for trusted, developer-authored strings.
+
+##### 27.3.5 `StaticMessage` for user-generated content
+
+If you render user-authored text (a custom invoice memo, a company name) and want to guarantee it is *never* translated or interpolated, wrap it:
+
+```php
+use Symfony\Component\Translation\StaticMessage;
+
+$memo = new StaticMessage($invoice->getMemo());
+```
+
+`StaticMessage` implements `TranslatableInterface` but `trans()` returns the raw string unchanged. This is a safety valve against placeholder injection from user input.
+
+---
+
+#### 27.4 ICU MessageFormat
+
+Basic `%placeholder%` substitution breaks down the moment a message needs **pluralization**, **gender selection**, or **locale-aware number/date formatting**. The ICU MessageFormat — powered by PHP's `MessageFormatter` — handles all of these.
+
+To activate ICU processing, the catalog domain must carry the `+intl-icu` suffix:
+
+```
+messages+intl-icu.en.yaml
+invoices+intl-icu.de.yaml
+```
+
+And placeholders switch from `%name%` to `{name}`. The two syntaxes are *not* interchangeable in the same catalog.
+
+> **Tip:** You can test ICU messages in an online editor at [format-message.github.io/icu-message-format-for-translators](https://format-message.github.io/icu-message-format-for-translators/) before committing them to a file.
+
+##### 27.4.1 Simple placeholders
+
+```yaml
+# translations/messages+intl-icu.en.yaml
+greeting: "Hello, {name}! Welcome to {company}."
+```
+
+```php
+$this->translator->trans(
+    'greeting',
+    ['name' => 'Anna', 'company' => 'Müller GmbH'],
+    'messages+intl-icu',
+);
+// "Hello, Anna! Welcome to Müller GmbH."
+```
+
+##### 27.4.2 Pluralization
+
+Plural rules differ per language. English has two forms (`one`, `other`); German also two; Russian has four (`one`, `few`, `many`, `other`). The ICU `plural` function delegates to the correct rule set automatically based on the locale.
+
+```yaml
+# translations/messages+intl-icu.en.yaml
+invoice.line_items: >-
+    {count, plural,
+        =0    {No line items.}
+        =1    {1 line item.}
+        other {# line items.}
+    }
+
+# translations/messages+intl-icu.de.yaml
+invoice.line_items: >-
+    {count, plural,
+        =0    {Keine Positionen.}
+        =1    {1 Position.}
+        other {# Positionen.}
+    }
+
+# translations/messages+intl-icu.ru.yaml
+invoice.line_items: >-
+    {count, plural,
+        one   {# позиция}
+        few   {# позиции}
+        many  {# позиций}
+        other {# позиций}
+    }
+```
+
+The `#` character inside a plural branch is a special token that resolves to the numeric value of the `count` argument. This is how "There are # line items" becomes "There are 12 line items" without a second placeholder.
+
+```php
+$this->translator->trans(
+    'invoice.line_items',
+    ['count' => 12],
+    'messages+intl-icu',
+);
+// English: "12 line items."
+// Russian: "12 позиций"
+```
+
+##### 27.4.3 `select` for gender and other categorical choices
+
+```yaml
+# translations/messages+intl-icu.en.yaml
+invoice.recipient_note: >-
+    {gender, select,
+        female   {The invoice for {company} was sent to {name}.}
+        male     {The invoice for {company} was sent to {name}.}
+        multiple {The invoice for {company} was sent to {name}.}
+        other    {The invoice for {company} was sent to {name}.}
+    }
+```
+
+In languages with grammatical gender (French, German, Arabic, etc.), the translator fills in the appropriate article, adjective agreement, or pronoun in each branch. In English the branches may be identical, but the structure is still required so that the translation pipeline can flag each branch for review.
+
+##### 27.4.4 Combining `select` and `plural`
+
+When a message varies by both gender and count, nest `plural` *inside* `select`, with `select` as the outermost function:
+
+```yaml
+# translations/messages+intl-icu.en.yaml
+invoice.summary: >-
+    {gender, select,
+        female {{count, plural,
+            one   {{name} created 1 invoice for {company}.}
+            other {{name} created # invoices for {company}.}
+        }}
+        male   {{count, plural,
+            one   {{name} created 1 invoice for {company}.}
+            other {{name} created # invoices for {company}.}
+        }}
+        other  {{count, plural,
+            one   {{name} created 1 invoice for {company}.}
+            other {{name} created # invoices for {company}.}
+        }}
+    }
+```
+
+##### 27.4.5 `selectordinal`
+
+For rankings or positions:
+
+```yaml
+# translations/messages+intl-icu.en.yaml
+top_client: >-
+    {company} is your {rank, selectordinal,
+        one   {#st}
+        two   {#nd}
+        few   {#rd}
+        other {#th}
+    } highest-spending client.
+```
+
+```php
+// "ACME Corp is your 1st highest-spending client."
+$this->translator->trans('top_client', ['company' => 'ACME Corp', 'rank' => 1]);
+```
+
+##### 27.4.6 Date and time formatting inside ICU messages
+
+The ICU formatter can embed locale-aware date and time formatting *inside* a translated message:
+
+```yaml
+# translations/messages+intl-icu.en.yaml
+invoice.due_notice: >-
+    Invoice {number} is due on {dueDate, date, medium}.
+
+# translations/messages+intl-icu.de.yaml
+invoice.due_notice: >-
+    Rechnung {number} ist fällig am {dueDate, date, medium}.
+
+# translations/messages+intl-icu.pt_BR.yaml
+invoice.due_notice: >-
+    A fatura {number} vence em {dueDate, date, medium}.
+```
+
+```php
+$this->translator->trans(
+    'invoice.due_notice',
+    ['number' => 'INV-2026-0142', 'dueDate' => new \DateTimeImmutable('2026-01-25')],
+    'messages+intl-icu',
+);
+// en:      "Invoice INV-2026-0142 is due on Jan 25, 2026."
+// de:      "Rechnung INV-2026-0142 ist fällig am 25.01.2026."
+// pt_BR:   "A fatura INV-2026-0142 vence em 25/01/2026."
+```
+
+The format argument (`short`, `medium`, `long`, `full`) maps to `IntlDateFormatter` constants. The same applies to `time`.
+
+##### 27.4.7 Number and currency formatting
+
+```yaml
+# translations/messages+intl-icu.en.yaml
+invoice.total: "Total: {amount, number, currency}"
+
+# translations/messages+intl-icu.de.yaml
+invoice.total: "Gesamt: {amount, number, currency}"
+```
+
+```php
+$number = new \NumberFormatter('de_DE', \NumberFormatter::CURRENCY);
+$number->setTextAttribute(\NumberFormatter::CURRENCY_CODE, 'EUR');
+
+$this->translator->trans(
+    'invoice.total',
+    ['amount' => $number->format(1234.56)],
+    'messages+intl-icu',
+);
+// en: "Total: $1,234.56"   (with USD NumberFormatter)
+// de: "Gesamt: 1.234,56 €" (with EUR NumberFormatter)
+```
+
+> **Design note:** For currency amounts on invoices, it is often better to format the number *in PHP* (using `NumberFormatter` with the tenant's currency and locale) and pass the pre-formatted string as a plain placeholder. This gives you explicit control over decimal places, currency code display, and grouping separators — all of which matter for financial documents.
+
+---
+
+#### 27.5 Locale Negotiation
+
+The translator picks the right catalog based on the **request locale**. The question is: how does that locale get set?
+
+##### 27.5.1 Route parameter `_locale`
+
+The simplest mechanism. Define a route with the `_locale` default:
+
+```php
+use Symfony\Component\Routing\Attribute\Route;
+
+#[Route('/{_locale}/invoices', name: 'app_invoices', requirements: ['_locale' => 'en|de|pt_BR'])]
+public function index(): Response
+{
+    // $request->getLocale() returns the matched locale
+}
+```
+
+When a user visits `/de/invoices`, Symfony sets the request locale to `de`. The `getLocale()` method on `Request` returns it. In Twig, `app.request.locale` is available.
+
+##### 27.5.2 `Accept-Language` header fallback
+
+If no `_locale` parameter is present, Symfony falls back to the `Accept-Language` HTTP header. You can configure the preferred order in `framework.yaml`:
+
+```yaml
+# config/packages/framework.yaml
+framework:
+    default_locale: 'en'
+    # The translator checks the _locale route param first,
+    # then the Accept-Language header, then the default_locale.
+```
+
+This means a user whose browser sends `Accept-Language: de-DE,de;q=0.9,en;q=0.8` will automatically receive German without any URL prefix.
+
+##### 27.5.3 User preference (sticky locale)
+
+For a SaaS product, the user's chosen language should persist across sessions. Symfony ships a built-in event subscriber that does this:
+
+```yaml
+# config/services.yaml (or your main service definitions)
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\EventSubscriber\LocaleSubscriber:
+        tags:
+            - { name: kernel.event_subscriber }
+```
+
+```php
+// src/EventSubscriber/LocaleSubscriber.php
+namespace App\EventSubscriber;
+
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Contracts\Translation\TranslatorInterface;
+
+final class LocaleSubscriber implements EventSubscriberInterface
+{
+    public function __construct(
+        private readonly TranslatorInterface $translator,
+    ) {}
+
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            // high priority to run before the router sets _locale
+            KernelEvents::REQUEST => [['onKernelRequest', 30]],
+        ];
+    }
+
+    public function onKernelRequest(RequestEvent $event): void
+    {
+        if (!$event->isMainRequest()) {
+            return;
+        }
+
+        $request = $event->getRequest();
+
+        // 1. Explicit route parameter takes priority
+        if ($request->attributes->has('_locale')) {
+            $locale = $request->attributes->get('_locale');
+        } elseif ($request->getSession()->has('_locale')) {
+            // 2. Session value (user previously chose a language)
+            $locale = $request->getSession()->get('_locale');
+        } else {
+            // 3. Fall back to Accept-Language
+            $locale = $request->getPreferredLanguage(
+                ['en', 'de', 'pt_BR'],
+            );
+        }
+
+        $request->setLocale($locale);
+    }
+}
+```
+
+A locale-switch endpoint writes the choice to the session:
+
+```php
+// src/Controller/SettingsController.php
+#[Route('/settings/locale', name: 'app_locale_switch', methods: ['POST'])]
+public function switchLocale(
+    Request $request,
+    TranslatorInterface $translator,
+    UserPreferences $preferences,   // a value object persisted to the DB
+): RedirectResponse
+{
+    $locale = $request->request->get('locale', 'en');
+
+    // Validate against the list of supported locales
+    $supported = ['en', 'de', 'pt_BR'];
+    if (!in_array($locale, $supported, true)) {
+        $locale = 'en';
+    }
+
+    $request->getSession()->set('_locale', $locale);
+    $preferences->setLocale($locale);
+    // persist via Doctrine...
+
+    return $this->redirect($request->headers->get('referer', '/'));
+}
+```
+
+> **Multi-tenant note:** In our invoicing SaaS, the locale is stored per *user*, not per *tenant*. An admin might work in German while their bookkeeper prefers English. If your product instead requires tenant-wide language settings, read the locale from the resolved tenant entity in your `TenantSubscriber` and skip the per-user preference.
+
+##### 27.5.4 Programmatic locale switching with `LocaleSwitcher`
+
+For console commands, tests, or code that needs to generate a string in a *specific* locale (e.g., building a PDF invoice in the customer's language regardless of the request locale):
+
+```php
+use Symfony\Component\Translation\LocaleSwitcher;
+
+// Injected via autowiring (framework registers a shared LocaleSwitcher)
+public function generateInvoicePdf(
+    Invoice $invoice,
+    LocaleSwitcher $localeSwitcher,
+    TranslatorInterface $translator,
+): string
+{
+    $customerLocale = $invoice->getCustomer()->getPreferredLocale(); // e.g., 'de'
+
+    $localeSwitcher->switchToLocalLocale($customerLocale);
+    try {
+        $subject = $translator->trans('invoice.email.subject', domain: 'emails+intl-icu');
+        // ... build the PDF
+    } finally {
+        $localeSwitcher->switchBack();
+    }
+
+    return $pdfPath;
+}
+```
+
+`LocaleSwitcher` temporarily changes the locale for the translator (and any `Intl` formatters that read it) and restores the previous locale in the `finally` block. This is essential for batch operations where you iterate over customers in different locales.
+
+---
+
+#### 27.6 Localized Routing
+
+The `_locale` route parameter gives you URL-based locale switching (`/en/invoices`, `/de/invoices`). There are two common patterns:
+
+##### 27.6.1 Prefix all routes
+
+Add the `{_locale}` parameter to every public route. This is verbose but explicit:
+
+```php
+#[Route('/{_locale}/invoices/{id}', name: 'app_invoice_show',
+        requirements: ['_locale' => 'en|de|pt_BR'], defaults: ['_locale' => 'en'])]
+public function show(int $id): Response { /* ... */ }
+
+#[Route('/{_locale}/invoices/new', name: 'app_invoice_new',
+        requirements: ['_locale' => 'en|de|pt_BR'], defaults: ['_locale' => 'en'])]
+public function new(): Response { /* ... */ }
+```
+
+In Twig, the `path()` function will include the current locale automatically because it reads `app.request.locale`:
+
+```twig
+<a href="{{ path('app_invoice_show', {id: invoice.id}) }}">
+    {{ 'invoices.view'|trans }}
+</a>
+<!-- Renders: <a href="/de/invoices/42">…</a> -->
+```
+
+##### 27.6.2 Locale-prefixed route prefix (recommended for large apps)
+
+Define a base path in `routing.yaml` that includes the locale:
+
+```yaml
+# config/routes.yaml
+app_invoices:
+    resource: ../src/Controller/Invoice/
+    prefix: /{_locale}
+    requirements:
+        _locale: en|de|pt_BR
+    defaults:
+        _locale: en
+```
+
+Inside the controllers, you no longer repeat `{_locale}`:
+
+```php
+#[Route('/', name: 'app_invoices', methods: ['GET'])]
+#[Route('/{id}', name: 'app_invoice_show')]
+#[Route('/new', name: 'app_invoice_new')]
+```
+
+This keeps individual route attributes clean and centralizes the locale constraint in one place.
+
+##### 27.6.3 Locale switcher in the navigation
+
+```twig
+{# templates/base.html.twig #}
+<nav class="locale-switcher">
+    {% for locale in ['en', 'de', 'pt_BR'] %}
+        <form method="post" action="{{ path('app_locale_switch') }}" class="inline">
+            <input type="hidden" name="_token" value="{{ csrf_token('locale_switch') }}">
+            <button type="submit" name="locale" value="{{ locale }}"
+                    class="{{ app.request.locale == locale ? 'active' }}">
+                {{ locale|upper }}
+            </button>
+        </form>
+    {% endfor %}
+</nav>
+```
+
+---
+
+#### 27.7 Translating Framework Messages
+
+Symfony's built-in components (Validator, Security, Form, CSRF) emit their own error messages. By default these are English and live in the component's own translation files. You can override them:
+
+##### 27.7.1 Validation messages
+
+```yaml
+# translations/validation.en.yaml
+# Symfony Validation (override)
+"invoice.date.due.before": "The due date must be after the invoice date."
+"invoice.total.negative": "The total cannot be negative."
+"invoice.number.format": "The invoice number must match INV-YYYY-NNNN."
+
+# translations/validation.de.yaml
+"invoice.date.due.before": "Das Fälligkeitsdatum muss nach dem Rechnungsdatum liegen."
+"invoice.total.negative": "Der Gesamtbetrag kann nicht negativ sein."
+"invoice.number.format": "Die Rechnungsnummer muss dem Format JJJJ-JJJJ entsprechen."
+```
+
+In your `Invoice` entity or DTO:
+
+```php
+use Symfony\Component\Validator\Constraints as Assert;
+
+class Invoice
+{
+    #[Assert\NotBlank(message: 'invoice.number.blank')]
+    #[Assert\Regex(
+        pattern: '/^INV-\d{4}-\d{4}$/',
+        message: 'invoice.number.format',
+    )]
+    private ?string $number = null;
+
+    #[Assert\GreaterThanOrEqual(
+        new \ExpressionLanguage("{ value } >= 0"),
+        message: 'invoice.total.negative',
+    )]
+    private ?float $total = null;
+}
+```
+
+> **Tip:** When overriding Symfony's *built-in* constraint messages (e.g., `NotBlank`), use the same message key that the constraint uses by default (e.g., `This value should not be blank.`) or a custom key. Symfony looks up the message in the `validators` domain first, then falls back to `messages`. You can set a custom domain on the constraint:
+>
+> ```php
+> #[Assert\NotBlank(message: 'This value should not be blank.', groups: ['default'])]
+> ```
+>
+> And override it in `translations/validators.de.yaml`:
+>
+> ```yaml
+> "This value should not be blank.": "Dieser Wert darf nicht leer sein."
+> ```
+
+##### 27.7.2 Security messages
+
+Login failures, 2FA prompts, and password-reset emails all use the `security` domain:
+
+```yaml
+# translations/security.de.yaml
+"Invalid credentials.": "Ungültige Anmeldedaten."
+"Too many login attempts. Please try again later.": "Zu viele Fehlversuche. Bitte versuchen Sie es später erneut."
+"Enter your 6-digit code.": "Geben Sie Ihren 6-stelligen Code ein."
+```
+
+##### 27.7.3 Form labels and help text
+
+```php
+// src/Form/InvoiceType.php
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\Extension\Core\Type\*
+
+class InvoiceType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('number', TextType::class, [
+                'label' => 'invoices.form.label.number',
+                'help'  => 'invoices.form.help.number',
+            ])
+            ->add('dueDate', DateType::class, [
+                'label' => 'invoices.form.label.due_date',
+            ])
+            ->add('lineItems', CollectionType::class, [
+                'label' => 'invoices.form.label.line_items',
+                'entry_label' => 'invoices.form.label.line_item',
+            ]);
+    }
+}
+```
+
+```yaml
+# translations/invoices.de.yaml
+invoices.form.label.number: "Rechnungsnummer"
+invoices.form.help.number: "Format: JJJJ-JJJJ"
+invoices.form.label.due_date: "Fälligkeitsdatum"
+invoices.form.label.line_items: "Positionen"
+invoices.form.label.line_item: "Position"
+```
+
+The form renderer automatically passes these strings through the translator.
+
+##### 27.7.4 Flash messages
+
+Flash messages set in a controller are rendered in Twig, so they go through the `trans` filter:
+
+```php
+// In a controller
+$request->getSession()->getFlashBag()->add(
+    'success',
+    t('invoice.flash.created', ['%number%' => $invoice->getNumber()], 'invoices'),
+);
+```
+
+```yaml
+# translations/invoices.de.yaml
+invoice.flash.created: "Rechnung %number% wurde erstellt."
+```
+
+```twig
+{# templates/base.html.twig #}
+{% for label, messages in app.flashes %}
+    <div class="alert alert-{{ label }}">
+        {% for message in messages %}
+            <p>{{ message|trans }}</p>
+        {% endfor %}
+    </div>
+{% endfor %}
+```
+
+---
+
+#### 27.8 Locale-Aware Formatting with `Intl`
+
+Translation handles *strings*. But dates, numbers, and currencies also need locale-specific formatting, and this is where PHP's `Intl` extension (specifically `NumberFormatter` and `IntlDateFormatter`) comes in.
+
+##### 27.8.1 Number and currency formatting
+
+```php
+use IntlNumberFormatter;
+
+final class InvoiceFormatter
+{
+    public function formatCurrency(
+        float $amount,
+        string $currency,  // ISO 4217, e.g., 'EUR'
+        string $locale,    // e.g., 'de_DE'
+    ): string {
+        $formatter = new IntlNumberFormatter($locale, IntlNumberFormatter::CURRENCY);
+        $formatter->setTextAttribute(IntlNumberFormatter::CURRENCY_CODE, $currency);
+        $formatter->setMinimumFractionDigits(2);
+
+        return $formatter->format($amount);
+    }
+}
+```
+
+```php
+$fmt = new InvoiceFormatter();
+
+$fmt->formatCurrency(1234567.
+
+# Chapter 28. Contributing to Symfony
+
+Throughout this book you have been a *consumer* of Symfony: you wrote controllers, configured services, defined routes, and shipped a production application. In this final chapter you take the other side of the table. You will learn how to contribute back to the project that has carried you this far — how to read the codebase you have been calling into for months, how to write the tests that keep a component honest, and how to land a pull request in a project with one of the most rigorous review processes in open source.
+
+Contributing to Symfony is not a special club reserved for the core team. Thousands of developers ship changes to it every year, and the same skills you have practiced building your invoicing app — debugging, testing, reading unfamiliar code, writing clear commits — are exactly what you need here. The payoff is twofold: the framework gets better, and you develop a deeper, structural understanding of the code that makes you a more effective Symfony developer even when you never submit a single pull request.
+
+> **Note**
+> This chapter targets the `symfony/symfony` monorepo on the 7.4 LTS / 8.x line, using PHP 8.2+. The process described is the same whether you fix a bug in `HttpClient` or add a feature to `Serializer`; the component name is just a variable.
+
+## 28.1 The lay of the land
+
+Before touching any code, orient yourself. "Contributing to Symfony" is broader than "writing PHP," and it is worth knowing your options because the lowest-friction ones are often the most valuable.
+
+| Way to contribute | Setup required | Good first step |
+|---|---|---|
+| Report a bug | None | Write a minimal reproducer (Section 28.3.3) |
+| Review & triage issues/PRs | A GitHub account | Comment on an issue you understand |
+| Fix a bug in a component | Local clone + Composer | A `Bug`-labeled issue with a reproducer |
+| Add a feature | Local clone + Composer | Discuss first on `#contribs` |
+| Improve the docs | None (edit online) or a docs clone | A typo or a confusing paragraph |
+| Translate messages | A Weblate account | An unfinished locale for your language |
+| Mentor newcomers | Slack access | Answer a question in `#mentoring` |
+
+The community lives on the **Symfony Slack**, where `#contribs` is the home for "I want to build this, is it wanted / is someone already on it?" and `#mentoring` is a dedicated space where newcomers ask questions and core team members point them in the right direction. There is genuinely no such thing as a silly question in those channels. Join early and lurk a little before you post; you will quickly absorb the idioms.
+
+One rule is absolute: **if you have found a security issue, do not report it publicly.** Open the issue tracker at your peril — you would be disclosing the flaw to the world. Instead, follow Symfony's private security disclosure process (see the "Security Issues" section of the official contributing docs, and email `security@symfony.com`). Everything else in this chapter is safe to do in the open.
+
+### The monorepo and its branches
+
+All components, bundles, bridges, and contracts live in **one repository**: `symfony/symfony`. It is organized by *type* first, then by *name*:
+
+```
+symfony/
+├── src/Symfony/
+│   ├── Component/      # Standalone libraries (Routing, Validator, HttpFoundation, …)
+│   ├── Bundle/         # Framework integrations (FrameworkBundle, SecurityBundle, …)
+│   ├── Bridge/         # Adapters to third-party libraries (Twig, Doctrine, Monolog, …)
+│   ├── Contracts/      # Cross-component interfaces (Service, EventDispatcher, …)
+│   └── Polyfill/       # Backwards-compatibility shims for older PHP / extensions
+├── .github/            # CI workflows (GitHub Actions), issue & PR templates
+├── phpunit.xml.dist    # Root test configuration (the "bridge" runs this per component)
+├── .php-cs-fixer.dist.php
+├── CHANGELOG-*.md      # Auto-generated; do NOT edit by hand
+└── UPGRADE-*.md        # Human-maintained upgrade notes per major version
+```
+
+When you `composer require symfony/validator`, you are not pulling the whole monorepo — Composer installs *just that component* as its own package. But you **contribute** to everything in the single repository, which is why your local clone is large.
+
+Branches follow the version numbers you have seen on the releases page: `6.4`, `7.4`, `8.0`, and so on, plus a moving development branch for the next minor release. The one decision that matters when you start a piece of work is **which branch to base it on**, and it is easy to get right:
+
+- **Bug fix →** the *oldest supported branch* that contains the bug. If you are unsure, that is the oldest branch listed as maintained on the releases page (as of writing, `6.4`). Bug fixes are merged **forward** into newer branches automatically by the maintainers; you never cherry-pick them yourself.
+- **New feature →** the *current development branch* shown on the releases page. Features are never backported to LTS or stable branches.
+
+> **Tip**
+> You pick the branch exactly once, when you create your topic branch. If you base a bug fix on a dev branch by mistake, the reviewer will ask you to retarget it — a five-minute fix, but avoid it anyway.
+
+## 28.2 Setting up your environment
+
+You only do this once. Install **Git** and **PHP 8.2+**, and set your identity (it appears on every commit):
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+
+### On Windows, stop Git from rewriting line endings when cloning:
+git config --global core.autocrlf input
+```
+
+Then fork, clone, and wire up the `upstream` remote:
+
+```bash
+### 1. On GitHub, click "Fork" on symfony/symfony — this creates YOUR_USERNAME/symfony.
+### 2. Clone your fork:
+git clone git@github.com:YOUR_USERNAME/symfony.git
+cd symfony
+
+### 3. Point "upstream" at the real project so you can pull in the latest code:
+git remote add upstream https://github.com/symfony/symfony.git
+git remote -v   # you should see both "origin" (your fork) and "upstream"
+```
+
+The `origin`/`upstream` pair is the single most important habit in monorepo contribution. **`origin` is where you push; `upstream` is where you pull.** You almost never push to `upstream` (you do not have permission), and you almost never merge from `origin` (it is behind).
+
+### Installing test dependencies
+
+The monorepo's `composer.json` declares the dependencies the *test suite* needs — Doctrine, Twig, Monolog, and many more, because many components are tested against the framework. Install them with a plain `composer update`:
+
+```bash
+composer update
+```
+
+Because the monorepo is a single package that references itself, Composer sometimes needs to know which version it is "acting" as. If `composer update` complains about unresolved dependencies, pin the root version:
+
+```bash
+COMPOSER_ROOT_VERSION=7.4.x-dev composer update
+```
+
+### Verifying the toolchain works
+
+Run the test suite for one small, fast component and confirm everything is green *before* you change anything:
+
+```bash
+php ./phpunit src/Symfony/Component/Filesystem/
+```
+
+`php ./phpunit` is not the stock PHPUnit binary — it is Symfony's **PHPUnit Bridge**, a wrapper that installs and runs the correct PHPUnit version and collects deprecation notices for you. When you pass it a directory, it runs every test suite in that component; when you pass it a single file, it runs just that file.
+
+### Testing your changes inside a real project
+
+You will want to exercise your change against an actual application, not just unit tests. The repository ships a helper script for exactly this. From the root of your clone:
+
+```bash
+php link /path/to/your/invoicing-app
+```
+
+This replaces the `symfony/*` packages in your app's `vendor/` directory with **symbolic links** to your local clone, so edits you make in the monorepo take effect immediately in the app (no `composer update` in between). When you are done, restore the original dependencies with:
+
+```bash
+php link /path/to/your/invoicing-app --rollback
+```
+
+If your environment cannot resolve symlinks (some CI or container setups), pass `--copy` instead.
+
+> **Note**
+> The `link` script is a developer convenience; it changes nothing about how your pull request is validated. CI runs the full test suite on a clean checkout, never against your linked app.
+
+## 28.3 Reading the codebase
+
+You have spent the whole book calling into Symfony without reading it. Reading the source is a distinct skill, and it pays off immediately: you stop guessing at behavior and start *knowing* it. Here is how to move through the codebase without getting lost.
+
+### 28.3.1 The anatomy of a component
+
+Open any component and you will recognize the same shape again and again. Consider a schematic component:
+
+```
+src/Symfony/Component/Validator/
+├── composer.json          # The package manifest (name, deps, autoload map)
+├── CHANGELOG.md           # One entry per change, newest on top
+├── README.md
+├── LICENSE
+├── ValidatorInterface.php # Top-level API: interfaces, abstract classes, value objects
+├── ConstraintValidatorFactory.php
+├── Exception/             # The component's own exception hierarchy
+│   └── NotCompromisedPasswordException.php
+├── Constraints/           # Feature sub-namespaces, one per concern
+│   ├── Email.php
+│   └── EmailValidator.php
+└── Tests/                 # The test suite — see Section 28.4
+    ├── ConstraintValidatorTest.php
+    ├── Constraints/
+    │   └── EmailValidatorTest.php
+    └── Fixtures/          # Static data the tests load
+```
+
+The piece that ties a component together is its `composer.json` autoload map, which follows a strict pattern you will see in every one:
+
+```jsonc
+{
+    "name": "symfony/validator",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.2",
+        "symfony/deprecation-contracts": "^2.5|^3",
+        "symfony/translation-contracts": "^2.5|^3"
+    },
+    "autoload": {
+        "psr-4": { "Symfony\\Component\\Validator\\": "" },
+        "exclude-from-classmap": ["/Tests/"]
+    },
+    "autoload-dev": {
+        "psr-4": { "Symfony\\Component\\Validator\\Tests\\": "Tests/" }
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}
+```
+
+Three things to internalize:
+
+1. **Production code** maps `Symfony\Component\Validator\` to the component root (an empty string), so `Symfony\Component\Validator\Constraints\Email` resolves to `Constraints/Email.php`.
+2. **Test code** lives under the *same* namespace with `\Tests\` appended, mapped in `autoload-dev` — meaning it is only loaded in development/test contexts and never shipped to your production app.
+3. **`exclude-from-classmap`** ensures the `Tests/` directory is stripped out when the component is installed as a Composer package, so your users never see your test classes.
+
+This "tests share the namespace root" convention is why you can `use Symfony\Component\Validator\Tests\Fixtures\Foo;` in a test and have autoloading just work.
+
+### 28.3.2 Navigating without getting lost
+
+You do not read a component top to bottom. You follow a *question*. The three tools that answer most questions are:
+
+- **GitHub code search** (the "Code" tab, or the keyboard shortcut when you are in a file) — to find where a behavior is implemented. Search for a method name or a string from an error message, scoped to the repo.
+- **`git log`** — to see *when* a line changed and *why* (the commit message and linked PR are there):
+
+  ```bash
+  # History of one file
+  git log --oneline -- src/Symfony/Component/HttpFoundation/Request.php
+
+  # Every commit that touched a specific line range
+  git log -L :doSomething:src/Symfony/Component/Serializer/Normalizer/ObjectNormalizer.php
+  ```
+
+- **`git blame`** — to find the author and commit for a specific line, which almost always leads you to the PR discussion where the decision was made:
+
+  ```bash
+  git blame -L 42,80 src/Symfony/Component/Security/Core/Validator/PasswordValidatorTrait.php
+  ```
+
+A fourth tool is the **Contracts** packages. When you want to understand the *guaranteed* shape of something — what a `NormalizerInterface` must do, what an `EventDispatcherInterface` promises — read the contract, not one implementation. Contracts are the smallest, most stable slice of the codebase and the best on-ramp for a new reader.
+
+### 28.3.3 Writing a good bug report (a component of reading)
+
+Reading pays off the moment you hit a bug, because a good report is, at its core, *a piece of code that isolates one behavior*. Two rules separate a bug that gets fixed in a day from one that stalls for months:
+
+**Keep the reproducer minimal.** A *reproducer* is the smallest amount of code that triggers the bug. For a **standalone component** (one you can use without the full framework), a script is enough:
+
+```php
+// composer require symfony/serializer
+require_once __DIR__.'/vendor/autoload.php';
+
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+
+$serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
+$object     = new \stdClass();
+$object->id = 1;
+
+// Expected: '{"id":1}'  — Actual: throws an exception on this PHP version
+echo $serializer->serialize($object, 'json');
+```
+
+For a **framework bug** (routing, security, the DI container in action), build the smallest possible app, strip it down until the bug still reproduces, push it to a fresh repository, and link it in the issue. Resist the urge to paste your whole invoicing app — strip it to one route, one controller, one service.
+
+**Always include the stack trace as plain text**, never a screenshot. Symfony's exception page has a "Stack Trace" block you can copy directly; in the console, add `--verbose`. Before pasting, redact anything sensitive (tokens, internal hostnames, PII). When reading a trace yourself, the lines under your own `src/` are almost always more interesting than the lines in `vendor/` — the interesting frame is where your code met the framework's assumption.
+
+## 28.4 Writing tests for a component
+
+This is the heart of contribution, and the part that most distinguishes a contribution that gets merged from one that gets closed. Symfony's test culture is simple to summarize: **every behavior change ships with a test that would have caught the bug, and the test reads like a specification.**
+
+### 28.4.1 Where tests live and what they are called
+
+Tests live in the component's `Tests/` directory and **mirror the source layout**. A class at `Constraints/EmailValidator.php` is tested at `Tests/Constraints/EmailValidatorTest.php`. The convention is:
+
+- Test class name = class name + `Test` (`EmailValidator` → `EmailValidatorTest`).
+- One public test method per behavior, named `testXyz()`, written as a *sentence* about what should be true.
+- No `void` return types on test methods (a Symfony-specific deviation from general PSR style, to keep method signatures uniform with PHPUnit's expectations).
+
+### 28.4.2 A component test, in practice
+
+Here is what a realistic test for a value-level class looks like, including the conventions you will be expected to follow: a **data provider** to cover many cases in one method, fixtures for anything non-trivial, and assertion choices that make a failure readable.
+
+```php
+namespace Symfony\Component\Validator\Tests\Constraints;
+
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\Validator\Constraints\EmailValidator;
+use Symfony\Component\Validator\Constraints\Email;
+use Symfony\Component\Validator\Exception\NotCompromisedPasswordException;
+
+class EmailValidatorTest extends TestCase
+{
+    public static function validEmails(): iterable
+    {
+        yield 'simple address'        => ['jane@example.com'];
+        yield 'plus addressing'       => ['jane+tag@example.com'];
+        yield 'subdomain'             => ['jane@mail.example.co.uk'];
+        yield 'local part with dash'  => ['jane-doe@example.com'];
+    }
+
+    public static function invalidEmails(): iterable
+    {
+        yield 'missing @'             => ['jane@examplecom'];
+        yield 'double @'              => ['jane@@example.com'];
+        yield 'empty local part'      => ['@example.com'];
+        yield 'spaces'                => ['jane doe@example.com'];
+    }
+
+    #[DataProvider('validEmails')]
+    public function testAcceptsValidEmails(string $email): void
+    {
+        $validator = new EmailValidator();
+
+        $this->assertTrue($validator->isValid($email, new Email()));
+    }
+
+    #[DataProvider('invalidEmails')]
+    public function testRejectsInvalidEmails(string $email): void
+    {
+        $validator = new EmailValidator();
+
+        $this->assertFalse($validator->isValid($email, new Email()));
+    }
+
+    public function testThrowsForUnexpectedConstraintType(): void
+    {
+        $validator = new EmailValidator();
+
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('This validator only supports list of "Email" constraints.');
+
+        $validator->validate('anything', new \stdClass());
+    }
+}
+```
+
+Note the choices that make this a *good* Symfony test:
+
+- **`yield 'label' => [args]`** gives every sub-case a name, so a failure reports `testRejectsInvalidEmails with data set "double @"` — you know exactly which input broke, without opening the file.
+- **Data providers are `static`** and return `iterable`. Modern Symfony uses the `#[DataProvider]` attribute (PHP 8.1+), which fits the book's attribute-first style.
+- **The failure message is tested, not just the exception type.** `expectExceptionMessage` pins the contract that a user might match on.
+
+### 28.4.3 Running the tests
+
+From the monorepo root:
+
+```bash
+### One whole component
+php ./phpunit src/Symfony/Component/Validator/
+
+### One test file
+php ./phpunit src/Symfony/Component/Validator/Tests/Constraints/EmailValidatorTest.php
+
+### A single test method, and only cases whose name matches
+php ./phpunit src/Symfony/Component/Validator/Tests/Constraints/EmailValidatorTest.php --filter testRejectsInvalidEmails
+```
+
+You should develop a reflex: **run the whole component's suite, not just your new test**, before you commit. A change to a shared helper can break a test three files away, and catching it locally is far cheaper than catching it in CI.
+
+### 28.4.4 Testing deprecations
+
+Because deprecation is central to Symfony's BC strategy (Section 28.6), you will frequently need to *assert that a deprecation fires*. The PHPUnit Bridge provides a helper for exactly this:
+
+```php
+public function testLegacyOptionIsDeprecated(): void
+{
+    $this->expectDeprecation('Since symfony/validator 7.3: Not setting "allow_empty" is deprecated.');
+
+    $validator = new EmailValidator();
+    $validator->validate('jane@example.com', new Email());
+}
+```
+
+When you *introduce* a deprecation, this test is your guardrail: it fails if the `trigger_deprecation()` call is ever removed or its message changes.
+
+### 28.4.5 Testing generated code
+
+A few components generate PHP code at runtime (the DI container, the Config builder, the proxy factories) and keep a **golden-file** of the expected output. The test generates the code and diffs it against a stored fixture. If your change legitimately alters the generated output, you regenerate the fixture rather than editing it by hand:
+
+```bash
+TEST_GENERATE_FIXTURES=1 php ./phpunit src/Symfony/Component/Config/Tests/Builder/
+```
+
+You will usually see the test fail once, print a note that fixtures were regenerated, and pass on the next run — and you commit the updated fixture files *together with* the code change.
+
+### 28.4.6 A bug fix, end to end (TDD)
+
+This is the workflow you will do most often, and it is worth walking through completely because the discipline is what gets PRs merged. Suppose you found that `EmailValidator` accepts an address with a trailing dot in the domain, `jane@example.com.` — it should not.
+
+**1. Write the failing test first.** Add it to `EmailValidatorTest`:
+
+```php
+public function testRejectsDomainWithTrailingDot(): void
+{
+    $validator = new EmailValidator();
+
+    $this->assertFalse($validator->isValid('jane@example.com.', new Email()));
+}
+```
+
+**2. Run it and watch it fail** — you must see it fail for the *right* reason (the validator returns `true`, not a crash):
+
+```bash
+php ./phpunit src/Symfony/Component/Validator/Tests/Constraints/EmailValidatorTest.php --filter testRejectsDomainWithTrailingDot
+### Expected: FAILS — Failed asserting that true is false.
+```
+
+**3. Make the smallest fix** in `EmailValidator` that turns the test green, without touching unrelated lines.
+
+**4. Re-run the whole component** to confirm nothing regressed:
+
+```bash
+php ./phpunit src/Symfony/Component/Validator/
+### Expected: OK (… tests, … assertions)
+```
+
+**5. Optionally prove it in the wild** by linking into your invoicing app (`php link /path/to/app`) and sending the bad address through the real validation path — this catches integration-level surprises a unit test cannot.
+
+That loop — *red, green, whole suite, integration* — is the entire craft of a bug-fix contribution. Everything else in this chapter is ceremony around it.
+
+## 28.5 Coding standards and conventions
+
+Symfony is written by thousands of hands, so it looks like one hand wrote it. That consistency is enforced, and you are expected to match it. The good news: you do not memorize the rules — you run a tool.
+
+### 28.5.1 Let PHP CS Fixer do the mechanical work
+
+The coding standards are based on **PSR-12** and **PSR-4**, with Symfony-specific refinements. Rather than review your formatting by eye, run the fixer over the files you touched:
+
+```bash
+php php-cs-fixer.phar fix -v
+```
+
+In the monorepo the configuration lives in `.php-cs-fixer.dist.php`, so the fixer already knows Symfony's exact rules. If you skip this and open a PR with style violations, the CI check will fail and point you back here — but running it locally first saves a round trip.
+
+### 28.5.2 The conventions worth knowing by heart
+
+A handful of rules come up in nearly every review, so learn them now and you will stop getting poked about the same things:
+
+- **Yoda conditions** when comparing a variable to a literal — `if (5 === $count)`, not `if ($count === 5)`. This guards against an accidental `=` inside the condition.
+- **Exception and error messages** start with a capital letter, end with a period, use **double quotes** (never backticks) around technical names, and are built with `sprintf`:
+
+  ```php
+  throw new \RuntimeException(sprintf('The "email" option is required.'));
+  ```
+
+- **Use `get_debug_type()`** to render a class name in a message, not `::class` — it degrades gracefully to a more useful name for anonymous or internal classes:
+
+  ```php
+  throw new \LogicException(sprintf('Expected an instance of "%s".', get_debug_type($object)));
+  ```
+
+- **No trailing `else` after a `return` or `throw`** — return early and fall through.
+- **Trailing commas** in multi-line arrays and in constructor-promoted parameter lists.
+- **One space around binary operators** (but *not* around the `.` concatenation operator), unary operators *adjacent* to their operand (`!$flag`, not `! $flag`).
+- **Blank line before a `return`**, unless the `return` is the only statement in its block.
+- **Naming**: `camelCase` for methods and variables (`$acceptableContentTypes`, `hasSession()`), `snake_case` for config keys and route names, `SCREAMING_SNAKE_CASE` for constants, `UpperCamelCase` for classes, `Interface` suffix for interfaces, `Trait` suffix for traits, `Exception` suffix for exceptions, and `As`/`Map` prefixes for the service- and controller-argument attributes you have used throughout this book.
+- **License header** at the top of every new PHP file, before the `namespace` — the fixer adds it for you.
+
+The full list is long; the contributing "Coding Standards" page has a single annotated class that demonstrates almost all of it at once. Read that one example and you will internalize more than you would from a list.
+
+### 28.5.3 Keep the diff honest
+
+A rule that is not in any style guide but is enforced in review: **only touch the lines your change requires.** Resist the urge to "fix" the coding standard on a line you are already near, or to reformat a neighboring method. Every unrelated line makes the review harder and the blame history noisier. If you notice an unrelated problem, mention it in the PR description or open a separate issue — do not bundle it in.
+
+### 28.5.4 Documenting the change: `CHANGELOG` and deprecations
+
+If your change is a **new feature or a deprecation**, it is not complete until it is recorded. Each component has a `CHANGELOG.md` at its root, and you add an entry under the current minor-version heading, **newest entries on top**, in the imperative, capitalized, no-trailing-period style:
+
+```markdown
+CHANGELOG
+=========
+
+7.4
+---
+
+ * Add `#[MapRequestParameter]` attribute for binding typed request parameters to controllers
+```
+
+If you **deprecate** something, the deprecation is a *checklist*, not a single edit. All of the following belong in the **same pull request**:
+
+1. A `@deprecated since Symfony X.Y, use Z instead.` PHPDoc on the affected symbol.
+2. A `trigger_deprecation()` call so users get a runtime hint (requires `symfony/deprecation-contracts`):
+
+   ```php
+   trigger_deprecation('symfony/validator', '7.4',
+       'The "%s()" method is deprecated, use "%s()" instead.', __METHOD__, NewApi::class
+   );
+   ```
+
+3. An entry in the component's `CHANGELOG.md`.
+4. An entry in the current `UPGRADE-X.Y.md` describing the *consequence* of the deprecation.
+5. An entry in the *next major* `UPGRADE` file noting the planned *removal*.
+
+You cannot introduce a deprecation into a brand-new class or method (there is nothing to migrate *from*), and you can only **remove** deprecated code in a major release. Those guardrails keep the deprecate-then-remove rhythm predictable for every user.
+
+## 28.6 Not breaking the world: backward compatibility
+
+This is the single most important constraint on a Symfony contribution, and the one that surprises newcomers most. Symfony makes a **backward-compatibility (BC) promise**: within a major version, minor releases may add features but may *not* break existing code. This is semantic versioning, and it is why you can upgrade from `7.4.0` to `7.4.9` without rewriting your app.
+
+Your pull request is held to that promise. The practical, memorizable summary is:
+
+> **Quick reference**
+> Do not remove or rename public/protected methods, properties, or constants. Do not add *required* arguments to existing methods. Do not change a public/protected method's signature. To replace something, keep the old API working and **deprecate** it (Section 28.5.4) instead of deleting it.
+
+The full rules differ by visibility and by whether the symbol is on an interface, a class, or a trait, and the contributing docs publish exhaustive tables for each. The intuition you need is: **the stricter the visibility and the more public the surface, the less you may touch it.**
+
+- A **private** method or property is yours to change freely — no one outside the class can depend on it.
+- A **public** method on a concrete class: you may *add* one, but you may not change an existing one's signature, add a required argument, or make it `final`.
+- An **interface** is the most frozen surface of all — you may not add a method to it, because every existing implementer would break. (Adding a *parent* interface is allowed; adding a *method* is not.)
+- Anything tagged `@internal` or living in a `*\Tests\` namespace is **outside** the promise — it is there for Symfony's own use, and you may treat it as unstable.
+
+Two escape hatches exist, and you should know them before they bite: **security fixes** are allowed to break BC when necessary, and **experimental features** (clearly marked as such) are not covered by the promise at all.
+
+When in doubt, do not guess — the maintainers would rather see you *ask* than see you silently break someone's production app. Post on `#contribs`: "I want to do X, but it looks like this changes a public method signature — what's the BC-safe path?" That question is the most welcome kind in the channel.
+
+## 28.7 Submitting a pull request
+
+You have code, tests, and a clean style. Now the process.
+
+### 28.7.1 Commit messages
+
+Start with a short subject line: the affected component, bridge, or bundle in **square brackets**, then a capitalized, imperative sentence with no trailing period. Add a blank line and a longer explanation only if the subject cannot carry it:
+
+```
+[HttpClient] Add support for streaming responses larger than the buffer size
+
+When the response exceeds the configured buffer, the previous code buffered
+the entire body in memory. This switches to a streamed read and emits
+`progress` callbacks as chunks arrive.
+```
+
+The `[Component]` prefix is load-bearing: it is how maintainers route the PR to the right reviewers and how the generated changelog is built.
+
+### 28.7.2 Prepare and open the PR
+
+Sync with `upstream`, rebase (not merge — a linear history is cleaner for review), and push to *your* fork:
+
+```bash
+git fetch upstream
+git rebase upstream/6.4          # or the branch you based off
+git push origin fix_12345        # rebase may require: git push --force-with-lease origin fix_12345
+```
+
+> **Tip**
+> Always name the branch explicitly when force-pushing, and prefer `--force-with-lease` over a bare `--force` — it will refuse to publish if someone else has pushed to that branch in the meantime.
+
+Open the pull request against the branch you chose. The template asks a few structured questions that gate the review:
+
+- **Bug fix?** → Reference the issue number (e.g. `Fixes #12345`).
+- **BC break or deprecation?** → Confirm you have updated `CHANGELOG.md` and the `UPGRADE-*.md` files.
+
+Fill in the description generously — what the change does, why, and how you tested it. It becomes the permanent record of *why* the code exists. **If it is not ready, open it as a *draft*;** that tells reviewers it is a work in progress and stops the pile of premature "looks good" approvals.
+
+### 28.7.3 The automated checks
+
+Opening a PR kicks off **GitHub Actions**. Expect three families of checks, and learn what each means when it fails:
+
+- **Coding style (PHP CS Fixer).** A failure is almost always mechanical. Run the fixer locally, commit the result, and re-push — there is no judgment in it.
+- **The test suite**, across the supported PHP versions and operating systems. A failure here usually points at a real problem in your change. If you suspect it is a pre-existing, unrelated failure, check whether the target branch is also red and leave a comment explaining what you observed.
+- **Static analysis (PHPStan and Psalm).** These may comment on potential type errors. Review each one on its merits, but do **not** edit their baseline files or silence them with `@phpstan-`/`@psalm-` annotations — that is a decision for the maintainers.
+
+### 28.7.4 Receiving review — and reworking
+
+The **core team** decides what gets merged, so their feedback carries the most weight, but anyone can review. A few norms keep the exchange constructive for everyone:
+
+- Take feedback as *input*, not as a verdict. You are not required to apply every suggestion verbatim — if a suggestion conflicts with the component's design, say so and explain your reasoning.
+- Respond to each point so reviewers can see you engaged with it, even when the answer is "I considered that, and here is why I did it differently."
+- If feedback ever crosses into abuse, contact the **CARE team**; that is what they are there for.
+
+To apply feedback, commit to the *same* branch, rebase onto the latest `upstream`, and force-push:
+
+```bash
+git rebase upstream/6.4
+git push --force-with-lease origin fix_12345
+```
+
+**You do not need to squash your commits.** Symfony squashes automatically at merge time, and the merged commit's message records the PR number (e.g. `merged branch USER/fix_12345 (PR #12345)`), so the entire discussion stays linked to the code forever. Commit as often as you like while iterating; the cleanup happens for you.
+
+## 28.8 Beyond your first merge
+
+Landing a PR is a milestone, not a summit. The ecosystem keeps rewarding you in ways that do not require you to write a single line of PHP:
+
+- **Triage.** Labelling issues, confirming a reporter's reproducer, and closing duplicates is high-leverage work that takes no setup and teaches you where the project's pain points are.
+- **Documentation.** The docs live in `symfony/symfony-docs` (reStructuredText). Small fixes can be made *online* in the browser with no clone at all. A paragraph that clears up a confusion you personally had is a genuine gift to the next reader.
+- **Translations.** Error and validation messages are crowd-translated through Weblate; improving a locale in your own language is a low-barrier, high-impact contribution.
+- **Mentoring.** Answer a question in `#mentoring`, review a newcomer's first PR, or pair with them. The people who become long-term contributors were usually helped by someone doing exactly this.
+- **Governance.** The core team and its process are public; understanding how releases, LTS branches, and the BC promise are *decided* completes the picture this chapter has built.
+
+You arrived at this chapter as someone who uses Symfony. By the end of it, you are someone who can read it, prove its behavior, and improve it — which, honestly, is also what makes you a better user of it.
+
+## Exercises
+
+Work through these in order; each builds on the last. Keep a fork of `symfony/symfony` ready from Section 28.2.
+
+**1. Orientation (no code).** Identify the three most recent *maintained* branches on the Symfony releases page. For a hypothetical bug present in all of them, which branch do you base your fix on? For a new feature, which branch? Write a three-sentence justification you could post in `#contribs`.
+
+**2. Read a component cold.** Open `src/Symfony/Component/Uid/` (a small, self-contained component). Using only GitHub code search and `git blame`, answer: (a) Where is the ULID generation implemented? (b) When was the `AbstractUid::toBase58()` behavior last changed, and what did the linked PR say it was fixing? (c) Which files are `@internal`? Record your navigation path — you are building a muscle, not just an answer.
+
+**3. Your first test.** Add a data-provider-driven test to an existing component's suite that asserts a behavior you *believe* is true but have not verified (for example, a boundary value in `FrameworkBundle`'s rate limiter, or an edge case in `HttpFoundation`'s `IpUtils`). Run the whole component. If your belief was wrong, you have just found a candidate bug — go to Exercise 5.
+
+**4. The full bug-fix loop.** Pick a small, currently-open, `Bug`-labeled issue in the `symfony/symfony` tracker that has a clear reproducer and touches a component you understand from this book (Serializer, Validator, Messenger, or Routing are natural, given the invoicing app). Run the reproducer, write the failing test, fix it, run the whole component, and — using `php link` — confirm the fix in your running invoicing app. You do not need to open the PR; the point is to complete *red → green → whole suite → integration* end to end.
+
+**5. (Challenge) A deprecation done properly.** In a scratch branch, deprecate a small, safe, public method of a component (pick something clearly low-impact so it is an easy review if you do submit it). Complete the entire checklist from Section 28.5.4: the `@deprecated` PHPDoc, the `trigger_deprecation()` call, an `expectDeprecation()` test, the `CHANGELOG.md` entry, and both `UPGRADE` entries. Run the component suite and confirm the deprecation test passes.
+
+**6. (Challenge) Ship it.** Take your best work from Exercise 4 or 5, format a commit message per Section 28.7.1, rebase onto the correct branch, run PHP CS Fixer, and open a real (or draft) pull request with a fully filled-in template. Watch the CI checks run, respond to any failure, and post your PR URL to `#contribs` asking for a review. Even if it is never merged, having walked the pipeline once is the goal of this chapter.
+
+> **Further reading**
+> The official contributing hub: symfony.com/doc/current/contributing/. Read "Coding Standards," "Code Conventions," and "Our Backward Compatibility Promise" in full — they are the authoritative versions of Sections 28.5 and 28.6, and the BC tables in particular are worth keeping open beside you. The SymfonyCast *Contributing Back To Symfony* series is a strong video companion if you prefer watching the workflow performed live.
+
+---
+
+*This concludes Part VII — Advanced Topics, and the main body of the book. The appendices that follow collect the reference material you are most likely to reach for day to day: a cheat sheet, a component reference table, a glossary, and further resources.*
+
+## Appendices
+
+# Appendices
+
+These appendices are designed to be consulted in the middle of building the running project, not read end‑to‑end. Appendix A is a fast‑lookup cheat sheet for the four things you'll type most often; Appendix B maps every component to a real job in the invoicing app so you always know *which* library solves *which* problem; Appendix C defines the vocabulary used throughout the book; Appendix D points you past the final page.
+
+---
+
+## Appendix A — Cheat Sheet
+
+Everything below targets Symfony 7.4 LTS / 8.x and uses **attribute‑based configuration** by default. Code samples are written for the running project (namespaces `App\Controller`, `App\Entity`, `App\Service`).
+
+### A.1 Routing
+
+**Define a route with an attribute**
+
+```php
+// src/Controller/InvoiceController.php
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[Route('/invoices', name: 'app_invoice_')]   // name prefix → app_invoice_index, app_invoice_show…
+class InvoiceController
+{
+    #[Route('/', name: 'index', methods: ['GET'])]
+    public function index(): Response
+    {
+        // …
+    }
+
+    #[Route(
+        '/{year}/summary',
+        name: 'summary',
+        methods: ['GET'],
+        requirements: ['year' => '\d{4}'],   // 4‑digit year
+        defaults: ['format' => 'html'],
+        priority: 10,                         // higher = matched earlier
+    )]
+    public function summary(int $year): Response
+    {
+        // …
+    }
+}
+```
+
+**Key `#[Route]` options**
+
+| Option | Meaning |
+|---|---|
+| `path` (1st arg) | URL pattern; placeholders are `{name}` |
+| `name` | Identifier used to generate URLs (set explicitly for important routes) |
+| `methods` | HTTP verbs, e.g. `['GET', 'POST']` |
+| `requirements` | Regex applied to each placeholder |
+| `defaults` | Default values / extra request attributes |
+| `host`, `port`, `schemes` | Full‑URL matching (`https://api.example.com`) |
+| `format` | Content format (`json`, `html`) |
+| `condition` | PHP expression, e.g. `"request.get('x') === 'yes'"` |
+| `priority` | Integer; higher matches first among overlapping routes |
+
+**Generate URLs**
+
+```twig
+{# Twig #}
+<a href="{{ path('app_invoice_summary', {year: 2026}) }}">2026 summary</a>
+```
+
+```php
+// PHP — inject RouterInterface (Symfony\Component\Routing\RouterInterface)
+$url = $this->router->generate('app_invoice_summary', ['year' => 2026]);
+$url = $this->router->generate('app_invoice_show', ['id' => $invoice->getId()], RouterInterface::ABSOLUTE_URL);
+```
+
+**Redirects** (extend `Symfony\Bundle\FrameworkBundle\Controller\AbstractController` to get the helper):
+
+```php
+return $this->redirectToRoute('app_invoice_index', ['year' => $year]);
+return $this->redirect('/some/absolute/url');
+```
+
+A route that *is* a redirect lives in YAML config:
+
+```yaml
+app_invoice_old:
+  path: /old/invoices
+  redirect: /invoices
+```
+
+**Route console**
+
+| Command | Purpose |
+|---|---|
+| `bin/console debug:router` | List every route |
+| `bin/console debug:router app_invoice_summary` | Inspect one route (defaults, requirements, compiled regex) |
+| `bin/console router:match /invoices/2026/summary` | Resolve a URL back to its route |
+
+---
+
+### A.2 Dependency Injection (DI)
+
+**Register a service** — by default every class in `src/` is auto‑registered as a *private* service. Add `#[Service]` to make it explicit or to configure it:
+
+```php
+// src/Service/InvoiceService.php
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\DependencyInjection\Attribute\Tag;
+use Symfony\Component\DependencyInjection\Attribute\Target;
+use Symfony\Component\DependencyInjection\Attribute\When;
+use Symfony\Component\DependencyInjection\Service;
+
+#[Service]                          // private by default; use #[Service(public: true)] to expose it
+#[When('!production')]              // register only outside production
+class InvoiceService
+{
+    public function __construct(
+        private EntityManagerInterface $em,          // autowired by type
+        #[Autowire('%app.invoice.tax_rate%')]       // inject a container parameter
+        private float $taxRate = 0.0,
+        #[Target('invoiceMail')]                    // disambiguate several MailerInterface candidates
+        private MailerInterface $mailer,
+    ) {}
+}
+```
+
+**Attribute quick reference**
+
+| Attribute | Effect |
+|---|---|
+| `#[Service]` | Mark a class as a service; `public: true` to make it fetchable |
+| `#[Autowire('…')]` | Override a constructor dependency with a service name, parameter, or env placeholder |
+| `#[Target('name')]` | Pick among multiple services of the same type |
+| `#[Tag('name')]` / `#[Tag('name', key: 'k')]` | Attach metadata used by bundles to collect/iterate services |
+| `#[When('dev\|test')]` / `#[When('!production')]` | Register only in matching environments |
+
+**Service locator** — for a *few* optional or conditional services, defer resolution instead of coupling the whole container:
+
+```php
+use Symfony\Component\DependencyInjection\ServiceLocator;
+
+public function __construct(private ServiceLocator $locator) {}
+
+public function notify(string $channel): void
+{
+    $notifier = $this->locator->get('notifier.'.$channel); // resolved only when called
+}
+```
+
+> **Rule of thumb:** inject the specific dependency via the constructor. Reach for a locator only for genuinely optional lookups.
+
+**Decorators and aliases** live in config:
+
+```yaml
+### config/services.yaml
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  app.audit_logger:
+    class: App\Service\AuditLogger
+    decorates: 'logger'          # replaces the 'logger' service
+    arguments: ['@logger.inner'] # pass the wrapped original in
+
+  Psr\Log\LoggerInterface:
+    alias: app.audit_logger
+```
+
+**DI console**
+
+| Command | Purpose |
+|---|---|
+| `bin/console debug:container` | List services / `debug:container app.invoice` for one |
+| `bin/console debug:autowiring` | Types the container can autowire |
+| `bin/console lint:container` | Catch private‑service leaks & wiring errors |
+| `bin/console cache:clear` | Force a re‑compile of the container |
+
+---
+
+### A.3 Security
+
+**Protect a controller or action with attributes**
+
+```php
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
+
+#[Route('/invoices/{id}', name: 'app_invoice_show', methods: ['GET'])]
+#[IsGranted('ROLE_USER')]                                   // any logged‑in user
+public function show(Invoice $id): Response { /* … */ }     // route param → entity (ValueResolver)
+
+#[Route('/invoices/{id}/delete', name: 'app_invoice_delete', methods: ['POST'])]
+#[IsGranted('Invoice:delete', subject: 'id')]              // ask a voter (see below)
+#[IsCsrfTokenValid('delete_invoice')]
+public function delete(Invoice $id): Response { /* … */ }
+```
+
+> Modern Symfony prefers `#[IsGranted('ROLE_USER')]` over the deprecated `IsAuthenticated` / `IsAnonymous` attributes.
+
+**Voter**
+
+```php
+// src/Security/InvoiceVoter.php
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+
+class InvoiceVoter extends Voter
+{
+    public const DELETE = 'Invoice:delete';
+
+    protected function supports(string $attribute, mixed $subject): bool
+    {
+        return $attribute === self::DELETE && $subject instanceof Invoice;
+    }
+
+    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
+    {
+        $user = $token->getUser();
+        /** @var Invoice $subject */
+        return match ($attribute) {
+            self::DELETE => $user->hasRole('ROLE_ADMIN')
+                        || $user->getId() === $subject->getOwner()->getId(),
+            default => false,
+        };
+    }
+}
+```
+
+**Password hashing**
+
+```php
+use Symfony\Component\Security\Core\PasswordHasher\PasswordHasherInterface;
+
+$hash = $hasher->hashPassword($user, 'plain-text');
+$ok   = $hasher->isPasswordValid($user, 'plain-text');
+```
+
+```bash
+bin/console security:hash-password App\Entity\User
+```
+
+**Firewall + access control** (`config/packages/security.yaml`)
+
+```yaml
+security:
+  password_hashers:
+    App\Entity\User: auto          # uses the modern algorithm (argon2id where available)
+
+  providers:
+    app_user_provider:
+      entity:
+        class: App\Entity\User
+        property: email
+
+  firewalls:
+    dev:
+      pattern: ^/(_(profiler|wdt)|css|images|js)/
+      security: false
+
+    main:
+      lazy: true                   # only authenticate when needed
+      provider: app_user_provider
+      form_login:
+        login_path: app_login
+        check_path: app_login
+        enable_csrf: true
+      logout:
+        path: app_logout
+
+  access_control:
+    - { path: ^/admin,   roles: ROLE_ADMIN }
+    - { path: ^/profile, roles: ROLE_USER }
+```
+
+The full custom‑authenticator walk‑through (two‑factor, throttling, session‑fixation) is Chapter 12; the above is the "shape" you'll recognize in most apps.
+
+---
+
+### A.4 Console Commands
+
+**Classic class‑based command**
+
+```php
+// src/Command/GenerateInvoicesCommand.php
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+
+#[AsCommand(name: 'app:invoice:generate', description: 'Generate invoices for a billing period')]
+class GenerateInvoicesCommand extends Command
+{
+    protected function configure(): void
+    {
+        $this
+            ->addArgument('period', InputArgument::OPTIONAL, 'Billing period (Y‑m)', '2026-09')
+            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Report only, do not persist')
+            ->addOption('force',   null, InputOption::VALUE_NONE, 'Overwrite existing invoices');
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $io = new SymfonyStyle($input, $output);
+        $period  = $input->getArgument('period');
+        $dryRun  = (bool) $input->getOption('dry-run');
+
+        $rows = $this->findEligibleTenants($period);   // your logic
+
+        $bar = $output->createProgressBar(count($rows));
+        $bar->start();
+        foreach ($rows as $tenant) {
+            $this->process($tenant, $dryRun);
+            $bar->advance();
+        }
+        $bar->finish();
+
+        $io->success(sprintf('%d invoices %s.', count($rows), $dryRun ? 'checked' : 'created'));
+        return Command::SUCCESS;   // 0 = success; non‑zero = failure
+    }
+}
+```
+
+**Invokable command** (8.x) — a plain, invokable method for the simple cases:
+
+```php
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
+#[AsCommand(name: 'app:ping', description: 'Health check')]
+class PingCommand
+{
+    public function __invoke(InputInterface $input, OutputInterface $output): int
+    {
+        $output->writeln('pong');
+        return Command::SUCCESS;
+    }
+}
+```
+
+**Interactive input & questions**
+
+```php
+$period = $input->getArgument('period')
+    ?? $io->choice('Which billing period?', ['2026-09', '2026-08'], '2026-09');
+
+if (!$io->confirm('Proceed with 1,204 tenants?', true)) {
+    return Command::SUCCESS;   // user said no — not an error
+}
+```
+
+**Verbosity & common flags**
+
+| Flag | Effect |
+|---|---|
+| `-v`, `-vv`, `-vvv` | Increasing detail (DEBUG / more) |
+| `--ansi` / `--no-ansi` | Force / strip color |
+| `--env=staging` | Run under a specific environment |
+| `list`, `about`, `completion bash` | Discover commands / install shell completion |
+
+**Essential console commands across the app**
+
+| Command | What it does |
+|---|---|
+| `bin/console list` | Every registered command + description |
+| `bin/console app:invoice:generate 2026-09 --dry-run` | Your custom command |
+| `bin/console lint:container` · `lint:yaml` · `lint:twig` · `lint:php` | Static validation |
+| `bin/console debug:router` · `debug:container` | Inspect routes / services |
+| `bin/console security:hash-password App\Entity\User` | Hash a password |
+| `bin/console cache:clear` · `cache:pool:clear cache.app` | Rebuild caches |
+
+---
+
+## Appendix B — Component Reference
+
+Grouped by job. The last column ties each component to where it first appears in the book. *(Bundles — `FrameworkBundle`, `DoctrineBundle`, `TwigBundle`, `SecurityBundle` — are thin wiring layers over the components and are listed where they matter.)*
+
+### B.1 Core infrastructure
+
+| Component | One‑line purpose | In the running app | First seen |
+|---|---|---|---|
+| `Config` | Builds & validates configuration trees; resolves `.env` placeholders | Bundle config, `%env()%` in parameters | Ch 6 |
+| `DependencyInjection` | The service container; autowiring, autoconfiguration | All DI; `src/` services | Ch 5 |
+| `EventDispatcher` | Decoupled pub/sub events | Cross‑cutting hooks, custom events | Ch 7 |
+| `HttpKernel` | Drives the request lifecycle; the front‑controller object | `request` → `response` pipeline | Ch 4 |
+| `HttpFoundation` | `Request`, `Response`, sessions, cookies, file uploads | Everything web‑facing | Ch 2 |
+| `HttpCache` | Reverse‑proxy HTTP caching, surrogates, invalidation tags | Caching the public API / pages | Ch 23 |
+| `ErrorHandler` | Turns PHP errors into exceptions; renders debug/error pages | Debug pages in dev, clean errors in prod | Ch 23 |
+| `Dotenv` | Loads `.env` files into the environment | `.env`, `.env.local` | Front matter |
+| `Finder` | Discovers files by pattern/directory | Cleaning build artifacts, scanning fixtures | Ch 15 |
+| `Filesystem` | Atomic, permission‑aware file operations | Serving/exporting PDF invoices | Ch 14 |
+| `Process` | Runs shell commands with structured I/O | Invoking CLI tools during deploy | Ch 15 |
+| `Runtime` | Tiny, framework‑independent bootstrap | `public/index.php` | Ch 4 |
+| `VarDumper` | `dump()` and the server‑based dumper | Debugging anywhere | Ch 23 |
+| `VarExporter` | Fast, dependency‑free `var_export` | Caching compiled data | Ch 23 |
+| `Stopwatch` | Precise timing | Profiling hot paths | Ch 23 |
+| `Options` | Resolves a typed options array with defaults | Configuring form/message options | Ch 10 |
+| `PropertyAccess` | Dot/bracket path access: `get('invoice.amount')` | Mapping form & serializer data | Ch 10, 19 |
+| `PropertyInfo` | Introspects property types & lists | Forms, serializer, validation | Ch 10, 19 |
+| `Clock` | Fakeable, injectable "now" | Deterministic time in tests & scheduling | Ch 17, 26 |
+| `String` | Unicode‑aware strings: transliteration, slugs | Generating tenant subdomains / slugs | Ch 27 |
+
+### B.2 Web layer
+
+| Component | One‑line purpose | In the running app | First seen |
+|---|---|---|---|
+| `Routing` | Maps URLs to controllers; generates URLs | All routes | Ch 3 |
+| `BrowserKit` | Scriptable browser for functional tests | `WebTestCase` flows | Ch 22 |
+| `DomCrawler` | Parses HTML into a queryable DOM | Asserting rendered markup in tests | Ch 22 |
+| `CssSelector` | Translates CSS selectors to XPath | Selectors inside crawler assertions | Ch 22 |
+| `TwigBridge` | Symfony ⇄ Twig glue; form themes, email | Form themes, `templatemail` | Ch 9 |
+| `AssetMapper` | Resolves, fingerprints & hot‑reloads assets | JS/CSS/Fonts in the SPA shell | Ch 14 |
+| `Asset` | Classic asset/package URL generation | Legacy asset URLs | Ch 14 |
+| `WebLink` | Emits `Link:` headers (preload, pagination) | Preloading API assets, API nav links | Ch 19 |
+| `HtmlSanitizer` | Allow‑list sanitization of (user) HTML | Rendering tenant‑supplied rich text safely | Ch 9 |
+| `Mime` | Content types, file metadata, message parts | File uploads, email parts | Ch 2, 16 |
+
+### B.3 Data, validation & serialization
+
+| Component | One‑line purpose | In the running app | First seen |
+|---|---|---|---|
+| `Serializer` | Normalize/denormalize objects ⇄ array/JSON | REST API in/out, groups | Ch 19 |
+| `Validator` | Constraint catalog, groups, custom validators | Invoice & user validation | Ch 11 |
+| `Cache` | PSR‑6/16 cache pools, tags, adapters | Query/HTTP cache pools | Ch 23 |
+| `Doctrine` (bundle) | ORM, DQL, migrations (external, via bridge) | All persistence | Ch 13 |
+
+### B.4 Messaging, async & scheduling
+
+| Component | One‑line purpose | In the running app | First seen |
+|---|---|---|---|
+| `Mailer` | Sends email; transports, templated messages, attachments | "Your invoice is ready", bounces | Ch 16 |
+| `Messenger` | Async messages, transports, retries, DLQ | Background invoice generation | Ch 17 |
+| `Notifier` | SMS/email/push notifications (multi‑channel) | Tenant alerts | Ch 16 |
+| `Webhook` | Receives & verifies inbound webhooks, maps them to messages | Payment‑provider callbacks | Ch 18 |
+| `RemoteEvent` | Typed abstraction over external webhook payloads | Modeling Stripe‑style events | Ch 18 |
+| `Scheduler` | Cron‑style, lockable recurring tasks | Nightly dunning, reports | Ch 18 |
+
+### B.5 Security
+
+| Component | One‑line purpose | In the running app | First seen |
+|---|---|---|---|
+| `Security` (Core/Http/Csrf) | Authentication, authorization, voters, firewalls, CSRF | Login, roles, 2FA, throttling | Ch 12 |
+| `PasswordHasher` | Algorithm‑agnostic password hashing | Storing/verifying credentials | Ch 12 |
+
+### B.6 Specialized & utilities
+
+| Component | One‑line purpose | In the running app | First seen |
+|---|---|---|---|
+| `Workflow` | Model state machines (states, transitions, guards) | Invoice lifecycle: draft → sent → paid | Ch 25 |
+| `Uid` | UUID/ULID generation (time‑ordered) | Entity IDs, idempotency keys | Ch 26 |
+| `Lock` | Distributed, expiring locks | One worker per scheduled task | Ch 18, 26 |
+| `Semaphore` | Counting / weighted concurrency limits | Bounding parallel API calls | Ch 26 |
+| `RateLimiter` | Declarative rate‑limiting policies | Per‑tenant API & login limits | Ch 19, 26 |
+| `Translation` | i18n catalogs, ICU messages, locale negotiation | Multilingual UI & emails | Ch 27 |
+
+### B.7 Stable additions in Symfony 8.0
+
+| Component | One‑line purpose | In the running app | First seen |
+|---|---|---|---|
+| `FormFlow` | Multi‑step / wizard forms with per‑step validation | Setup wizard for a new tenant | Ch 10 |
+| `JsonPath` | Query JSON with RFC 9535 expressions | Extracting fields from provider payloads | Ch 19 |
+| `JsonStreamer` | Stream large JSON without full in‑memory load | Exporting bulk invoice data | Ch 19 |
+| `ObjectMapper` | Map JSON to objects (Serializer alternative) | Decoding nested provider events | Ch 19 |
+| `TypeInfo` | Rich type introspection (now stable) | Forms, validation, mapping | Ch 10, 19 |
+| `Emoji` | Emoji utilities (validation, rendering) | Tenant branding / UI polish | Ch 27 |
+
+> **How to read this table:** if you can name the *job* but not the *library*, scan the "One‑line purpose" column. If you know the library but not *why* it's here, read the "In the running app" column.
+
+---
+
+## Appendix C — Glossary
+
+Definitions are framed for the running project and for Symfony 7.4 LTS / 8.x.
+
+- **`.env` file** — Dotenv‑loaded environment file (`.env`, `.env.local`, `.env.<env>`) whose values feed the container's `%env()%` placeholders.
+- **Alias (DI)** — A container name pointing at another service, so two names resolve to the same instance.
+- **Attribute** — A PHP 8 annotation (`#[Route]`, `#[Service]`, `#[IsGranted]`) used in place of XML/YAML to declare routing, services, security, and more.
+- **Autowiring** — The container resolving a constructor's dependencies automatically by type.
+- **Autoconfiguration** — The container automatically applying tags/metadata based on the interfaces a service implements (e.g., a `Command` becomes a console command).
+- **Backward compatibility (BC) promise** — Guarantee that no breaking change is introduced within a major version; removals/deprecations follow a multi‑release cycle.
+- **Bundle** — A self‑contained package that bundles services, config, and an `Extension`; a bundle *adds* capabilities, a component *provides* them.
+- **Cache pool** — A named PSR‑6 cache instance (e.g., `cache.app`, `cache.validator`) with its own adapter and (optionally) invalidation tags.
+- **Component** — A standalone, reusable library (e.g., `HttpFoundation`). The *framework* is components + bundles + the wiring between them.
+- **Compiler pass** — Code that rewrites the service‑definition graph at compile time (removing unused services, wiring tags, registering event listeners).
+- **Container (DI)** — The object holding every service definition; at runtime it compiles into a single optimized class.
+- **CSRF token** — A per‑session nonce that must accompany state‑changing requests to defend against cross‑site request forgery.
+- **Dead‑letter queue (DLQ)** — The Messenger transport that receives a message after it exhausts all retry attempts.
+- **Dependency injection** — Supplying an object's collaborators through its constructor rather than having it build them itself.
+- **Denormalizer** — A Serializer that converts an array (e.g., decoded JSON) *into* an object.
+- **Decorator (DI)** — A service that wraps another, intercepting and augmenting its calls (e.g., logging).
+- **DQL** — Doctrine Query Language; an object‑oriented, entity‑based query language analogous to SQL.
+- **Entity** — A PHP class mapped to a database table; the unit of persistence.
+- **Environment (`env`)** — One of `dev`, `test`, `prod`, …; drives which services, config, and features are active.
+- **Event** — A message dispatched through the `EventDispatcher`; listeners react without the sender knowing them.
+- **Event subscriber** — A service that groups related listeners and declares the events it cares about.
+- **Flash message** — A one‑request message stored in the session (shown once, then cleared).
+- **Firewall** — A security rule‑set matched by URL pattern that governs how (and whether) a request is authenticated.
+- **FormFlow** — (8.x) A component for multi‑step forms where each step validates independently.
+- **Front controller** — The single entry point (`public/index.php`) that boots the kernel for every request.
+- **Guard (workflow)** — A boolean condition that permits or blocks a transition.
+- **Kernel** — The central object that handles a `Request` and produces a `Response`, dispatching kernel events along the way.
+- **Kernel event** — One of the fixed lifecycle events (`kernel.request`, `kernel.controller`, `kernel.view`, `kernel.response`, `kernel.exception`, `kernel.terminate`).
+- **LTS (Long‑Term Support)** — A release with extended support; 7.4 LTS receives bug fixes for ~3 years and security fixes beyond that.
+- **Listener** — A single method reacting to one event (a subscriber is a collection of listeners).
+- **Message (Messenger)** — A data unit routed to a handler, synchronously or asynchronously, through a transport.
+- **Message handler** — A method annotated to consume a specific message type.
+- **Middleware (Symfony pattern)** — There is no literal middleware; cross‑cutting logic is expressed via kernel events / listeners, which achieve the same layering.
+- **Normalizer** — A Serializer that converts an object *into* an array (the inverse of a denormalizer).
+- **Parameter (DI)** — A named, scalar container value (e.g., `%kernel.environment%`, `%app.invoice.tax_rate%`).
+- **Placeholder (route)** — A dynamic segment in a route pattern, e.g. `{year}` in `/invoices/{year}`.
+- **Profiler** — Per‑request debugging tool (Web Profiler / `X‑Debug` data) that captures timing, queries, and events.
+- **Rate limiter** — A policy (from the `RateLimiter` component) that throttles requests by a defined window and limit.
+- **Repository** — A Doctrine class for finding and persisting one entity type, built on QueryBuilder/DQL.
+- **Route** — The binding of a URL pattern (+ requirements) to a controller action.
+- **Serialization group** — A named set of properties the Serializer includes/excludes for a given context (e.g., `"list"`, `"detail"`).
+- **Service** — A class managed and wired by the container.
+- **Service locator** — A scoped container used to look up a small number of services, usually when a dependency is optional.
+- **State (workflow)** — A named condition of an object in a workflow (e.g., `draft`, `paid`).
+- **Surrogate (HttpCache)** — Placeholders in a page (e.g., `{{ surrogates() }}`) that a reverse proxy replaces with fresh fragments at delivery time.
+- **Tag (DI)** — Metadata attached to a service that lets a bundle find and group services (event subscribers, commands, handlers).
+- **Transition (workflow)** — A named, permitted move from one state to another, optionally guarded.
+- **Transport (Messenger)** — How messages are stored and moved: `sync`, Doctrine, AMQP/RabbitMQ, Redis, etc.
+- **ValueResolver** — A resolver that turns a route parameter (e.g., an ID) into a fully‑loaded entity before the controller runs.
+- **Value‑object controller** — A lightweight controller whose only state is its injected dependencies (no per‑request fields).
+- **Voter** — An `AuthorizationVoter` that decides whether a subject (entity) grants an attribute (e.g., `Invoice:delete`) to the current user.
+- **Webhook** — An inbound HTTP POST from an external service (a payment provider) carrying an event to process.
+- **Warmup** — Pre‑populating caches/containers during a deploy so the first real request isn't slow.
+- **Workflow** — A component modeling an object's state machine: states, transitions, guards, and marking listeners.
+
+---
+
+## Appendix D — Further Resources
+
+The single best "next page" after this book is the official documentation, pinned to the exact version you run.
+
+### Official documentation
+- **Symfony Documentation** — <https://symfony.com/doc>. Always pick your version (7.4 LTS or 8.x) from the dropdown; the *Getting Started*, *Installation*, and *How to* guides are the canonical reference.
+- **Release & support tracker** — <https://symfony.com/releases>. Current status, PHP requirements, end‑of‑bug‑fix / end‑of‑security dates, and the upgrade path for every version (7.4 LTS: bug fixes through late 2028, security fixes to late 2029).
+- **Release changelogs (GitHub)** — <https://github.com/symfony/symfony>. Each major branch has a `CHANGELOG-*.md`; read the *New features* and *BC breaks* sections before upgrading.
+- **Component changelogs** — every component keeps its own `CHANGELOG.md` under `src/Symfony/Component/*`.
+
+### Blogs & news
+- **The Symfony Blog** — <https://symfony.com/blog>. Release announcements, deep dives, and the "Living on the edge" series tracking experimental components as they stabilize.
+- **Symfony News** — <https://symfony.com/news> (and the "Symfony News" email), a weekly digest of changes across all components.
+- **SymfonyCasts** — <https://symfonycasts.com>. Free screencasts and courses that pair well with the running project, especially for Doctrine, Security, and testing.
+
+### Books
+- *Symfony: Web Application* (the official "Web Application Book") — broader application‑level coverage that complements this book's architecture focus.
+- *Symfony: Component Development* — for writing your own components and bundles (pairs with Chapter 28).
+- *Symfony Cookbook* — a recipe index for long‑tail tasks ("how do I…?").
+
+### Community
+- **Symfony Community (Forge)** — <https://symfony.com/community> — the forum/announcements hub for the project and its members.
+- **Symfony Slack** — invited community Slack channel; a fast way to ask questions and see what's in flight.
+- **GitHub Discussions & issues** — <https://github.com/symfony/symfony> — where bugs are reported, features proposed, and "how do I do X" questions are answered.
+- **SymfonyCon** — the flagship annual conference (talks and tutorials recorded online).
+- **The Symfony Podcast** — interviews and feature explainers with core contributors.
+- **Local user groups / meetups** — search "Symfony" on meetup.com in your city; great for pairing and feedback.
+
+### Tooling worth adopting alongside the code
+- **Web Profiler & Debug Toolbar** — built in for `dev`; the fastest way to see queries, events, and cache hits (Ch 23).
+- **Blackfire / Xdebug** — profiling for performance work (Ch 23).
+- **PHPStan / Psalm** — static analysis; catches type and nullability issues early.
+- **Rector** — automated, rule‑based upgrades (e.g., "upgrade to Symfony 8") and modernizations.
+- **PHP‑CS‑Fixer** — enforces the code style in the Front Matter.
+- **PHPUnit / Pest** — the test runner behind Chapters 22 and 28; **Panther** for browser‑level testing (Ch 22).
+- **Mailpit** — a local SMTP sink for inspecting the Mailer's output in development (Ch 16).
+- **Symfony CLI** — <https://symfony.com/download> — project scaffolding, local tunnels, and a `.env`‑aware console wrapper.
+
+### A suggested reading order to keep momentum
+1. Re‑read **Ch 4** (request lifecycle) whenever a "why does this happen here?" question arises.
+2. Keep **Appendix A** open while wiring the running project — it's the 20% you'll use 80% of the time.
+3. When adding a feature, look up the relevant row in **Appendix B** to confirm which component owns the job before you reach for a library.
+4. Before shipping, work top‑to‑bottom through **Part VI** with the **tooling list** above.
+
+---
+
+*Notes on currency.* This appendix set targets **Symfony 7.4 LTS** (PHP 8.2+) as the stable anchor, with **Symfony 8.x** additions (invokable commands, `FormFlow`, `JsonPath`, `JsonStreamer`, `ObjectMapper`, `Emoji`, and the now‑stable `TypeInfo`) flagged inline. Where the two lines diverge — most notably the minimum PHP version for 8.x — prefer the official release page for your exact version.
